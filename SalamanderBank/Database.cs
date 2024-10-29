@@ -70,14 +70,14 @@ namespace SalamanderBank
 			using (SQLiteCommand command = new SQLiteCommand(createUsersTableQuery, connection))
 			{
 				int rowsAffected = command.ExecuteNonQuery();
-				Console.WriteLine($"Users table creation: {rowsAffected} table(s) created.");
+				Console.WriteLine($"Users table created.");
 			}
 
 			string createAccountsTableQuery = "CREATE TABLE IF NOT EXISTS Accounts (Id INTEGER PRIMARY KEY, Uid INTEGER, AccountName TEXT, Balance INTEGER, Status INTEGER);";
 			using (SQLiteCommand command = new SQLiteCommand(createAccountsTableQuery, connection))
 			{
 				int rowsAffected = command.ExecuteNonQuery();
-				Console.WriteLine($"Accounts table creation: {rowsAffected} table(s) created.");
+				Console.WriteLine($"Accounts table created.");
 			}
 		}
 
