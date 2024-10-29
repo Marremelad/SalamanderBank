@@ -12,8 +12,8 @@ class Program
         // db.InitializeDatabase();
         // db.AddUser(007, 1, "123abc", "james@bond.com", "James", "Bond");
         
-        // EmailService.SendEmail($"Hello Mauricio and welcome to Salamander Bank! To get started, verify your account using the code below. \n{Guid.NewGuid()}");
+        EmailService.SendEmail("Mauricio", "mauricio.corte@chasacademy.se", EmailService.VerificationText("Mauricio"));
         
-        EmailService.SendEmail("Mauricio", "Corte.Mauricio98@gmail.com", EmailService.VerificationText("Mauricio"));
+        // Logo.DisplayFullLogo();
     }
 }
