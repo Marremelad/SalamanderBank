@@ -5,8 +5,8 @@ namespace SalamanderBank;
 public static class EmailService
 {
     private const string Password = "bdkw ufnw npnc hjvc"; // DO NOT CHANGE!!!
-    public static Guid Guid = Guid.NewGuid();
-    public static DateTime CurrentDate = DateTime.Now;
+    private static readonly Guid Guid = Guid.NewGuid();
+    private static readonly DateTime CurrentDate = DateTime.Now;
     public static void SendEmail(string name, string email, string message)
     {
         var mimeMessage = new MimeMessage ();
@@ -19,15 +19,13 @@ public static class EmailService
             Text = message
         };
 
-        using (var client = new SmtpClient ()) 
-        {
-            client.Connect ("smtp.gmail.com", 587, false);
+        using var client = new SmtpClient ();
+        client.Connect ("smtp.gmail.com", 587, false);
             
-            client.Authenticate ("salamanderbank@gmail.com", Password);
+        client.Authenticate ("salamanderbank@gmail.com", Password);
 
-            client.Send (mimeMessage);
-            client.Disconnect (true);
-        }
+        client.Send (mimeMessage);
+        client.Disconnect (true);
     }
 
     public static string VerificationText(string name)
