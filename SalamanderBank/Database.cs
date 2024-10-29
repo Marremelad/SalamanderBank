@@ -20,6 +20,8 @@ namespace SalamanderBank
 	 *
 	 * Database db = new Database("path/to/database.db");
 	 * db.InitializeDatabase();
+	 * db.CreateTables();
+	 * db.AddUser(1001, 1, "hashed_password", "user@example.com", "John", "Doe");
 	 */
 	public class Database
 	{
@@ -65,10 +67,43 @@ namespace SalamanderBank
 
 		private void CreateTables(SQLiteConnection connection)
 		{
-			string createTableQuery = "CREATE TABLE IF NOT EXISTS Users (Id INTEGER PRIMARY KEY, Name TEXT);";
-			using (SQLiteCommand command = new SQLiteCommand(createTableQuery, connection))
+			string createUsersTableQuery = "CREATE TABLE IF NOT EXISTS Users (Id INTEGER PRIMARY KEY, Uid INTEGER, Type INTEGER, Password TEXT, Email TEXT, FirstName TEXT, LastName TEXT);";
+			using (SQLiteCommand command = new SQLiteCommand(createUsersTableQuery, connection))
 			{
-				command.ExecuteNonQuery();
+				int rowsAffected = command.ExecuteNonQuery();
+				Console.WriteLine($"Users table creation: {rowsAffected} table(s) created.");
+			}
+
+			string createAccountsTableQuery = "CREATE TABLE IF NOT EXISTS Accounts (Id INTEGER PRIMARY KEY, Uid INTEGER, Balance INTEGER);";
+			using (SQLiteCommand command = new SQLiteCommand(createAccountsTableQuery, connection))
+			{
+				int rowsAffected = command.ExecuteNonQuery();
+				Console.WriteLine($"Accounts table creation: {rowsAffected} table(s) created.");
+			}
+		}
+
+		public void AddUser(int uid, int type, string password, string email, string firstName, string lastName)
+		{
+			string insertQuery = "INSERT INTO Users (Uid, Type, Password, Email, FirstName, LastName) " +
+								 "VALUES (@Uid, @Type, @Password, @Email, @FirstName, @LastName);";
+
+			using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
+			{
+				connection.Open();
+
+				using (SQLiteCommand command = new SQLiteCommand(insertQuery, connection))
+				{
+					// Bind parameters to prevent SQL injection
+					command.Parameters.AddWithValue("@Uid", uid);
+					command.Parameters.AddWithValue("@Type", type);
+					command.Parameters.AddWithValue("@Password", password);  // Be sure to hash passwords in production
+					command.Parameters.AddWithValue("@Email", email);
+					command.Parameters.AddWithValue("@FirstName", firstName);
+					command.Parameters.AddWithValue("@LastName", lastName);
+
+					int rowsAffected = command.ExecuteNonQuery();
+					Console.WriteLine($"{rowsAffected} row(s) inserted into Users table.");
+				}
 			}
 		}
 
