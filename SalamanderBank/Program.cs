@@ -2,8 +2,10 @@
 
 class Program
 {
-    static void Main(string[] args)
+    public static void Main(string[] args)
     {
-        Console.WriteLine("Hello, World!");
+        Logo.DisplayFullLogo();
+        Logo.DisplayFireLogo();
+        Logo.DisplayTextLogo();
     }
 }
