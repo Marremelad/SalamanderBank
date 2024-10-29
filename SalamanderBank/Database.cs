@@ -20,7 +20,6 @@ namespace SalamanderBank
 	 *
 	 * Database db = new Database("path/to/database.db");
 	 * db.InitializeDatabase();
-	 * db.CreateTables();
 	 * db.AddUser(1001, 1, "hashed_password", "user@example.com", "John", "Doe");
 	 */
 	public class Database
