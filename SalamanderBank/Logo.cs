@@ -25,9 +25,11 @@ public static class Logo
      ██ ██   ██ ██      ██   ██ ██  ██  ██ ██   ██ ██  ██ ██ ██   ██ ██      ██   ██ 
 ███████ ██   ██ ███████ ██   ██ ██      ██ ██   ██ ██   ████ ██████  ███████ ██   ██ ";
 
+    private const int LeftPadding = 56;
+
     public static void DisplayFullLogo()
     {
-        int leftPadding = 67;
+        int leftPadding = LeftPadding;
         
         var fireLines = FireLogo.Split(Environment.NewLine);
         foreach (var line in fireLines)
@@ -45,7 +47,7 @@ public static class Logo
 
     public static void DisplayFireLogo()
     {
-        int leftPadding = 67;
+        int leftPadding = LeftPadding;
         
         var fireLines = FireLogo.Split(Environment.NewLine);
         foreach (var line in fireLines)
