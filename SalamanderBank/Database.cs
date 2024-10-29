@@ -33,6 +33,7 @@ namespace SalamanderBank
 			_connectionString = $"Data Source={_dbFile};Version=3;";
 		}
 
+		// Run this method to check if the database file and correct tables exist
 		public void InitializeDatabase()
 		{
 			// Check if the database file exists
@@ -64,16 +65,17 @@ namespace SalamanderBank
 			}
 		}
 
+		// Checks if the Users and Accounts tables exist
 		private void CreateTables(SQLiteConnection connection)
 		{
-			string createUsersTableQuery = "CREATE TABLE IF NOT EXISTS Users (Id INTEGER PRIMARY KEY, Uid INTEGER, Type INTEGER, Password TEXT, Email TEXT, FirstName TEXT, LastName TEXT);";
+			string createUsersTableQuery = "CREATE TABLE IF NOT EXISTS Users (id INTEGER PRIMARY KEY, uid INTEGER, type INTEGER, password TEXT, email TEXT, first_name TEXT, last_name TEXT);";
 			using (SQLiteCommand command = new SQLiteCommand(createUsersTableQuery, connection))
 			{
 				int rowsAffected = command.ExecuteNonQuery();
 				Console.WriteLine($"Users table created.");
 			}
 
-			string createAccountsTableQuery = "CREATE TABLE IF NOT EXISTS Accounts (Id INTEGER PRIMARY KEY, Uid INTEGER, AccountName TEXT, Balance INTEGER, Status INTEGER);";
+			string createAccountsTableQuery = "CREATE TABLE IF NOT EXISTS Accounts (id INTEGER PRIMARY KEY, uid INTEGER, account_name TEXT, balance INTEGER, status INTEGER);";
 			using (SQLiteCommand command = new SQLiteCommand(createAccountsTableQuery, connection))
 			{
 				int rowsAffected = command.ExecuteNonQuery();
@@ -81,10 +83,12 @@ namespace SalamanderBank
 			}
 		}
 
+		// Adds a user
 		public void AddUser(int uid, int type, string password, string email, string firstName, string lastName)
 		{
-			string insertQuery = "INSERT INTO Users (Uid, Type, Password, Email, FirstName, LastName) " +
-								 "VALUES (@Uid, @Type, @Password, @Email, @FirstName, @LastName);";
+			// This query will insert a user into the Users table, based on the arguments in the method
+			string insertQuery = "INSERT INTO Users (uid, type, password, email, first_name, last_name) " +
+								 "VALUES (@uid, @type, @password, @email, @first_name, @last_name);";
 
 			using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
 			{
@@ -93,12 +97,12 @@ namespace SalamanderBank
 				using (SQLiteCommand command = new SQLiteCommand(insertQuery, connection))
 				{
 					// Bind parameters to prevent SQL injection
-					command.Parameters.AddWithValue("@Uid", uid);
-					command.Parameters.AddWithValue("@Type", type);
-					command.Parameters.AddWithValue("@Password", password);  // Be sure to hash passwords in production
-					command.Parameters.AddWithValue("@Email", email);
-					command.Parameters.AddWithValue("@FirstName", firstName);
-					command.Parameters.AddWithValue("@LastName", lastName);
+					command.Parameters.AddWithValue("@uid", uid);
+					command.Parameters.AddWithValue("@type", type);
+					command.Parameters.AddWithValue("@password", password);  // Be sure to hash passwords in production
+					command.Parameters.AddWithValue("@email", email);
+					command.Parameters.AddWithValue("@first_name", firstName);
+					command.Parameters.AddWithValue("@last_name", lastName);
 
 					int rowsAffected = command.ExecuteNonQuery();
 					Console.WriteLine($"{rowsAffected} row(s) inserted into Users table.");
@@ -106,6 +110,51 @@ namespace SalamanderBank
 			}
 		}
 
-		// You can add more methods to execute queries here
+		/* Searches for users based on search term
+		 * Searches while using a wild card on email, first name and last name
+		 * int[] uids = db.SearchUser("John");
+		 * if (uids.Length > 0)
+		 * {
+		 *		Console.WriteLine("Matching UIDs:");
+		 *		foreach (int uid in uids)
+		 *		{
+		 *			Console.WriteLine(uid);
+		 *		}
+		 * }
+		 * else
+		 * {
+		 *		Console.WriteLine("No user found with the provided search criteria.");
+		 * }
+		 */
+		public int[] SearchUser(string searchTerm)
+		{
+			string searchQuery = "SELECT uid FROM Users WHERE email LIKE %@search% OR first_name LIKE %@search% OR last_name LIKE %@search%;";
+			List<int> uids = new List<int>();
+
+			using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
+			{
+				connection.Open();
+
+				using (SQLiteCommand command = new SQLiteCommand(searchQuery, connection))
+				{
+					// Bind parameters to prevent SQL injection
+					command.Parameters.AddWithValue("@search", searchTerm);
+
+					// Reads the search results
+					using (SQLiteDataReader reader = command.ExecuteReader())
+					{
+						// Reads the next row in the current result
+						while (reader.Read())
+						{
+							// Add each matching uid to the list
+							uids.Add(Convert.ToInt32(reader["uid"]));
+						}
+					}
+				}
+			}
+
+			// Return the list as an array
+			return uids.ToArray();
+		}
 	}
 }
