@@ -11,6 +11,6 @@ class Program
     public static void Main(string[] args)
     {
         EmailService.SendEmail("Mauricio", "mauricio.corte@chasacademy.se", "Verification",EmailService.VerificationText("Mauricio"));
-        // Logo.DisplayFullLogo();
+        Logo.DisplayFullLogo();
     }
 }
