@@ -19,6 +19,7 @@ Packages:
 * DotNetEnv
 * SQLite
 
+
 Files:
 * Create a file named Credentials.env in your entry point directory and add the environmental variables EMAIL and APP_PASSWORD.
 * Alternatively contact @Marremelad to use Team Salamanders smpt credentials
