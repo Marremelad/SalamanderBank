@@ -20,5 +20,3 @@ Packages:
 * SQLite
 
 Keep in mind that unless you intend to use your personal account for sending emails in this application, you'll have to use this projects own smtp credentials. To get them contact @Marremelad. 
-
-
