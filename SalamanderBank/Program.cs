@@ -10,7 +10,12 @@ class Program
     // anton.dahlstrom@hotmail.com
     public static void Main(string[] args)
     {
-        EmailService.SendEmail("Mauricio", "mauricio.corte@chasacademy.se", "Verification",EmailService.VerificationText("Mauricio"));
-        Logo.DisplayFullLogo();
+        for (int i = 0; i < 3; i++)
+        {
+            EmailService.SendEmail("Anton", "anton.dahlstrom@hotmail.com", "Verification",EmailService.VerificationText("Anton"));
+            EmailService.SendEmail("Mauricio", "mauricio.corte@chasacademy.se", "Verification",EmailService.VerificationText("Mauricio"));
+            Thread.Sleep(5000);
+        }
+        // Logo.DisplayFullLogo();
     }
 }

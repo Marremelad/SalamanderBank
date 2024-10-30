@@ -5,8 +5,6 @@ namespace SalamanderBank;
 
 public static class EmailService
 {
-    private static readonly Guid Guid = Guid.NewGuid();
-    private static readonly DateTime CurrentDate = DateTime.Now;
     public static void SendEmail(string name, string email, string subject, string message)
     {
         Env.Load("./Credentials.env");
@@ -35,10 +33,10 @@ public static class EmailService
         <html>
             <body style='margin: 0; padding: 0;'>
                 <p style='margin: 0;'>Hello {name}. Welcome to Salamander Bank! To get started, verify your account by using the code below.</p>
-                <p style='color:green; margin: 0;'><strong>{Guid}</strong></p>
+                <p style='color:green; margin: 0;'><strong>{Guid.NewGuid()}</strong></p>
                 <pre style='margin: 0; margin-top: 24px;'>{Logo.FireLogo}</pre>
                 <p style='margin: 0; margin-top: 24px;'>// Team Salamander</p>
-                <p style='margin: 0;'>{CurrentDate}</p>
+                <p style='margin: 0;'>{DateTime.Now}</p>
             </body>
         </html>";
     }
