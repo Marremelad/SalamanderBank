@@ -20,7 +20,7 @@ Packages:
 * SQLite
 
 Files:
-* Create a files named Credentials.env in your entry point directory and add the environmental variables EMAIL and APP_PASSWORD.
+* Create a file named Credentials.env in your entry point directory and add the environmental variables EMAIL and APP_PASSWORD.
 * Alternatively contact @Marremelad to use Team Salamanders smpt credentials
 
-Keep in mind that some email providers require smpt authentication for third party applications. This means that your regular password might not work to send emails through this app. To fix this, access your email account and generate a third party app password and set it as the value for the APP_PASSWORD variable.
+Keep in mind that some email providers require smpt authentication for third party applications. This means that your regular password might not work when trying to send emails through this app. To fix this, access your email account and generate a third party app password and set it as the value for the APP_PASSWORD variable.
