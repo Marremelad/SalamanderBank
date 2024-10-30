@@ -1,4 +1,6 @@
-﻿namespace SalamanderBank;
+﻿using DotNetEnv;
+
+namespace SalamanderBank;
 
 class Program
 {
@@ -8,8 +10,7 @@ class Program
     // anton.dahlstrom@hotmail.com
     public static void Main(string[] args)
     {
-        // EmailService.SendEmail("Mauricio", "mauricio.corte@chasacademy.se", "Verification",EmailService.VerificationText("Mauricio"));
-        
+        EmailService.SendEmail("Mauricio", "mauricio.corte@chasacademy.se", "Verification",EmailService.VerificationText("Mauricio"));
         // Logo.DisplayFullLogo();
     }
 }

@@ -1,16 +1,17 @@
 ﻿using MimeKit;
 using MailKit.Net.Smtp;
+using DotNetEnv;
 namespace SalamanderBank;
 
 public static class EmailService
 {
-    private const string Password = "bdkw ufnw npnc hjvc"; // DO NOT CHANGE!!!
     private static readonly Guid Guid = Guid.NewGuid();
     private static readonly DateTime CurrentDate = DateTime.Now;
     public static void SendEmail(string name, string email, string subject, string message)
     {
+        Env.Load("./Credentials.env");
         var mimeMessage = new MimeMessage ();
-        mimeMessage.From.Add(new MailboxAddress("SalamanderBank", "salamanderbank@gmail.com"));
+        mimeMessage.From.Add(new MailboxAddress("SalamanderBank", Env.GetString("EMAIL")));
         mimeMessage.To.Add (new MailboxAddress ($"{name}", $"{email}"));
         mimeMessage.Subject = subject;
         
@@ -22,7 +23,7 @@ public static class EmailService
         using var client = new SmtpClient ();
         client.Connect ("smtp.gmail.com", 587, false);
             
-        client.Authenticate ("salamanderbank@gmail.com", Password);
+        client.Authenticate ("salamanderbank@gmail.com", Env.GetString("APP_PASSWORD"));
 
         client.Send (mimeMessage);
         client.Disconnect (true);
