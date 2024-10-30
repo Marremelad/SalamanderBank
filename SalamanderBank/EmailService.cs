@@ -5,7 +5,7 @@ namespace SalamanderBank;
 
 public static class EmailService
 {
-    public static void SendEmail(string name, string email, string subject, string message)
+    private static void SendEmail(string name, string email, string subject, string message)
     {
         Env.Load("./Credentials.env");
         var mimeMessage = new MimeMessage ();
@@ -27,9 +27,9 @@ public static class EmailService
         client.Disconnect (true);
     }
 
-    public static string VerificationText(string name)
+    public static void SendVerificationEmail(string name, string email)
     {
-        return $@"
+        string htmlBody = $@"
         <html>
             <body style='margin: 0; padding: 0;'>
                 <p style='margin: 0;'>Hello {name}. Welcome to Salamander Bank! To get started, verify your account by using the code below.</p>
@@ -39,5 +39,7 @@ public static class EmailService
                 <p style='margin: 0;'>{DateTime.Now}</p>
             </body>
         </html>";
+        
+        SendEmail(name, email, "Verification", htmlBody);
     }
 }
