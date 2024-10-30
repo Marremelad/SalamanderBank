@@ -7,12 +7,12 @@ public static class EmailService
     private const string Password = "bdkw ufnw npnc hjvc"; // DO NOT CHANGE!!!
     private static readonly Guid Guid = Guid.NewGuid();
     private static readonly DateTime CurrentDate = DateTime.Now;
-    public static void SendEmail(string name, string email, string message)
+    public static void SendEmail(string name, string email, string subject, string message)
     {
         var mimeMessage = new MimeMessage ();
         mimeMessage.From.Add(new MailboxAddress("SalamanderBank", "salamanderbank@gmail.com"));
         mimeMessage.To.Add (new MailboxAddress ($"{name}", $"{email}"));
-        mimeMessage.Subject = "Verification";
+        mimeMessage.Subject = subject;
         
         mimeMessage.Body = new TextPart ("html") 
         {
