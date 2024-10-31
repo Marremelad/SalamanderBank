@@ -83,7 +83,7 @@ namespace SalamanderBank
 			}
 
 			string createCurrenciesTableQuery = "CREATE TABLE IF NOT EXISTS Currencies (id INTEGER PRIMARY KEY, currency_code TEXT, value_in_SEK REAL);";
-			using (SQLiteCommand command = new SQLiteCommand(createAccountsTableQuery, connection))
+			using (SQLiteCommand command = new SQLiteCommand(createCurrenciesTableQuery, connection))
 			{
 				int rowsAffected = command.ExecuteNonQuery();
 				Console.WriteLine($"Accounts table created.");
