@@ -75,7 +75,7 @@ namespace SalamanderBank
 				Console.WriteLine($"Users table created.");
 			}
 
-			string createAccountsTableQuery = "CREATE TABLE IF NOT EXISTS Accounts (id INTEGER PRIMARY KEY, uid INTEGER, account_name TEXT, balance REAL, status INTEGER);";
+			string createAccountsTableQuery = "CREATE TABLE IF NOT EXISTS Accounts (id INTEGER PRIMARY KEY, uid INTEGER, account_name TEXT, balance REAL, status INTEGER, type INTEGER, interest REAL);";
 			using (SQLiteCommand command = new SQLiteCommand(createAccountsTableQuery, connection))
 			{
 				int rowsAffected = command.ExecuteNonQuery();
