@@ -122,22 +122,6 @@ namespace SalamanderBank
 			}
 		}
 
-		/* Searches for users based on search term
-		 * Searches while using a wild card on email, first name and last name
-		 * int[] ids = db.SearchUser("John");
-		 * if (ids.Length > 0)
-		 * {
-		 *		Console.WriteLine("Matching IDs:");
-		 *		foreach (int id in ids)
-		 *		{
-		 *			Console.WriteLine(id);
-		 *		}
-		 * }
-		 * else
-		 * {
-		 *		Console.WriteLine("No user found with the provided search criteria.");
-		 * }
-		 */
 		public int[] SearchUser(string searchTerm)
 		{
 			string searchQuery = "SELECT id FROM Users WHERE email LIKE %@search% OR first_name LIKE %@search% OR last_name LIKE %@search%;";
