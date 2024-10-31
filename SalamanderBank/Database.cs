@@ -135,7 +135,7 @@ namespace SalamanderBank
 		 */
 		public int[] SearchUser(string searchTerm)
 		{
-			string searchQuery = "SELECT uid FROM Users WHERE email LIKE %@search% OR first_name LIKE %@search% OR last_name LIKE %@search%;";
+			string searchQuery = "SELECT id FROM Users WHERE email LIKE %@search% OR first_name LIKE %@search% OR last_name LIKE %@search%;";
 			List<int> uids = new List<int>();
 
 			using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
@@ -154,7 +154,7 @@ namespace SalamanderBank
 						while (reader.Read())
 						{
 							// Add each matching uid to the list
-							uids.Add(Convert.ToInt32(reader["uid"]));
+							uids.Add(Convert.ToInt32(reader["id"]));
 						}
 					}
 				}
