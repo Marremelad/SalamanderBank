@@ -75,7 +75,7 @@ namespace SalamanderBank
 				Console.WriteLine($"Users table created.");
 			}
 
-			string createAccountsTableQuery = "CREATE TABLE IF NOT EXISTS Accounts (id INTEGER PRIMARY KEY, uid INTEGER, account_name TEXT, balance REAL, status INTEGER, type INTEGER, interest REAL);";
+			string createAccountsTableQuery = "CREATE TABLE IF NOT EXISTS Accounts (id INTEGER PRIMARY KEY, user_id INTEGER, account_name TEXT, balance REAL, status INTEGER, type INTEGER, interest REAL);";
 			using (SQLiteCommand command = new SQLiteCommand(createAccountsTableQuery, connection))
 			{
 				int rowsAffected = command.ExecuteNonQuery();
@@ -88,7 +88,7 @@ namespace SalamanderBank
 				int rowsAffected = command.ExecuteNonQuery();
 				Console.WriteLine($"Currencies table created.");
 			}
-			string createTransfersTableQuery = "CREATE TABLE IF NOT EXISTS Transfers (id INTEGER PRIMARY KEY, sender_user_id INTEGER, sender_account_id INTEGER, reciever_id INTEGER, reciever_account_id INTEGER, transfer_date DATETIME, amount REAL);";
+			string createTransfersTableQuery = "CREATE TABLE IF NOT EXISTS Transfers (id INTEGER PRIMARY KEY, sender_user_id INTEGER, sender_account_id INTEGER, reciever_user_id INTEGER, reciever_account_id INTEGER, transfer_date DATETIME, amount REAL);";
 			using (SQLiteCommand command = new SQLiteCommand(createTransfersTableQuery, connection))
 			{
 				int rowsAffected = command.ExecuteNonQuery();
