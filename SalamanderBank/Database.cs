@@ -68,7 +68,7 @@ namespace SalamanderBank
 		// Checks if the Users and Accounts tables exist
 		private void CreateTables(SQLiteConnection connection)
 		{
-			string createUsersTableQuery = "CREATE TABLE IF NOT EXISTS Users (id INTEGER PRIMARY KEY, type INTEGER, password TEXT, email TEXT, first_name TEXT, last_name TEXT);";
+			string createUsersTableQuery = "CREATE TABLE IF NOT EXISTS Users (id INTEGER PRIMARY KEY, type INTEGER, password TEXT, email TEXT NOT NULL UNIQUE, first_name TEXT, last_name TEXT);";
 			using (SQLiteCommand command = new SQLiteCommand(createUsersTableQuery, connection))
 			{
 				int rowsAffected = command.ExecuteNonQuery();
