@@ -92,7 +92,7 @@ namespace SalamanderBank
 			using (SQLiteCommand command = new SQLiteCommand(createTransfersTableQuery, connection))
 			{
 				int rowsAffected = command.ExecuteNonQuery();
-				Console.WriteLine($"Currencies table created.");
+				Console.WriteLine($"Transfers table created.");
 			}
 		}
 
