@@ -88,6 +88,12 @@ namespace SalamanderBank
 				int rowsAffected = command.ExecuteNonQuery();
 				Console.WriteLine($"Currencies table created.");
 			}
+			string createTransfersTableQuery = "CREATE TABLE IF NOT EXISTS Transfers (id INTEGER PRIMARY KEY, from_account TEXT, to_account TEXT, amount REAL);";
+			using (SQLiteCommand command = new SQLiteCommand(createTransfersTableQuery, connection))
+			{
+				int rowsAffected = command.ExecuteNonQuery();
+				Console.WriteLine($"Currencies table created.");
+			}
 		}
 
 		// Adds a user
