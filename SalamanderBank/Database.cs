@@ -124,13 +124,13 @@ namespace SalamanderBank
 
 		/* Searches for users based on search term
 		 * Searches while using a wild card on email, first name and last name
-		 * int[] uids = db.SearchUser("John");
-		 * if (uids.Length > 0)
+		 * int[] ids = db.SearchUser("John");
+		 * if (ids.Length > 0)
 		 * {
-		 *		Console.WriteLine("Matching UIDs:");
-		 *		foreach (int uid in uids)
+		 *		Console.WriteLine("Matching IDs:");
+		 *		foreach (int id in ids)
 		 *		{
-		 *			Console.WriteLine(uid);
+		 *			Console.WriteLine(id);
 		 *		}
 		 * }
 		 * else
@@ -141,7 +141,7 @@ namespace SalamanderBank
 		public int[] SearchUser(string searchTerm)
 		{
 			string searchQuery = "SELECT id FROM Users WHERE email LIKE %@search% OR first_name LIKE %@search% OR last_name LIKE %@search%;";
-			List<int> uids = new List<int>();
+			List<int> ids = new List<int>();
 
 			using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
 			{
@@ -159,14 +159,14 @@ namespace SalamanderBank
 						while (reader.Read())
 						{
 							// Add each matching uid to the list
-							uids.Add(Convert.ToInt32(reader["id"]));
+							ids.Add(Convert.ToInt32(reader["id"]));
 						}
 					}
 				}
 			}
 
 			// Return the list as an array
-			return uids.ToArray();
+			return ids.ToArray();
 		}
 
 		// Escapes strings for SQL LIKE queries
