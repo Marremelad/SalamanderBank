@@ -91,11 +91,11 @@ namespace SalamanderBank
 		}
 
 		// Adds a user
-		public void AddUser(int uid, int type, string password, string email, string firstName, string lastName)
+		public void AddUser(int type, string password, string email, string firstName, string lastName)
 		{
 			// This query will insert a user into the Users table, based on the arguments in the method
-			string insertQuery = "INSERT INTO Users (uid, type, password, email, first_name, last_name) " +
-								 "VALUES (@uid, @type, @password, @email, @first_name, @last_name);";
+			string insertQuery = "INSERT INTO Users (type, password, email, first_name, last_name) " +
+								 "VALUES (@type, @password, @email, @first_name, @last_name);";
 
 			using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
 			{
@@ -104,7 +104,6 @@ namespace SalamanderBank
 				using (SQLiteCommand command = new SQLiteCommand(insertQuery, connection))
 				{
 					// Bind parameters to prevent SQL injection
-					command.Parameters.AddWithValue("@uid", uid);
 					command.Parameters.AddWithValue("@type", type);
 					command.Parameters.AddWithValue("@password", EscapeForLike(password));  // Be sure to hash passwords in production
 					command.Parameters.AddWithValue("@email", EscapeForLike(email));
