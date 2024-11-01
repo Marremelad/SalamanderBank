@@ -5,6 +5,7 @@ namespace SalamanderBank;
 
 public static class EmailService
 {
+    public static Guid DefaultPassword; 
     private static void SendEmail(string name, string email, string subject, string message)
     {
         try
@@ -38,11 +39,12 @@ public static class EmailService
 
     public static void SendVerificationEmail(string name, string email)
     {
+        DefaultPassword = Guid.NewGuid();
         string htmlBody = $@"
         <html>
             <body style='margin: 0; padding: 0;'>
                 <p style='margin: 0;'>Hello {name}. Welcome to Salamander Bank! To get started, verify your account by using the code below.</p>
-                <p style='color:green; margin: 0;'><strong>{Guid.NewGuid()}</strong></p>
+                <p style='color:green; margin: 0;'><strong>{DefaultPassword}</strong></p>
                 <pre style='margin: 0; margin-top: 24px;'>{Logo.FireLogo}</pre>
                 <p style='margin: 0; margin-top: 48px;'>// Team Salamander</p>
                 <p style='margin: 0;'>{DateTime.Now}</p>

@@ -26,7 +26,7 @@ public static class Logo
 ███████ ███████ ██      ███████ ██ ████ ██ ███████ ██ ██  ██ ██   ██ █████   ██████  
      ██ ██   ██ ██      ██   ██ ██  ██  ██ ██   ██ ██  ██ ██ ██   ██ ██      ██   ██ 
 ███████ ██   ██ ███████ ██   ██ ██      ██ ██   ██ ██   ████ ██████  ███████ ██   ██ 
---Ignite Your Wealth--";
+--Ignite Your Wealth--" + "\n";
 
     private const int LeftPadding = 90;
 
@@ -46,6 +46,7 @@ public static class Logo
             int padding = (Console.WindowWidth - line.Length) / 2;
             Console.WriteLine(line.PadLeft(line.Length + padding));
         }
+        
     }
 
     public static void DisplayFireLogo()
