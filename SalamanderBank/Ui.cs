@@ -1,12 +1,10 @@
-using System.Data.Entity.ModelConfiguration.Configuration;
-using System.Diagnostics;
 using System.Text;
 using System.Text.RegularExpressions;
 using Spectre.Console;
 
 namespace SalamanderBank;
 
-public class LoginBox
+public class Ui
 {
     private static string _registeredEmail = "";
     private static string _registeredName = "";
@@ -187,8 +185,6 @@ public class LoginBox
 
     public static void DisplayAccountDetails()
     {
-            string promptMessage = ("Welcome to SalamanderBank");
-            //AnsiConsole.MarkupLine("[bold]{0}[/]", promptMessage.PadLeft((Console.WindowWidth / 2) + (promptMessage.Length / 2)));
             var table = new Table();
             table.AddColumn("Account Information");
             table.AddRow($"Email: {_registeredEmail}");
