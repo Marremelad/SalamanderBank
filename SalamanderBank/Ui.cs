@@ -170,13 +170,4 @@ public static class Ui
         Console.Clear();
         AnsiConsole.Write(table);
     }
-        
-    
-    private static void ClearCurrentLine()
-    {
-        Console.SetCursorPosition(0, Console.CursorTop);
-        Console.Write(new string(' ', Console.WindowWidth));
-        Console.SetCursorPosition(0, Console.CursorTop);
-    }
-
 }
