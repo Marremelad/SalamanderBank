@@ -11,7 +11,7 @@ public static class EmailService
         {
             Env.Load("./Credentials.env");
             var mimeMessage = new MimeMessage ();
-            mimeMessage.From.Add(new MailboxAddress("SalamanderBank", Env.GetString("EMAIL")));
+            mimeMessage.From.Add(new MailboxAddress("Salamander", Env.GetString("EMAIL")));
             mimeMessage.To.Add (new MailboxAddress ($"{name}", $"{email}"));
             mimeMessage.Subject = subject;
         
@@ -23,7 +23,7 @@ public static class EmailService
             using var client = new SmtpClient ();
             client.Connect ("smtp.gmail.com", 587, false);
             
-            client.Authenticate ("salamanderbank@gmail.com", Env.GetString("APP_PASSWORD"));
+            client.Authenticate (Env.GetString("EMAIL"), Env.GetString("EMAIL_PASSWORD"));
 
             client.Send (mimeMessage);
             client.Disconnect (true);
@@ -65,6 +65,7 @@ public static class EmailService
                 <p style='margin: 0;'>{DateTime.Now}</p>
             </body>
         </html>";
+        SendEmail(name, email, "Transaction", htmlBody);
     }
 
     public static void SendTranserEmail(string name, string target, string email)
@@ -79,5 +80,6 @@ public static class EmailService
                 <p style='margin: 0;'>{DateTime.Now}</p>
             </body>
         </html>";
+        SendEmail(name, email, "Transfer", htmlBody);
     }
 }
