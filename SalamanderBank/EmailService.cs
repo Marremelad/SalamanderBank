@@ -24,7 +24,7 @@ public static class EmailService
             using var client = new SmtpClient ();
             client.Connect ("smtp.gmail.com", 587, false);
             
-            client.Authenticate ("salamanderbank@gmail.com", Env.GetString("APP_PASSWORD"));
+            client.Authenticate ("salamanderbank@gmail.com", Env.GetString("EMAIL_PASSWORD"));
 
             client.Send (mimeMessage);
             client.Disconnect (true);
