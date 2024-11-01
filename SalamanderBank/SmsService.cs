@@ -18,7 +18,7 @@ public class SmsService
         var data = new List<KeyValuePair<string, string>>
         {
             new KeyValuePair<string, string>("from", "Salamander"),
-            new KeyValuePair<string, string>("to", "-"),
+            new KeyValuePair<string, string>("to", "-"), // Replace dash with number to send sms to.
             new KeyValuePair<string, string>("message", "Hello from team Salamander")
         };
 
