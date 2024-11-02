@@ -5,7 +5,7 @@ namespace SalamanderBank;
 
 public class SmsService
 {
-    public static async Task SendSms()
+    public static async Task<string> SendSms(string phoneNumber, string message = "Hello from team salamander!")
     {
         Env.Load("./Credentials.env");
         var smsApiUsername = Env.GetString("SMS_API_USERNAME");
@@ -18,13 +18,14 @@ public class SmsService
         var data = new List<KeyValuePair<string, string>>
         {
             new KeyValuePair<string, string>("from", "Salamander"),
-            new KeyValuePair<string, string>("to", "-"), // Replace dash with number to send sms to.
-            new KeyValuePair<string, string>("message", "Hello from team Salamander")
+            new KeyValuePair<string, string>("to", phoneNumber), // Replace dash with number to send sms to.
+            new KeyValuePair<string, string>("message", message)
         };
 
         using var content = new FormUrlEncodedContent(data);
         using var response = await httpClient.PostAsync("https://api.46elks.com/a1/sms", content);
         string responseContent = await response.Content.ReadAsStringAsync();
-        Console.WriteLine(responseContent);
+
+        return responseContent;
     }
 }
