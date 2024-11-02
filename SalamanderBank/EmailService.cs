@@ -34,9 +34,8 @@ public static class EmailService
         catch (Exception e)
         {
             Console.WriteLine($"Something went wrong while trying to send an email.\n{e}");
-            Environment.Exit(1);
+            throw;
         }
-        
     }
 
     public static void SendVerificationEmail(string name, string email)
