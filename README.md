@@ -19,12 +19,12 @@ Packages:
 * [Pastel](https://www.nuget.org/packages/Pastel)
 * [DotNetEnv](https://www.nuget.org/packages/DotNetEnv/)
 * [SQLite](https://system.data.sqlite.org/index.html/doc/trunk/www/index.wiki)
-  
-### Optional
-This application uses the [46eLks](https://46elks.se/) API for sending SMS messages. To access the API you will have to get a subscription or ask for Team Salamanders API username and key.
 
 Files:
 * In your entry point directory, create a file named Credentials.env and add the environmental variables EMAIL and EMAIL_PASSWORD for sending emails and the environmental variables SMS_API_USERNAME and SMS_API_PASSWORD for sending SMS messages.
 * Alternatively contact [Mauricio Corte](https://github.com/Marremelad) to use Team Salamanders SMTP credentials.
+
+### Optional
+This application uses the [46eLks](https://46elks.se/) API for sending SMS messages. To access the API you will have to get a subscription or ask for Team Salamanders API username and key.
 
 Keep in mind that some email providers require SMTP authentication for third party applications. This means that your regular password might not work when trying to send emails through this app. To fix this, access your email account and generate a third party app password and set it as the value for the EMAIL_PASSWORD variable.
