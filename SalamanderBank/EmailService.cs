@@ -70,7 +70,7 @@ public static class EmailService
         SendEmail(name, email, "Transaction", htmlBody);
     }
 
-    public static void SendTranserEmail(string name, string target, string email)
+    public static void SendTransferEmail(string name, string target, string email)
     {
         string htmlBody = $@"
         <html>
