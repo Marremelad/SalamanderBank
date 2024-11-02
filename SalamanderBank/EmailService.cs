@@ -5,15 +5,17 @@ namespace SalamanderBank;
 
 public static class EmailService
 {
-    public static Guid Code; 
-    private static void SendEmail(string? name, string email, string subject, string message)
+    private static void SendEmail(string name, string targetEmail, string subject, string message)
     {
         try
         {
             Env.Load("./Credentials.env");
+            var email = Env.GetString("EMAIL");
+            var emailPassword = Env.GetString("EMAIL_PASSWORD");
+            
             var mimeMessage = new MimeMessage ();
-            mimeMessage.From.Add(new MailboxAddress("SalamanderBank", Env.GetString("EMAIL")));
-            mimeMessage.To.Add (new MailboxAddress ($"{name}", $"{email}"));
+            mimeMessage.From.Add(new MailboxAddress("Salamander", email));
+            mimeMessage.To.Add (new MailboxAddress ($"{name}", $"{targetEmail}"));
             mimeMessage.Subject = subject;
         
             mimeMessage.Body = new TextPart ("html") 
@@ -22,9 +24,9 @@ public static class EmailService
             };
 
             using var client = new SmtpClient ();
-            client.Connect ("smtp.gmail.com", 587, false);
-            
-            client.Authenticate ("salamanderbank@gmail.com", Env.GetString("EMAIL_PASSWORD"));
+            client.Connect ("smtp.gmail.com", 587, false);            
+            client.Authenticate (email, emailPassword);
+
 
             client.Send (mimeMessage);
             client.Disconnect (true);
@@ -32,9 +34,8 @@ public static class EmailService
         catch (Exception e)
         {
             Console.WriteLine($"Something went wrong while trying to send an email.\n{e}");
-            Environment.Exit(1);
+            throw;
         }
-        
     }
 
     public static void SendVerificationEmail(string? name, string email)
@@ -66,9 +67,10 @@ public static class EmailService
                 <p style='margin: 0;'>{DateTime.Now}</p>
             </body>
         </html>";
+        SendEmail(name, email, "Transaction", htmlBody);
     }
 
-    public static void SendTranserEmail(string name, string target, string email)
+    public static void SendTransferEmail(string name, string target, string email)
     {
         string htmlBody = $@"
         <html>
@@ -80,5 +82,6 @@ public static class EmailService
                 <p style='margin: 0;'>{DateTime.Now}</p>
             </body>
         </html>";
+        SendEmail(name, email, "Transfer", htmlBody);
     }
 }
