@@ -5,10 +5,16 @@ namespace SalamanderBank;
 
 public static class Ui
 {
-    private static string? _registeredEmail;
     private static string? _registeredName;
     private static string? _registeredLastName;
-    private static readonly decimal AccountBalance = 1500.75m;
+    private static string? _registeredEmail;
+    
+    private static string NameDisplay => ("Name: " + _registeredName).PadLeft(_registeredName != null ? 77 + _registeredName.Length : 77);
+    private static string LastNameDisplay => ("Last Name: " + _registeredLastName).PadLeft(_registeredLastName != null ? 82 + _registeredLastName.Length : 82);
+    private static string EmailDisplay => ("Email: " + _registeredEmail).PadLeft(_registeredEmail != null ? 78 + _registeredEmail.Length : 78);
+
+    
+    private const decimal AccountBalance = 1500.75m;
     private const int LeftPadding = 75;
     public static void DisplayMainMenu()
     {
@@ -16,7 +22,7 @@ public static class Ui
         {
             Console.Clear();
             Logo.DisplayFullLogo();
-            //Centering the text
+            
             string option1 = "Create Account".PadLeft( LeftPadding + ("Create Account".Length / 2));
             string option2 = "Sign In".PadLeft( LeftPadding + ("Sign In".Length / 2));
             string option3 = "Exit".PadLeft(LeftPadding + ("Exit".Length / 2));
@@ -52,17 +58,11 @@ public static class Ui
         _registeredName = GetFirstName();
         _registeredLastName = GetLastName();
         _registeredEmail = GetEmail();     
+        
         EmailService.SendVerificationEmail(_registeredName, _registeredEmail);
+        
         ValidateAccount();
     }
-
-    private static string Password() 
-    {
-            return AnsiConsole.Prompt(
-                new TextPrompt<string>("Enter password:")
-                    .Secret('_'));
-    }
-
     
     private static string GetFirstName()
     {
@@ -71,27 +71,30 @@ public static class Ui
         {
             Console.Clear();
             Logo.DisplayFullLogo();
+            
             Console.Write($"{"Name: ", 77}");
             name = Console.ReadLine();
+            
         } while (string.IsNullOrEmpty(name));
 
         return name;
     }
-
+    
     private static string GetLastName()
     {
         string? lastName;
-        string nameDisplay = ("Name: " + _registeredName).PadLeft(_registeredName != null ? 77 + _registeredName.Length : 77);
-        
         do
         {
             Console.Clear();
             Logo.DisplayFullLogo();
-            Console.WriteLine(nameDisplay);
+            
+            Console.WriteLine(NameDisplay);
+            
             Console.Write($"{"Last Name: ",82}");
             lastName = Console.ReadLine();
+            
         } while (string.IsNullOrEmpty(lastName));
-
+    
         return lastName;
     }
     
@@ -99,17 +102,13 @@ public static class Ui
     {
         string emailPattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
         
-        
         while (true)
         {
-            string nameDisplay = ("Name: " + _registeredName).PadLeft(_registeredName != null ? 77 + _registeredName.Length : 77);
-            string lastNameDisplay = ("Last Name: " + _registeredLastName).PadLeft(_registeredLastName != null ? 82 + _registeredLastName.Length : 82);
-
             Console.Clear();
             Logo.DisplayFullLogo();
             
-            Console.WriteLine(nameDisplay);
-            Console.WriteLine(lastNameDisplay);
+            Console.WriteLine(NameDisplay);
+            Console.WriteLine(LastNameDisplay);
 
             Console.Write($"{"Email: ", 78}");
             string? email = Console.ReadLine();
@@ -129,22 +128,17 @@ public static class Ui
     
     private static void ValidateAccount()
     {
-        string nameDisplay = ("Name: " + _registeredName).PadLeft(_registeredName != null ? 77 + _registeredName.Length : 77);
-        string lastNameDisplay = ("Last Name: " + _registeredLastName).PadLeft(_registeredLastName != null ? 82 + _registeredLastName.Length : 82);
-        string emailDisplay = ("Email: " + _registeredEmail).PadLeft(_registeredEmail != null ? 78 + _registeredEmail.Length : 78);
-        
         string? code;
         do
         {
             Console.Clear();
             Logo.DisplayFullLogo();
 
-            Console.WriteLine(nameDisplay);
-            Console.WriteLine(lastNameDisplay);
-            Console.WriteLine(emailDisplay);
+            Console.WriteLine(NameDisplay);
+            Console.WriteLine(LastNameDisplay);
+            Console.WriteLine(EmailDisplay);
             
-            // Console.WriteLine($"\n{"A code has been sent to " + _registeredEmail + " use it to log in to your account", 120}");
-            Console.Write($"\n{"A code has been sent to ", 61}"); // Adjust padding as needed
+            Console.Write($"\n{"A code has been sent to ", 61}");
             Console.ForegroundColor = ConsoleColor.Green;
             Console.Write(_registeredEmail);
             Console.ResetColor();
