@@ -29,4 +29,4 @@ This application uses the [46elks](https://46elks.se/) API for sending SMS messa
 
 ### Notes
 * Keep in mind that some email providers require SMTP authentication for third party applications. This means that your regular password might not work when trying to send emails through this app. To fix this, access your email account and generate a third party app password and set it as the value for the EMAIL_PASSWORD variable.
-* Alternatively contact one the contributors to use Team Salamanders SMTP credentials.
+Alternatively contact one the contributors to use Team Salamanders SMTP credentials.
