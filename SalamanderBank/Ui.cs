@@ -16,6 +16,7 @@ public static class Ui
     
     private const decimal AccountBalance = 1500.75m;
     private const int LeftPadding = 75;
+    
     public static void DisplayMainMenu()
     {
         while (true)
