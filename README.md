@@ -1,27 +1,32 @@
 ## Salamander Bank 🦎
 
 ### Roles
-* Mauricio Corte (CEO) --> Connection Services
-* Anton Dahlström (CTO) (V-CEO) --> Architecture
-* Onni Bucht (V-CTO) --> Database
-* Rasmus Wenngren --> UI Design and implementation
-* Matheus Torico --> UML Design
+* [Mauricio Corte](https://github.com/Marremelad) (CEO) --> Connection Services
+* [Anton Dahlström](https://github.com/Anton-Dahlstrom) (CTO) (V-CEO) --> Architecture
+* [Onni Bucht](https://github.com/onni82) (V-CTO) --> Database
+* [Rasmus Wenngren](https://github.com/RasmusWenngren92) --> UI Design and implementation
+* [Matheus Torico](https://github.com/ikariLain) --> UML Design
 
 ### Requirements
 To run the app successfully make sure that you are using the following.
 
 Runtime:
-* .NET 8
+* [.NET 8](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
 
 Packages:
-* MimeKit
-* MailKit
-* DotNetEnv
-* SQLite
-
+* [MimeKit](https://github.com/jstedfast/MimeKit)
+* [MailKit](https://github.com/jstedfast/MailKit)
+* [Pastel](https://www.nuget.org/packages/Pastel)
+* [DotNetEnv](https://www.nuget.org/packages/DotNetEnv/)
+* [SQLite](https://system.data.sqlite.org/index.html/doc/trunk/www/index.wiki)
 
 Files:
-* Create a file named Credentials.env in your entry point directory and add the environmental variables EMAIL and APP_PASSWORD.
-* Alternatively contact @Marremelad to use Team Salamanders smpt credentials
+* In your entry point directory, create a file named Credentials.env and add the environmental variables EMAIL and EMAIL_PASSWORD for sending emails and the environmental variables SMS_API_USERNAME and SMS_API_PASSWORD for sending SMS messages.
 
-Keep in mind that some email providers require smpt authentication for third party applications. This means that your regular password might not work when trying to send emails through this app. To fix this, access your email account and generate a third party app password and set it as the value for the APP_PASSWORD variable.
+
+### Optional
+This application uses the [46elks](https://46elks.se/) API for sending SMS messages. To access the API you will have to get a subscription or ask for Team Salamanders API username and key.
+
+### Notes
+* Keep in mind that some email providers require SMTP authentication for third party applications. This means that your regular password might not work when trying to send emails through this app. To fix this, access your email account and generate a third party app password and set it as the value for the EMAIL_PASSWORD variable.
+Alternatively contact one the contributors to use Team Salamanders SMTP credentials.
