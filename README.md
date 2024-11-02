@@ -11,16 +11,16 @@
 To run the app successfully make sure that you are using the following.
 
 Runtime:
-* .NET 8
+* [.NET 8](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
 
 Packages:
-* MimeKit
-* MailKit
-* Pastel
-* DotNetEnv
-* SQLite
+* [MimeKit](https://github.com/jstedfast/MimeKit)
+* [MailKit](https://github.com/jstedfast/MailKit)
+* [Pastel](https://www.nuget.org/packages/Pastel)
+* [DotNetEnv](https://www.nuget.org/packages/DotNetEnv/)
+* [SQLite](https://system.data.sqlite.org/index.html/doc/trunk/www/index.wiki)
   
-Optional:
+### Optional
 This application uses the [46eLks](https://46elks.se/) API for sending SMS messages. To access the API you will have to get a subscription or ask for Team Salamanders API username and key.
 
 Files:
