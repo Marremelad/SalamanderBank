@@ -5,7 +5,8 @@ namespace SalamanderBank;
 
 public static class EmailService
 {
-    private static void SendEmail(string name, string email, string subject, string message)
+    public static Guid Code; 
+    private static void SendEmail(string? name, string email, string subject, string message)
     {
         try
         {
@@ -23,7 +24,7 @@ public static class EmailService
             using var client = new SmtpClient ();
             client.Connect ("smtp.gmail.com", 587, false);
             
-            client.Authenticate ("salamanderbank@gmail.com", Env.GetString("APP_PASSWORD"));
+            client.Authenticate ("salamanderbank@gmail.com", Env.GetString("EMAIL_PASSWORD"));
 
             client.Send (mimeMessage);
             client.Disconnect (true);
@@ -36,13 +37,14 @@ public static class EmailService
         
     }
 
-    public static void SendVerificationEmail(string name, string email)
+    public static void SendVerificationEmail(string? name, string email)
     {
+        Code = Guid.NewGuid();
         string htmlBody = $@"
         <html>
             <body style='margin: 0; padding: 0;'>
                 <p style='margin: 0;'>Hello {name}. Welcome to Salamander Bank! To get started, verify your account by using the code below.</p>
-                <p style='color:green; margin: 0;'><strong>{Guid.NewGuid()}</strong></p>
+                <p style='color:green; margin: 0;'><strong>{Code}</strong></p>
                 <pre style='margin: 0; margin-top: 24px;'>{Logo.FireLogo}</pre>
                 <p style='margin: 0; margin-top: 48px;'>// Team Salamander</p>
                 <p style='margin: 0;'>{DateTime.Now}</p>
@@ -50,7 +52,6 @@ public static class EmailService
         </html>";
         
         SendEmail(name, email, "Verification", htmlBody);
-        Console.WriteLine($"A password code has been sen to {email}. Use it to log in to your account.");
     }
 
     public static void SendTransactionEmail(string name, string email)
