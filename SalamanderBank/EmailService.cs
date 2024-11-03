@@ -5,6 +5,7 @@ namespace SalamanderBank;
 
 public static class EmailService
 {
+    public static Guid Code;
     private static void SendEmail(string name, string targetEmail, string subject, string message)
     {
         try
