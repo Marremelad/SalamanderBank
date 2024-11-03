@@ -117,6 +117,7 @@ namespace SalamanderBank
 			}
 		}
 
+		// Searches for a user and returns an array user ids that have similar first name, last name and email address
 		public static int[] SearchUser(string searchTerm)
 		{
 			string searchQuery = "SELECT id FROM Users WHERE email LIKE %@search% OR first_name LIKE %@search% OR last_name LIKE %@search%;";
