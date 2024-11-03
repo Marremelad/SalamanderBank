@@ -83,6 +83,7 @@ namespace SalamanderBank
 				int rowsAffected = command.ExecuteNonQuery();
 				Console.WriteLine($"Currencies table created.");
 			}
+
 			string createTransfersTableQuery = "CREATE TABLE IF NOT EXISTS Transfers (id INTEGER PRIMARY KEY, sender_user_id INTEGER, sender_account_id INTEGER, reciever_user_id INTEGER, reciever_account_id INTEGER, transfer_date DATETIME, amount REAL);";
 			using (SQLiteCommand command = new SQLiteCommand(createTransfersTableQuery, connection))
 			{
@@ -158,6 +159,39 @@ namespace SalamanderBank
 				.Replace("\\", "[\\]")
 				.Replace("%", "[%]")
 				.Replace("_", "[_]");
+		}
+
+		public static object[] Login(string email, string password)
+		{
+			object[] userArray = null;
+
+			using (var connection = new SQLiteConnection(_connectionString))
+			{
+				connection.Open();
+
+				string query = "SELECT id, email, first_name, last_name FROM Users WHERE email = @Email AND password = @Password";
+				using (var command = new SQLiteCommand(query, connection))
+				{
+					command.Parameters.AddWithValue("@Email", email);
+					command.Parameters.AddWithValue("@Password", password);
+
+					using (var reader = command.ExecuteReader())
+					{
+						if (reader.Read())
+						{
+							userArray = new object[]
+							{
+							reader.GetInt32(0),        // id
+                            reader.GetString(1),       // email
+                            reader.GetString(2),       // first_name
+                            reader.GetString(3)        // last_name
+							};
+						}
+					}
+				}
+			}
+
+			return userArray;
 		}
 	}
 }
