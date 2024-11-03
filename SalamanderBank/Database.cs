@@ -22,19 +22,13 @@ namespace SalamanderBank
 	 * db.InitializeDatabase();
 	 * db.AddUser(1001, 1, "hashed_password", "user@example.com", "John", "Doe");
 	 */
-	public class Database
+	public static class Database
 	{
-		private string _dbFile;
-		private string _connectionString;
-
-		public Database(string dbFile)
-		{
-			_dbFile = dbFile;
-			_connectionString = $"Data Source={_dbFile};Version=3;";
-		}
+		private static string _dbFile = "SalamanderBank.db";
+		private static string _connectionString = $"Data Source={_dbFile};Version=3;";
 
 		// Run this method to check if the database file and correct tables exist
-		public void InitializeDatabase()
+		public static void InitializeDatabase()
 		{
 			// Check if the database file exists
 			if (!File.Exists(_dbFile))
@@ -66,7 +60,7 @@ namespace SalamanderBank
 		}
 
 		// Checks if the Users and Accounts tables exist
-		private void CreateTables(SQLiteConnection connection)
+		private static void CreateTables(SQLiteConnection connection)
 		{
 			string createUsersTableQuery = "CREATE TABLE IF NOT EXISTS Users (id INTEGER PRIMARY KEY, type INTEGER, password TEXT, email TEXT NOT NULL UNIQUE, first_name TEXT, last_name TEXT);";
 			using (SQLiteCommand command = new SQLiteCommand(createUsersTableQuery, connection))
@@ -97,7 +91,7 @@ namespace SalamanderBank
 		}
 
 		// Adds a user
-		public void AddUser(int type, string password, string email, string firstName, string lastName)
+		public static void AddUser(int type, string password, string email, string firstName, string lastName)
 		{
 			// This query will insert a user into the Users table, based on the arguments in the method
 			string insertQuery = "INSERT INTO Users (type, password, email, first_name, last_name) " +
@@ -122,7 +116,7 @@ namespace SalamanderBank
 			}
 		}
 
-		public int[] SearchUser(string searchTerm)
+		public static int[] SearchUser(string searchTerm)
 		{
 			string searchQuery = "SELECT id FROM Users WHERE email LIKE %@search% OR first_name LIKE %@search% OR last_name LIKE %@search%;";
 			List<int> ids = new List<int>();
