@@ -24,8 +24,8 @@ namespace SalamanderBank
 	 */
 	public static class Database
 	{
-		private static string _dbFile = "SalamanderBank.db";
-		private static string _connectionString = $"Data Source={_dbFile};Version=3;";
+		public static string _dbFile = "SalamanderBank.db";
+		public static string _connectionString = $"Data Source={_dbFile};Version=3;";
 
 		// Run this method to check if the database file and correct tables exist
 		public static void InitializeDatabase()
@@ -54,6 +54,7 @@ namespace SalamanderBank
 				using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
 				{
 					connection.Open();
+					CreateTables(connection);
 					Console.WriteLine("Connected to the existing database.");
 				}
 			}
