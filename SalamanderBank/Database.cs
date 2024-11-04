@@ -96,8 +96,8 @@ namespace SalamanderBank
 		public static void AddUser(int type, string password, string email, string firstName, string lastName)
 		{
 			// This query will insert a user into the Users table, based on the arguments in the method
-			string insertQuery = "INSERT INTO Users (type, password, email, first_name, last_name) " +
-								 "VALUES (@type, @password, @email, @first_name, @last_name);";
+			string insertQuery = "INSERT INTO Users (type, password, email, first_name, last_name, verified) " +
+								 "VALUES (@type, @password, @email, @first_name, @last_name, 0);";
 
 			using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
 			{
