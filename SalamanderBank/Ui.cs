@@ -1,3 +1,4 @@
+using System.Data.SQLite;
 using System.Text.RegularExpressions;
 using Spectre.Console;
 
@@ -5,17 +6,28 @@ namespace SalamanderBank;
 
 public static class Ui
 {
-    private static string? _registeredName;
+    private static string? _registeredFirstName;
     private static string? _registeredLastName;
     private static string? _registeredEmail;
-    
-    private static string NameDisplay => ("Name: " + _registeredName).PadLeft(_registeredName != null ? 77 + _registeredName.Length : 77);
-    private static string LastNameDisplay => ("Last Name: " + _registeredLastName).PadLeft(_registeredLastName != null ? 82 + _registeredLastName.Length : 82);
-    private static string EmailDisplay => ("Email: " + _registeredEmail).PadLeft(_registeredEmail != null ? 78 + _registeredEmail.Length : 78);
+    private static string? _registeredPassword;
 
+    private static readonly double Padding = (Console.WindowWidth / 2.25);
+    
+    private static string FirstNameDisplay => $"First Name: {_registeredFirstName}".PadLeft(_registeredFirstName != null ?
+        "First Name: ".Length + _registeredFirstName.Length + (int)Padding : "First Name: ".Length + (int)Padding);
+    
+    private static string LastNameDisplay => $"Last Name: {_registeredLastName}".PadLeft(_registeredLastName != null ?
+        "Last Name: ".Length + _registeredLastName.Length + (int)Padding : "Last Name: ".Length + (int)Padding) ;
+    
+    private static string EmailDisplay => $"Email: {_registeredEmail}".PadLeft(_registeredEmail != null
+        ? "Email: ".Length + _registeredEmail.Length + (int)Padding : "Email: ".Length + (int)Padding);
+
+    private static string PasswordDisplay => $"Password: {_registeredPassword}".PadLeft(_registeredPassword != null
+        ? "Password: ".Length + _registeredPassword.Length + (int)Padding : "Password: ".Length + (int)Padding);
     
     private const decimal AccountBalance = 1500.75m;
     private const int LeftPadding = 75;
+    private const double MenuPadding = 2.1;
     
     public static void DisplayMainMenu()
     {
@@ -24,9 +36,9 @@ public static class Ui
             Console.Clear();
             Logo.DisplayFullLogo();
             
-            string option1 = "Create Account".PadLeft( LeftPadding + ("Create Account".Length / 2));
-            string option2 = "Sign In".PadLeft( LeftPadding + ("Sign In".Length / 2));
-            string option3 = "Exit".PadLeft(LeftPadding + ("Exit".Length / 2));
+            string option1 = "Create Account".PadLeft("Create Account".Length + (int)((Console.WindowWidth - "Create Account".Length) / MenuPadding));
+            string option2 = "Sign In".PadLeft("Sign In".Length + (int)((Console.WindowWidth - "Sign In".Length) / MenuPadding));
+            string option3 = "Exit".PadLeft("Exit".Length + (int)((Console.WindowWidth - "Exit".Length) / 2.1 ));
             
             var login = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
@@ -56,11 +68,12 @@ public static class Ui
 
     private static void CreateAccount()
     { 
-        _registeredName = GetFirstName();
+        _registeredFirstName = GetFirstName();
         _registeredLastName = GetLastName();
-        _registeredEmail = GetEmail();     
+        _registeredEmail = GetEmail();
+        _registeredPassword = GetPassword();
         
-        EmailService.SendVerificationEmail(_registeredName, _registeredEmail);
+        EmailService.SendVerificationEmail(_registeredFirstName, _registeredEmail);
         
         ValidateAccount();
     }
@@ -72,11 +85,9 @@ public static class Ui
         {
             Console.Clear();
             Logo.DisplayFullLogo();
+            Console.Write($"{FirstNameDisplay}");
             
-            Console.Write($"{"Name: ", 77}");
-            name = Console.ReadLine();
-            
-        } while (string.IsNullOrEmpty(name));
+        } while (string.IsNullOrEmpty(name = Console.ReadLine()));
 
         return name;
     }
@@ -89,12 +100,9 @@ public static class Ui
             Console.Clear();
             Logo.DisplayFullLogo();
             
-            Console.WriteLine(NameDisplay);
+            Console.Write($"{FirstNameDisplay}\n{LastNameDisplay}");
             
-            Console.Write($"{"Last Name: ",82}");
-            lastName = Console.ReadLine();
-            
-        } while (string.IsNullOrEmpty(lastName));
+        } while (string.IsNullOrEmpty(lastName = Console.ReadLine()));
     
         return lastName;
     }
@@ -108,23 +116,46 @@ public static class Ui
             Console.Clear();
             Logo.DisplayFullLogo();
             
-            Console.WriteLine(NameDisplay);
-            Console.WriteLine(LastNameDisplay);
-
-            Console.Write($"{"Email: ", 78}");
-            string? email = Console.ReadLine();
+            Console.Write($"{FirstNameDisplay}\n{LastNameDisplay}\n{EmailDisplay}");
             
-            if (email != null && Regex.IsMatch(email, emailPattern))
+            string? password = Console.ReadLine();
+            if (password != null && Regex.IsMatch(password, emailPattern))
             {
-                return email;
+                return password;
             }
 
-            Console.Write($"\n\u001b[38;2;255;69;0m{"Please enter a valid email",91}\u001b[0m");
+            Console.WriteLine();
+            string message = "\u001b[38;2;255;69;0mPlease enter a valid email\u001b[0m";
+            Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
             Console.ResetColor();
-
+        
             Thread.Sleep(2000);
         }
+    }
 
+    private static string GetPassword()
+    {
+        while (true)
+        {
+            Console.Clear();
+            Logo.DisplayFullLogo();
+                
+            Console.Write($"{FirstNameDisplay}\n{LastNameDisplay}\n{EmailDisplay}\n{PasswordDisplay}");
+
+            string? password = Console.ReadLine();
+            if (!string.IsNullOrEmpty(password) && password.Length >= 8)
+            {
+                return password;
+            }
+            
+            Console.WriteLine();
+            string message = "\u001b[38;2;255;69;0mPassword has to be at least 8 characters long\u001b[0m";
+            Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
+            Console.ResetColor();
+        
+            Thread.Sleep(3000);
+        }
+        
     }
     
     private static void ValidateAccount()
@@ -135,17 +166,15 @@ public static class Ui
             Console.Clear();
             Logo.DisplayFullLogo();
 
-            Console.WriteLine(NameDisplay);
-            Console.WriteLine(LastNameDisplay);
-            Console.WriteLine(EmailDisplay);
+            Console.Write($"{FirstNameDisplay}\n{LastNameDisplay}\n{EmailDisplay}\n{PasswordDisplay}\n");
             
-            Console.Write($"\n{"A code has been sent to ", 61}");
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.Write(_registeredEmail);
-            Console.ResetColor();
-            Console.Write(" use it to log in to your account");
-            
-            Console.Write($"\n\n{"Enter Code: ", 83}");
+            string message = $"A code has been sent to {_registeredEmail}, use it to verify your account.";
+            string message2 = "Enter Code: ";
+
+            Console.WriteLine();
+            Console.Write($"{message}".PadLeft(message.Length + ((Console.WindowWidth - message.Length) / 2)));
+            Console.WriteLine();
+            Console.Write($"{message2}".PadLeft(message2.Length + ((Console.WindowWidth - message2.Length) / 2)));
             code = Console.ReadLine();
             
         } while (string.IsNullOrEmpty(code) || code != EmailService.Code.ToString());
@@ -158,7 +187,7 @@ public static class Ui
         var table = new Table();
         
         table.AddColumn("Account Information");
-        table.AddRow($"Name: {_registeredName} {_registeredLastName}");
+        table.AddRow($"Name: {_registeredFirstName} {_registeredLastName}");
         table.AddRow($"Email: {_registeredEmail}");
         table.AddRow($"Balance: {AccountBalance:F2}");
             
