@@ -16,5 +16,11 @@
       <PackageReference Include="System.Data.SQLite" Version="1.0.119" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="Credentials.env">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>
 

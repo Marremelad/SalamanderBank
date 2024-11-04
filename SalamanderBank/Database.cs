@@ -20,21 +20,15 @@ namespace SalamanderBank
 	 *
 	 * Database db = new Database("path/to/database.db");
 	 * db.InitializeDatabase();
-	 * db.AddUser(1001, 1, "hashed_password", "user@example.com", "John", "Doe");
+	 * db.AddUser(1, "password", "user@example.com", "John", "Doe");
 	 */
-	public class Database
+	public static class Database
 	{
-		private string _dbFile;
-		private string _connectionString;
-
-		public Database(string dbFile)
-		{
-			_dbFile = dbFile;
-			_connectionString = $"Data Source={_dbFile};Version=3;";
-		}
+		public static string _dbFile = "SalamanderBank.db";
+		public static string _connectionString = $"Data Source={_dbFile};Version=3;";
 
 		// Run this method to check if the database file and correct tables exist
-		public void InitializeDatabase()
+		public static void InitializeDatabase()
 		{
 			// Check if the database file exists
 			if (!File.Exists(_dbFile))
@@ -60,15 +54,16 @@ namespace SalamanderBank
 				using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
 				{
 					connection.Open();
+					CreateTables(connection);
 					Console.WriteLine("Connected to the existing database.");
 				}
 			}
 		}
 
-		// Checks if the Users and Accounts tables exist
-		private void CreateTables(SQLiteConnection connection)
+		// Checks if the tables exist
+		private static void CreateTables(SQLiteConnection connection)
 		{
-			string createUsersTableQuery = "CREATE TABLE IF NOT EXISTS Users (id INTEGER PRIMARY KEY, type INTEGER, password TEXT, email TEXT NOT NULL UNIQUE, first_name TEXT, last_name TEXT);";
+			string createUsersTableQuery = "CREATE TABLE IF NOT EXISTS Users (id INTEGER PRIMARY KEY, type INTEGER, password TEXT, email TEXT NOT NULL UNIQUE, first_name TEXT, last_name TEXT, verified INTEGER);";
 			using (SQLiteCommand command = new SQLiteCommand(createUsersTableQuery, connection))
 			{
 				int rowsAffected = command.ExecuteNonQuery();
@@ -88,6 +83,7 @@ namespace SalamanderBank
 				int rowsAffected = command.ExecuteNonQuery();
 				Console.WriteLine($"Currencies table created.");
 			}
+
 			string createTransfersTableQuery = "CREATE TABLE IF NOT EXISTS Transfers (id INTEGER PRIMARY KEY, sender_user_id INTEGER, sender_account_id INTEGER, reciever_user_id INTEGER, reciever_account_id INTEGER, transfer_date DATETIME, amount REAL);";
 			using (SQLiteCommand command = new SQLiteCommand(createTransfersTableQuery, connection))
 			{
@@ -97,32 +93,79 @@ namespace SalamanderBank
 		}
 
 		// Adds a user
-		public void AddUser(int type, string password, string email, string firstName, string lastName)
+		// Returns 0 if email address is already in use and 1 if it was successful
+		public static int AddUser(int type, string password, string email, string firstName, string lastName)
 		{
-			// This query will insert a user into the Users table, based on the arguments in the method
-			string insertQuery = "INSERT INTO Users (type, password, email, first_name, last_name) " +
-								 "VALUES (@type, @password, @email, @first_name, @last_name);";
+			// Query to check if an account with the same email already exists
+			string checkEmailQuery = "SELECT COUNT(*) FROM Users WHERE email = @Email;";
+
+			// Query to insert a new user
+			string insertQuery = "INSERT INTO Users (type, password, email, first_name, last_name, verified) " +
+								 "VALUES (@Type, @Password, @Email, @FirstName, @LastName, 0);";
 
 			using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
 			{
 				connection.Open();
 
-				using (SQLiteCommand command = new SQLiteCommand(insertQuery, connection))
+				// First, check if the email already exists
+				using (SQLiteCommand checkCommand = new SQLiteCommand(checkEmailQuery, connection))
 				{
-					// Bind parameters to prevent SQL injection
-					command.Parameters.AddWithValue("@type", type);
-					command.Parameters.AddWithValue("@password", EscapeForLike(password));  // Be sure to hash passwords in production
-					command.Parameters.AddWithValue("@email", EscapeForLike(email));
-					command.Parameters.AddWithValue("@first_name", EscapeForLike(firstName));
-					command.Parameters.AddWithValue("@last_name", EscapeForLike(lastName));
+					checkCommand.Parameters.AddWithValue("@Email", email);
+					long emailExists = (long)checkCommand.ExecuteScalar();
 
-					int rowsAffected = command.ExecuteNonQuery();
+					if (emailExists > 0)
+					{
+						// Email already exists, return 0
+						return 0;
+					}
+				}
+
+				// If email doesn't exist, proceed with insertion
+				using (SQLiteCommand insertCommand = new SQLiteCommand(insertQuery, connection))
+				{
+					insertCommand.Parameters.AddWithValue("@Type", type);
+					insertCommand.Parameters.AddWithValue("@Password", Escape(password));  // Make sure to hash passwords in production
+					insertCommand.Parameters.AddWithValue("@Email", Escape(email));
+					insertCommand.Parameters.AddWithValue("@FirstName", Escape(firstName));
+					insertCommand.Parameters.AddWithValue("@LastName", Escape(lastName));
+
+					int rowsAffected = insertCommand.ExecuteNonQuery();
 					Console.WriteLine($"{rowsAffected} row(s) inserted into Users table.");
 				}
 			}
+
+			// Return 1 to indicate success
+			return 1;
 		}
 
-		public int[] SearchUser(string searchTerm)
+		// Verifies a user by checking the email argument
+		// Return 0 if failed, 1 if succeeded
+		public static int VerifyUser(string email)
+		{
+			string updateQuery = "UPDATE Users SET verified = 1 WHERE id = @Email;";
+
+			using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
+			{
+				connection.Open();
+
+				using (SQLiteCommand updateCommand = new SQLiteCommand(updateQuery, connection))
+				{
+					updateCommand.Parameters.AddWithValue("@Email", Escape(email));
+
+					int rowsAffected = updateCommand.ExecuteNonQuery();
+					Console.WriteLine($"{rowsAffected} row(s) updated in Users table.");
+
+					if (rowsAffected == 0) { return 0; }
+				}
+			}
+
+			// Return 1 to indicate success
+			return 1;
+		}
+
+
+		// Searches for a user and returns an array user ids that have similar first name, last name and email address
+		public static int[] SearchUser(string searchTerm)
 		{
 			string searchQuery = "SELECT id FROM Users WHERE email LIKE %@search% OR first_name LIKE %@search% OR last_name LIKE %@search%;";
 			List<int> ids = new List<int>();
@@ -134,7 +177,7 @@ namespace SalamanderBank
 				using (SQLiteCommand command = new SQLiteCommand(searchQuery, connection))
 				{
 					// Bind parameters to prevent SQL injection
-					command.Parameters.AddWithValue("@search", EscapeForLike(searchTerm));
+					command.Parameters.AddWithValue("@search", Escape(searchTerm));
 
 					// Reads the search results
 					using (SQLiteDataReader reader = command.ExecuteReader())
@@ -154,7 +197,7 @@ namespace SalamanderBank
 		}
 
 		// Escapes strings for SQL LIKE queries
-		public static string EscapeForLike(string input)
+		public static string Escape(string input)
 		{
 			return input
 				.Replace("[", "\\[")
@@ -162,6 +205,42 @@ namespace SalamanderBank
 				.Replace("\\", "[\\]")
 				.Replace("%", "[%]")
 				.Replace("_", "[_]");
+		}
+
+		// Login method that accepts email and password as arguments
+		public static object[] Login(string email, string password)
+		{
+			object[] userArray = null;
+
+			using (var connection = new SQLiteConnection(_connectionString))
+			{
+				connection.Open();
+
+				string query = "SELECT id, email, first_name, last_name FROM Users WHERE email = @Email AND password = @Password";
+				using (var command = new SQLiteCommand(query, connection))
+				{
+					command.Parameters.AddWithValue("@Email", email);
+					command.Parameters.AddWithValue("@Password", password);
+
+					using (var reader = command.ExecuteReader())
+					{
+						if (reader.Read())
+						{
+							// Adds ID, email address, fist name and last name to the array
+							userArray = new object[]
+							{
+							reader.GetInt32(0),        // ID
+                            reader.GetString(1),       // Email address
+                            reader.GetString(2),       // First name
+                            reader.GetString(3)        // Last name
+							};
+						}
+					}
+				}
+			}
+
+			// Returns an array
+			return userArray;
 		}
 	}
 }
