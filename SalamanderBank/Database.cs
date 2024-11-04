@@ -339,8 +339,8 @@ namespace SalamanderBank
                 {
                     // Notify that no update is needed
                     DateTime nextUpdate = lastUpdated.AddHours(24);
-                    Console.WriteLine($"Har inte uppdaterat Currencies Databasen.");
-                    Console.WriteLine($"Nästa uppdatering sker den {nextUpdate:yyyy-MM-dd} kl {nextUpdate:HH:mm}.");
+                    Console.WriteLine($"No update has been made to the Currencies Database.");
+                    Console.WriteLine($"The next update will occur on {nextUpdate:yyyy-MM-dd} at {nextUpdate:HH:mm}.");
                     return;
                 }
 
@@ -366,11 +366,6 @@ namespace SalamanderBank
                             {
                                 foreach (JsonProperty currency in data.EnumerateObject())
                                 {
-                                    // Assuming currency has a property for code or similar in your JSON structure
-                                    //string currencyCode = currency.GetProperty("code").GetString(); // Adjust if needed based on your JSON structure
-
-                                    //decimal exchangeRate = currency.GetProperty("value").GetDecimal(); // Adjust if needed based on your JSON structure
-
                                     string currencyCode = currency.Name;
 
                                     decimal exchangeRate = currency.Value.GetProperty("value").GetDecimal();
@@ -431,7 +426,7 @@ namespace SalamanderBank
                     else
                     {
                         // Currency code not found
-                        Console.WriteLine($"Valutan '{currencyCode}' finns inte i databasen.");
+                        Console.WriteLine($"The currency '{currencyCode}' does not exist in the database.");
                         return 0; // Return 0 to indicate an error
                     }
                 }
