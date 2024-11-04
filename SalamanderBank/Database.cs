@@ -155,7 +155,7 @@ namespace SalamanderBank
 					int rowsAffected = updateCommand.ExecuteNonQuery();
 					Console.WriteLine($"{rowsAffected} row(s) updated in Users table.");
 
-					if (rowsAffected > 0) { return 0; }
+					if (rowsAffected == 0) { return 0; }
 				}
 			}
 
