@@ -11,23 +11,22 @@ public static class Ui
     private static string? _registeredEmail;
     private static string? _registeredPassword;
 
-    private static readonly double Padding = (Console.WindowWidth / 2.25);
+    private static readonly double DisplayPadding = (Console.WindowWidth / 2.25);
+    private const double MenuPadding = 2.1;
     
     private static string FirstNameDisplay => $"First Name: {_registeredFirstName}".PadLeft(_registeredFirstName != null ?
-        "First Name: ".Length + _registeredFirstName.Length + (int)Padding : "First Name: ".Length + (int)Padding);
+        "First Name: ".Length + _registeredFirstName.Length + (int)DisplayPadding : "First Name: ".Length + (int)DisplayPadding);
     
     private static string LastNameDisplay => $"Last Name: {_registeredLastName}".PadLeft(_registeredLastName != null ?
-        "Last Name: ".Length + _registeredLastName.Length + (int)Padding : "Last Name: ".Length + (int)Padding) ;
+        "Last Name: ".Length + _registeredLastName.Length + (int)DisplayPadding : "Last Name: ".Length + (int)DisplayPadding) ;
     
     private static string EmailDisplay => $"Email: {_registeredEmail}".PadLeft(_registeredEmail != null
-        ? "Email: ".Length + _registeredEmail.Length + (int)Padding : "Email: ".Length + (int)Padding);
+        ? "Email: ".Length + _registeredEmail.Length + (int)DisplayPadding : "Email: ".Length + (int)DisplayPadding);
 
     private static string PasswordDisplay => $"Password: {_registeredPassword}".PadLeft(_registeredPassword != null
-        ? "Password: ".Length + _registeredPassword.Length + (int)Padding : "Password: ".Length + (int)Padding);
+        ? "Password: ".Length + _registeredPassword.Length + (int)DisplayPadding : "Password: ".Length + (int)DisplayPadding);
     
     private const decimal AccountBalance = 1500.75m;
-    private const int LeftPadding = 75;
-    private const double MenuPadding = 2.1;
     
     public static void DisplayMainMenu()
     {
