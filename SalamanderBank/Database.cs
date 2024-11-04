@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data.SQLite;
 using System.IO;
+using Microsoft.AspNetCore.Identity;
 
 namespace SalamanderBank
 {
@@ -124,7 +125,7 @@ namespace SalamanderBank
 				using (SQLiteCommand insertCommand = new SQLiteCommand(insertQuery, connection))
 				{
 					insertCommand.Parameters.AddWithValue("@Type", type);
-					insertCommand.Parameters.AddWithValue("@Password", Escape(password));  // Make sure to hash passwords in production
+					insertCommand.Parameters.AddWithValue("@Password", HashPassword(password));  // Make sure to hash passwords in production
 					insertCommand.Parameters.AddWithValue("@Email", Escape(email));
 					insertCommand.Parameters.AddWithValue("@FirstName", Escape(firstName));
 					insertCommand.Parameters.AddWithValue("@LastName", Escape(lastName));
@@ -220,7 +221,7 @@ namespace SalamanderBank
 				using (var command = new SQLiteCommand(query, connection))
 				{
 					command.Parameters.AddWithValue("@Email", email);
-					command.Parameters.AddWithValue("@Password", password);
+					command.Parameters.AddWithValue("@Password", HashPassword(password));
 
 					using (var reader = command.ExecuteReader())
 					{
@@ -229,10 +230,10 @@ namespace SalamanderBank
 							// Adds ID, email address, fist name and last name to the array
 							userArray = new object[]
 							{
-							reader.GetInt32(0),        // ID
-                            reader.GetString(1),       // Email address
-                            reader.GetString(2),       // First name
-                            reader.GetString(3)        // Last name
+								reader.GetInt32(0),		// ID
+								reader.GetString(1),		// Email address
+								reader.GetString(2),		// First name
+								reader.GetString(3)		// Last name
 							};
 						}
 					}
@@ -241,6 +242,65 @@ namespace SalamanderBank
 
 			// Returns an array
 			return userArray;
+		}
+
+		// Returns a hashed password that accepts an unhashed string password
+		public static string HashPassword(string password)
+		{
+			var passwordHasher = new PasswordHasher<string>();
+			string hashedPassword = passwordHasher.HashPassword(null, password); // 'null' is used as the user identifier here
+			return hashedPassword;
+		}
+
+		// Accepts a hashed password and account ID, checks hashed password in SQLite
+		// Returns true if it matches
+		// Returns false if it doesn't match
+		public static bool VerifyPassword(string hashedPassword, int id)
+		{
+			string actualPassword = null;
+
+			using (var connection = new SQLiteConnection(_connectionString))
+			{
+				connection.Open();
+
+				string query = "SELECT password FROM Users WHERE id = @Id";
+				using (var command = new SQLiteCommand(query, connection))
+				{
+					command.Parameters.AddWithValue("@Id", id);
+
+					using (var reader = command.ExecuteReader())
+					{
+						if (reader.Read())
+						{
+							actualPassword = (string)reader.GetString(0);		// Password
+						}
+					}
+				}
+			}
+
+			var passwordHasher = new PasswordHasher<string>();
+			PasswordVerificationResult result = passwordHasher.VerifyHashedPassword(null, hashedPassword, actualPassword);
+
+			return result == PasswordVerificationResult.Success;
+		}
+
+		// Accepts an email and a new password and updates the password in the database
+		public static void ChangePassword(string email, string newPassword)
+		{
+			using (var connection = new SQLiteConnection(_connectionString))
+			{
+				connection.Open();
+
+				string query = "UPDATE Users SET password = @NewPassword WHERE email = @Email";
+				using (var command = new SQLiteCommand(query, connection))
+				{
+					command.Parameters.AddWithValue("@Email", Escape(email));
+					command.Parameters.AddWithValue("@NewPassword", HashPassword(newPassword));
+
+					int rowsAffected = command.ExecuteNonQuery();
+					Console.WriteLine($"{rowsAffected} row(s) updated in Users table.");
+				}
+			}
 		}
 	}
 }
