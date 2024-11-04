@@ -177,9 +177,7 @@ public static class Ui
             code = Console.ReadLine();
             
         } while (string.IsNullOrEmpty(code) || code != EmailService.Code.ToString());
-
-        Database.InitializeDatabase();
-        Database.AddUser(0, code, _registeredEmail, _registeredName, _registeredLastName);
+        
         AccountDetails();
     }
     
