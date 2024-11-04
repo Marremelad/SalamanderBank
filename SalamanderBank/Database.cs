@@ -60,7 +60,7 @@ namespace SalamanderBank
 			}
 		}
 
-		// Checks if the Users and Accounts tables exist
+		// Checks if the tables exist
 		private static void CreateTables(SQLiteConnection connection)
 		{
 			string createUsersTableQuery = "CREATE TABLE IF NOT EXISTS Users (id INTEGER PRIMARY KEY, type INTEGER, password TEXT, email TEXT NOT NULL UNIQUE, first_name TEXT, last_name TEXT, verified INTEGER);";
@@ -130,6 +130,31 @@ namespace SalamanderBank
 
 					int rowsAffected = insertCommand.ExecuteNonQuery();
 					Console.WriteLine($"{rowsAffected} row(s) inserted into Users table.");
+				}
+			}
+
+			// Return 1 to indicate success
+			return 1;
+		}
+
+		// Verifies a user by checking the email argument
+		// Return 0 if failed, 1 if succeeded
+		public static int VerifyUser(string email)
+		{
+			string updateQuery = "UPDATE Users SET verified = 1 WHERE id = @Email;";
+
+			using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
+			{
+				connection.Open();
+
+				using (SQLiteCommand updateCommand = new SQLiteCommand(updateQuery, connection))
+				{
+					updateCommand.Parameters.AddWithValue("@Email", email);
+
+					int rowsAffected = updateCommand.ExecuteNonQuery();
+					Console.WriteLine($"{rowsAffected} row(s) updated in Users table.");
+
+					if (rowsAffected > 0) { return 0; }
 				}
 			}
 
