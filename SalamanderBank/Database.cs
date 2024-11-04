@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.Data.SQLite;
 using System.IO;
 using Microsoft.AspNetCore.Identity;
+using DotNetEnv;
+using System.Text.Json;
 
 namespace SalamanderBank
 {
@@ -303,8 +305,154 @@ namespace SalamanderBank
 			}
 		}
 
+        public static async Task UpdateCurrenciesAsync()
+        {
+
+            using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
+            {
+
+                connection.Open();
+
+
+                // Hämta senaste uppdateringstiden från databasen
+                string lastUpdateQuery = "SELECT MAX(last_updated) FROM Currencies;";
+
+                DateTime lastUpdated = DateTime.MinValue;
+
+                using (SQLiteCommand command = new SQLiteCommand(lastUpdateQuery, connection))
+                {
+
+                    var result = command.ExecuteScalar();
+
+                    if (result != DBNull.Value)
+                    {
+
+                        lastUpdated = Convert.ToDateTime(result);
+                    }
+                }
+                // Kontrollera om det har gått mer än 24 timmar sedan senaste uppdatering
+                TimeSpan timeSinceLastUpdate = DateTime.Now - lastUpdated;
 
 
 
-	}
+                if (timeSinceLastUpdate.TotalHours < 24)
+                {
+                    // Visa meddelande om att ingen uppdatering behövs
+                    DateTime nextUpdate = lastUpdated.AddHours(24);
+                    Console.WriteLine($"Har inte uppdaterat Currencies Databasen.");
+                    Console.WriteLine($"Nästa uppdatering sker den {nextUpdate:yyyy-MM-dd} kl {nextUpdate:HH:mm}.");
+                    return;
+                }
+
+                // Kör API-anrop för att hämta aktuella valutakurser
+                //Tagen från "https://currencyapi.com/"
+
+                Env.Load("./Credentials.env");
+                string apiKey = Env.GetString("CURRENCY_API_KEY");
+                string url = $"https://api.currencyapi.com/v3/latest?apikey={apiKey}&currencies=&base_currency=SEK";
+
+                using (HttpClient client = new HttpClient())
+                {
+
+                    HttpResponseMessage response = await client.GetAsync(url);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string jsonResponse = await response.Content.ReadAsStringAsync();
+                        using (JsonDocument document = JsonDocument.Parse(jsonResponse))
+                        {
+                            JsonElement data = document.RootElement.GetProperty("data");
+                            using (SQLiteTransaction transaction = connection.BeginTransaction())
+                            {
+                                foreach (JsonProperty currency in data.EnumerateObject())
+                                {
+                                    // Assuming currency has a property for code or similar in your JSON structure
+                                    //string currencyCode = currency.GetProperty("code").GetString(); // Adjust if needed based on your JSON structure
+
+                                    //decimal exchangeRate = currency.GetProperty("value").GetDecimal(); // Adjust if needed based on your JSON structure
+
+                                    string currencyCode = currency.Name;
+
+                                    decimal exchangeRate = currency.Value.GetProperty("value").GetDecimal();
+                                    string upsertQuery = @"
+
+                                    INSERT INTO Currencies (currency_code, exchange_rate, last_updated)
+
+                                    VALUES (@currencyCode, @exchangeRate, @lastUpdated)
+
+                                    ON CONFLICT(currency_code) 
+
+                                    DO UPDATE SET exchange_rate = @exchangeRate, last_updated = @lastUpdated;";
+
+                                    //Make Parameters for each (currency | value | time )
+                                    using (SQLiteCommand command = new SQLiteCommand(upsertQuery, connection))
+                                    {
+                                        command.Parameters.AddWithValue("@currencyCode", currencyCode);
+
+                                        command.Parameters.AddWithValue("@exchangeRate", exchangeRate);
+
+                                        command.Parameters.AddWithValue("@lastUpdated", DateTime.Now);
+
+                                        command.ExecuteNonQuery();
+
+                                    }
+                                }
+                                transaction.Commit();
+                            }
+                            Console.WriteLine("Har uppdaterat och kommer igen om 24 timmar.");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Kunde inte hämta valutakurser.");
+                    }
+                }
+            }
+        }
+        public static decimal GetExchangeRate(string currencyCode)
+        {
+            decimal exchangeRate = 0;
+            string query = "SELECT exchange_rate FROM Currencies WHERE currency_code = @currencyCode;";
+
+            using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (SQLiteCommand command = new SQLiteCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@currencyCode", currencyCode);
+
+                    var result = command.ExecuteScalar();
+
+                    if (result != DBNull.Value)
+                    {
+                        exchangeRate = Convert.ToDecimal(result);
+                    }
+                    else
+                    {
+                        // Valutakoden hittades inte
+                        Console.WriteLine($"Valutan '{currencyCode}' finns inte i databasen.");
+                        return 0; // Returnera 0 för att indikera ett fel
+                    }
+                }
+            }
+            return exchangeRate;
+        }
+        public static decimal ConvertCurrency(decimal amount, string convertFrom, string convertTo)
+        {
+            // Retrieve exchange rates for the specified currencies
+            decimal fromRate = GetExchangeRate(convertFrom);
+            decimal toRate = GetExchangeRate(convertTo);
+
+            // Check if either of the exchange rates is 0
+            if (fromRate == 0 || toRate == 0)
+            {
+                throw new Exception("One of the exchange rates is invalid. Check that the currency codes are correct and that the exchange rates have been updated.");
+            }
+
+            // Convert the amount to the target currency
+            decimal convertedAmount = (amount / fromRate) * toRate;
+            return convertedAmount;
+        }
+    }
 }

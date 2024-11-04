@@ -4,8 +4,9 @@ namespace SalamanderBank;
 
 class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         Ui.DisplayMainMenu();
+
     }
 }
