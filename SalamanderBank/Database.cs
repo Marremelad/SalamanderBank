@@ -161,6 +161,7 @@ namespace SalamanderBank
 				.Replace("_", "[_]");
 		}
 
+		// Login method that accepts email and password as arguments
 		public static object[] Login(string email, string password)
 		{
 			object[] userArray = null;
@@ -179,18 +180,20 @@ namespace SalamanderBank
 					{
 						if (reader.Read())
 						{
+							// Adds ID, email address, fist name and last name to the array
 							userArray = new object[]
 							{
-							reader.GetInt32(0),        // id
-                            reader.GetString(1),       // email
-                            reader.GetString(2),       // first_name
-                            reader.GetString(3)        // last_name
+							reader.GetInt32(0),        // ID
+                            reader.GetString(1),       // Email address
+                            reader.GetString(2),       // First name
+                            reader.GetString(3)        // Last name
 							};
 						}
 					}
 				}
 			}
 
+			// Returns an array
 			return userArray;
 		}
 	}
