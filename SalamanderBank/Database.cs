@@ -20,7 +20,7 @@ namespace SalamanderBank
 	 *
 	 * Database db = new Database("path/to/database.db");
 	 * db.InitializeDatabase();
-	 * db.AddUser(1001, 1, "hashed_password", "user@example.com", "John", "Doe");
+	 * db.AddUser(1, "password", "user@example.com", "John", "Doe");
 	 */
 	public static class Database
 	{
@@ -92,7 +92,8 @@ namespace SalamanderBank
 			}
 		}
 
-		// Adds a user. Returns 0 if email address is already used and 1 if it was succeessful
+		// Adds a user
+		// Returns 0 if email address is already in use and 1 if it was successful
 		public static int AddUser(int type, string password, string email, string firstName, string lastName)
 		{
 			// Query to check if an account with the same email already exists
