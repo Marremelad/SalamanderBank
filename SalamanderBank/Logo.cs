@@ -1,4 +1,5 @@
-﻿using Pastel;
+﻿using System.Drawing.Configuration;
+using Pastel;
 
 namespace SalamanderBank;
 
@@ -36,8 +37,7 @@ public static class Logo
         foreach (var line in fireLines)
         {
             double padding = (Console.WindowWidth - line.Length) / 1.35;
-            Console.WriteLine(line.PadLeft(line.Length + (int)padding));
-            // Console.WriteLine($"{new string(' ', leftPadding)}{line.Pastel(System.Drawing.Color.FromArgb(255, 69, 0))}");
+            Console.WriteLine($"{new string(' ', (int)padding)}{line.Pastel(System.Drawing.Color.FromArgb(255, 69, 0))}");
         }
         
         var textLines = TextLogo.Split(Environment.NewLine);
