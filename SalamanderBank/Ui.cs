@@ -167,7 +167,7 @@ public static class Ui
 
             Console.Write($"{FirstNameDisplay}\n{LastNameDisplay}\n{EmailDisplay}\n{PasswordDisplay}\n");
             
-            string message = $"A code has been sent to {_registeredEmail}, use it to verify your account.";
+            string message = $"A code has been sent to \u001b[38;2;34;139;34m{_registeredEmail}\u001b[0m, use it to verify your account.";
             string message2 = "Enter Code: ";
 
             Console.WriteLine();
