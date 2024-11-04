@@ -230,10 +230,10 @@ namespace SalamanderBank
 							// Adds ID, email address, fist name and last name to the array
 							userArray = new object[]
 							{
-								reader.GetInt32(0),        // ID
-								reader.GetString(1),       // Email address
-								reader.GetString(2),       // First name
-								reader.GetString(3)        // Last name
+								reader.GetInt32(0),		// ID
+								reader.GetString(1),		// Email address
+								reader.GetString(2),		// First name
+								reader.GetString(3)		// Last name
 							};
 						}
 					}
@@ -244,6 +244,7 @@ namespace SalamanderBank
 			return userArray;
 		}
 
+		// Returns a hashed password that accepts an unhashed string password
 		public static string HashPassword(string password)
 		{
 			var passwordHasher = new PasswordHasher<string>();
@@ -251,10 +252,34 @@ namespace SalamanderBank
 			return hashedPassword;
 		}
 
-		public static bool VerifyPassword(string hashedPassword, string providedPassword)
+		// Accepts a hashed password and account ID, checks hashed password in SQLite
+		// Returns true if it matches
+		// Returns false if it doesn't match
+		public static bool VerifyPassword(string hashedPassword, int id)
 		{
+			string actualPassword = null;
+
+			using (var connection = new SQLiteConnection(_connectionString))
+			{
+				connection.Open();
+
+				string query = "SELECT password FROM Users WHERE id = @Id";
+				using (var command = new SQLiteCommand(query, connection))
+				{
+					command.Parameters.AddWithValue("@Id", id);
+
+					using (var reader = command.ExecuteReader())
+					{
+						if (reader.Read())
+						{
+							actualPassword = (string)reader.GetString(0);		// Password
+						}
+					}
+				}
+			}
+
 			var passwordHasher = new PasswordHasher<string>();
-			PasswordVerificationResult result = passwordHasher.VerifyHashedPassword(null, hashedPassword, providedPassword);
+			PasswordVerificationResult result = passwordHasher.VerifyHashedPassword(null, hashedPassword, actualPassword);
 
 			return result == PasswordVerificationResult.Success;
 		}
