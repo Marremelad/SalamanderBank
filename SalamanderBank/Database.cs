@@ -150,7 +150,7 @@ namespace SalamanderBank
 
 				using (SQLiteCommand updateCommand = new SQLiteCommand(updateQuery, connection))
 				{
-					updateCommand.Parameters.AddWithValue("@Email", email);
+					updateCommand.Parameters.AddWithValue("@Email", Escape(email));
 
 					int rowsAffected = updateCommand.ExecuteNonQuery();
 					Console.WriteLine($"{rowsAffected} row(s) updated in Users table.");
