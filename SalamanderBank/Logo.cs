@@ -32,12 +32,12 @@ public static class Logo
 
     public static void DisplayFullLogo()
     {
-        int leftPadding = LeftPadding;
-        
         var fireLines = FireLogo.Split(Environment.NewLine);
         foreach (var line in fireLines)
         {
-            Console.WriteLine($"{new string(' ', leftPadding)}{line.Pastel(System.Drawing.Color.FromArgb(255, 69, 0))}");
+            double padding = (Console.WindowWidth - line.Length) / 1.35;
+            Console.WriteLine(line.PadLeft(line.Length + (int)padding));
+            // Console.WriteLine($"{new string(' ', leftPadding)}{line.Pastel(System.Drawing.Color.FromArgb(255, 69, 0))}");
         }
         
         var textLines = TextLogo.Split(Environment.NewLine);
