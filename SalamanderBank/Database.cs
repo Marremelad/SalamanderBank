@@ -314,7 +314,7 @@ namespace SalamanderBank
                 connection.Open();
 
 
-                // Hämta senaste uppdateringstiden från databasen
+                // Retrieve the latest update time from the database
                 string lastUpdateQuery = "SELECT MAX(last_updated) FROM Currencies;";
 
                 DateTime lastUpdated = DateTime.MinValue;
@@ -330,22 +330,22 @@ namespace SalamanderBank
                         lastUpdated = Convert.ToDateTime(result);
                     }
                 }
-                // Kontrollera om det har gått mer än 24 timmar sedan senaste uppdatering
+                // Check if more than 24 hours have passed since the last update
                 TimeSpan timeSinceLastUpdate = DateTime.Now - lastUpdated;
 
 
 
                 if (timeSinceLastUpdate.TotalHours < 24)
                 {
-                    // Visa meddelande om att ingen uppdatering behövs
+                    // Notify that no update is needed
                     DateTime nextUpdate = lastUpdated.AddHours(24);
                     Console.WriteLine($"Har inte uppdaterat Currencies Databasen.");
                     Console.WriteLine($"Nästa uppdatering sker den {nextUpdate:yyyy-MM-dd} kl {nextUpdate:HH:mm}.");
                     return;
                 }
 
-                // Kör API-anrop för att hämta aktuella valutakurser
-                //Tagen från "https://currencyapi.com/"
+                // Make API call to fetch current exchange rates
+                // Taken from "https://currencyapi.com/"
 
                 Env.Load("./Credentials.env");
                 string apiKey = Env.GetString("CURRENCY_API_KEY");
@@ -384,7 +384,7 @@ namespace SalamanderBank
 
                                     DO UPDATE SET exchange_rate = @exchangeRate, last_updated = @lastUpdated;";
 
-                                    //Make Parameters for each (currency | value | time )
+                                    
                                     using (SQLiteCommand command = new SQLiteCommand(upsertQuery, connection))
                                     {
                                         command.Parameters.AddWithValue("@currencyCode", currencyCode);
@@ -399,12 +399,12 @@ namespace SalamanderBank
                                 }
                                 transaction.Commit();
                             }
-                            Console.WriteLine("Har uppdaterat och kommer igen om 24 timmar.");
+                            Console.WriteLine("Updated successfully, next update will be in 24 hours.");
                         }
                     }
                     else
                     {
-                        Console.WriteLine("Kunde inte hämta valutakurser.");
+                        Console.WriteLine("Failed to retrieve exchange rates.");
                     }
                 }
             }
@@ -430,9 +430,9 @@ namespace SalamanderBank
                     }
                     else
                     {
-                        // Valutakoden hittades inte
+                        // Currency code not found
                         Console.WriteLine($"Valutan '{currencyCode}' finns inte i databasen.");
-                        return 0; // Returnera 0 för att indikera ett fel
+                        return 0; // Return 0 to indicate an error
                     }
                 }
             }
