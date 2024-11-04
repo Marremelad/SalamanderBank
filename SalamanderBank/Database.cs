@@ -124,10 +124,10 @@ namespace SalamanderBank
 				using (SQLiteCommand insertCommand = new SQLiteCommand(insertQuery, connection))
 				{
 					insertCommand.Parameters.AddWithValue("@Type", type);
-					insertCommand.Parameters.AddWithValue("@Password", EscapeForLike(password));  // Make sure to hash passwords in production
-					insertCommand.Parameters.AddWithValue("@Email", EscapeForLike(email));
-					insertCommand.Parameters.AddWithValue("@FirstName", EscapeForLike(firstName));
-					insertCommand.Parameters.AddWithValue("@LastName", EscapeForLike(lastName));
+					insertCommand.Parameters.AddWithValue("@Password", Escape(password));  // Make sure to hash passwords in production
+					insertCommand.Parameters.AddWithValue("@Email", Escape(email));
+					insertCommand.Parameters.AddWithValue("@FirstName", Escape(firstName));
+					insertCommand.Parameters.AddWithValue("@LastName", Escape(lastName));
 
 					int rowsAffected = insertCommand.ExecuteNonQuery();
 					Console.WriteLine($"{rowsAffected} row(s) inserted into Users table.");
@@ -177,7 +177,7 @@ namespace SalamanderBank
 				using (SQLiteCommand command = new SQLiteCommand(searchQuery, connection))
 				{
 					// Bind parameters to prevent SQL injection
-					command.Parameters.AddWithValue("@search", EscapeForLike(searchTerm));
+					command.Parameters.AddWithValue("@search", Escape(searchTerm));
 
 					// Reads the search results
 					using (SQLiteDataReader reader = command.ExecuteReader())
@@ -197,7 +197,7 @@ namespace SalamanderBank
 		}
 
 		// Escapes strings for SQL LIKE queries
-		public static string EscapeForLike(string input)
+		public static string Escape(string input)
 		{
 			return input
 				.Replace("[", "\\[")
