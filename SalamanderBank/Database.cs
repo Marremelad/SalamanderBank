@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data.SQLite;
 using System.IO;
+using Microsoft.AspNetCore.Identity;
 
 namespace SalamanderBank
 {
@@ -229,10 +230,10 @@ namespace SalamanderBank
 							// Adds ID, email address, fist name and last name to the array
 							userArray = new object[]
 							{
-							reader.GetInt32(0),        // ID
-                            reader.GetString(1),       // Email address
-                            reader.GetString(2),       // First name
-                            reader.GetString(3)        // Last name
+								reader.GetInt32(0),        // ID
+								reader.GetString(1),       // Email address
+								reader.GetString(2),       // First name
+								reader.GetString(3)        // Last name
 							};
 						}
 					}
@@ -241,6 +242,21 @@ namespace SalamanderBank
 
 			// Returns an array
 			return userArray;
+		}
+
+		public static string HashPassword(string password)
+		{
+			var passwordHasher = new PasswordHasher<string>();
+			string hashedPassword = passwordHasher.HashPassword(null, password); // 'null' is used as the user identifier here
+			return hashedPassword;
+		}
+
+		public static bool VerifyPassword(string hashedPassword, string providedPassword)
+		{
+			var passwordHasher = new PasswordHasher<string>();
+			PasswordVerificationResult result = passwordHasher.VerifyHashedPassword(null, hashedPassword, providedPassword);
+
+			return result == PasswordVerificationResult.Success;
 		}
 	}
 }
