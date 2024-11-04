@@ -92,31 +92,51 @@ namespace SalamanderBank
 			}
 		}
 
-		// Adds a user
-		public static void AddUser(int type, string password, string email, string firstName, string lastName)
+		// Adds a user. Returns 0 if email address is already used and 1 if it was succeessful
+		public static int AddUser(int type, string password, string email, string firstName, string lastName)
 		{
-			// This query will insert a user into the Users table, based on the arguments in the method
+			// Query to check if an account with the same email already exists
+			string checkEmailQuery = "SELECT COUNT(*) FROM Users WHERE email = @Email;";
+
+			// Query to insert a new user
 			string insertQuery = "INSERT INTO Users (type, password, email, first_name, last_name, verified) " +
-								 "VALUES (@type, @password, @email, @first_name, @last_name, 0);";
+								 "VALUES (@Type, @Password, @Email, @FirstName, @LastName, 0);";
 
 			using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
 			{
 				connection.Open();
 
-				using (SQLiteCommand command = new SQLiteCommand(insertQuery, connection))
+				// First, check if the email already exists
+				using (SQLiteCommand checkCommand = new SQLiteCommand(checkEmailQuery, connection))
 				{
-					// Bind parameters to prevent SQL injection
-					command.Parameters.AddWithValue("@type", type);
-					command.Parameters.AddWithValue("@password", EscapeForLike(password));  // Be sure to hash passwords in production
-					command.Parameters.AddWithValue("@email", EscapeForLike(email));
-					command.Parameters.AddWithValue("@first_name", EscapeForLike(firstName));
-					command.Parameters.AddWithValue("@last_name", EscapeForLike(lastName));
+					checkCommand.Parameters.AddWithValue("@Email", email);
+					long emailExists = (long)checkCommand.ExecuteScalar();
 
-					int rowsAffected = command.ExecuteNonQuery();
+					if (emailExists > 0)
+					{
+						// Email already exists, return 0
+						return 0;
+					}
+				}
+
+				// If email doesn't exist, proceed with insertion
+				using (SQLiteCommand insertCommand = new SQLiteCommand(insertQuery, connection))
+				{
+					insertCommand.Parameters.AddWithValue("@Type", type);
+					insertCommand.Parameters.AddWithValue("@Password", EscapeForLike(password));  // Make sure to hash passwords in production
+					insertCommand.Parameters.AddWithValue("@Email", EscapeForLike(email));
+					insertCommand.Parameters.AddWithValue("@FirstName", EscapeForLike(firstName));
+					insertCommand.Parameters.AddWithValue("@LastName", EscapeForLike(lastName));
+
+					int rowsAffected = insertCommand.ExecuteNonQuery();
 					Console.WriteLine($"{rowsAffected} row(s) inserted into Users table.");
 				}
 			}
+
+			// Return 1 to indicate success
+			return 1;
 		}
+
 
 		// Searches for a user and returns an array user ids that have similar first name, last name and email address
 		public static int[] SearchUser(string searchTerm)
