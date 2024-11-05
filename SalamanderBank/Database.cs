@@ -96,12 +96,8 @@ namespace SalamanderBank
 		}
 
 		// Adds a user
-		// Returns 0 if email address is already in use and 1 if it was successful
-		public static int AddUser(int type, string password, string email, string firstName, string lastName)
+		public static void AddUser(int type, string password, string email, string firstName, string lastName)
 		{
-			// Query to check if an account with the same email already exists
-			string checkEmailQuery = "SELECT COUNT(*) FROM Users WHERE email = @Email;";
-
 			// Query to insert a new user
 			string insertQuery = "INSERT INTO Users (type, password, email, first_name, last_name, verified) " +
 								 "VALUES (@Type, @Password, @Email, @FirstName, @LastName, 0);";
@@ -109,19 +105,6 @@ namespace SalamanderBank
 			using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
 			{
 				connection.Open();
-
-				// First, check if the email already exists
-				using (SQLiteCommand checkCommand = new SQLiteCommand(checkEmailQuery, connection))
-				{
-					checkCommand.Parameters.AddWithValue("@Email", email);
-					long emailExists = (long)checkCommand.ExecuteScalar();
-
-					if (emailExists > 0)
-					{
-						// Email already exists, return 0
-						return 0;
-					}
-				}
 
 				// If email doesn't exist, proceed with insertion
 				using (SQLiteCommand insertCommand = new SQLiteCommand(insertQuery, connection))
@@ -136,9 +119,6 @@ namespace SalamanderBank
 					Console.WriteLine($"{rowsAffected} row(s) inserted into Users table.");
 				}
 			}
-
-			// Return 1 to indicate success
-			return 1;
 		}
 
 		// Verifies a user by checking the email argument
