@@ -189,7 +189,7 @@ public static class Ui
             
         } while (string.IsNullOrEmpty(code) || code != EmailService.Code.ToString());
 
-        Database.VerifyUser(_registeredLastName);
+        Database.VerifyUser(_registeredEmail);
         
         AccountDetails();
     }
