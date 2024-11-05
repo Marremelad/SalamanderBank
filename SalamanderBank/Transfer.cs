@@ -9,10 +9,10 @@ namespace SalamanderBank
     internal class Transfer
     {
         public int ID;
-        public User Sender_user_id;
-        public Account Sender_account_id;
-        public User Reciever_user_id;
-        public Account Reciever_account_id;
+        public User SenderUser;
+        public Account SenderAccount;
+        public User ReceiverUser;
+        public Account ReceiverAccount;
         public decimal Amount;
         public int Processed;
     }
