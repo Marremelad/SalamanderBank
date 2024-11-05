@@ -360,6 +360,15 @@ public static class Ui
                 SignedIn();
             
         }
+        static void PlaySound(string filePath)
+        {
+            using (SoundPlayer player = new SoundPlayer(filePath))
+            {
+                player.Load();
+                player.Play();
+            }
+        
+        }
 
         static void MoneyExchange()
         {
@@ -454,15 +463,7 @@ public static class Ui
      
     }
 
-    public static void PlaySound(string filePath)
-    {
-        using (SoundPlayer player = new SoundPlayer(filePath))
-        {
-            player.Load();
-            player.Play();
-        }
-        
-    }
+   
     
 
 }
