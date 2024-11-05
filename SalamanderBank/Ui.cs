@@ -1,6 +1,9 @@
-using System.Data.SQLite;
+using System.Media;
 using System.Text.RegularExpressions;
+using NAudio.Dmo;
 using Spectre.Console;
+using NAudio.Wave;
+
 
 namespace SalamanderBank;
 
@@ -183,15 +186,20 @@ public static class Ui
     
     private static void AccountDetails()
     {
+        Console.Clear();
+        Logo.DisplayFullLogo();
+        
         var table = new Table();
+        
         
         table.AddColumn("Account Information");
         table.AddRow($"Name: {_registeredFirstName} {_registeredLastName}");
         table.AddRow($"Email: {_registeredEmail}");
-        table.AddRow($"Balance: {AccountBalance:F2}");
-           
-        
-        Console.Clear();
+        table.AddRow($"Total Balance: {AccountBalance:F2}");
+        table.Border = TableBorder.Rounded;
+        table.BorderStyle = new Style(foreground: ConsoleColor.DarkRed);
+        table.AddRow($"Password: {_registeredPassword}");
+        table.Alignment(Justify.Center);
         AnsiConsole.Write(table);
        
     }
@@ -245,34 +253,216 @@ public static class Ui
     
     public static async void LiveAccount2()
     {
-       // Logo.DisplayFullLogo();
-       
-       AnsiConsole.Status()
-           .Start("Transferring money", ctx =>
-           {
-               AnsiConsole.MarkupLine("The money is on the way.");
-               Thread.Sleep(2000);
-               
-               ctx.SpinnerStyle(Style.Parse("red"));
-               ctx.Spinner(Spinner.Known.Dots);
-               
-               
-               AnsiConsole.MarkupLine("Transfer Successful!");
-               Thread.Sleep(2000);
-           });
 
-       // var selection = AnsiConsole.Prompt(
-       //     new SelectionPrompt<string>()
-       //         .Title("[bold red]Welcome to SalamanderBank![/]")
-       //         .PageSize(10)
-       //         .AddChoices("Check Balance", "Transfer Funds", "Money Exchange", "Take Loan", "View Transactions",
-       //             "Exit"));
+        while (true)
+        {
+            Console.Clear();
+            Logo.DisplayFullLogo();
+            
+            string option1 = "Create Account".PadLeft("Create Account".Length + (int)((Console.WindowWidth - "Create Account".Length) / MenuPadding));
+            string option2 = "Sign In".PadLeft("Sign In".Length + (int)((Console.WindowWidth - "Sign In".Length) / MenuPadding));
+            string option3 = "Exit".PadLeft("Exit".Length + (int)((Console.WindowWidth - "Exit".Length) / 2.1 ));
+            
+            var login = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .PageSize(10)
+                    .AddChoices(option1, option2, option3));
+            
+            switch (login.Trim())
+            {
+                case "Create Account":
+                    CreateAccount();
+                    break;
+                                
+                case "Sign In":
+                    SignedIn();
+                    break;
+                
+                case "Exit":
+                    Console.WriteLine("Thank you for using SalamanderBank!");
+                    Thread.Sleep(2000);
+                    return;
+            }
+        
+            break;
+        }
+
+        static void SignedIn()
+        {
+            Console.Clear();
+            Logo.DisplayFullLogo();
+
+            var welcome = new Panel(new Markup("[bold red]Welcome to SalamanderBank![/]"))
+            {
+                Border = BoxBorder.Rounded,
+                Padding = new Padding(2, 1),
+                Width = 40
+            };
+            
+            AnsiConsole.Write(welcome);
+            AnsiConsole.WriteLine();
+
+            var selection = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .PageSize(3)
+                    .AddChoices("Check Balance", "Transfer Funds", "Money Exchange", "Take Loan", "View Transactions", "Exit")
+                    .MoreChoicesText("[grey](Move up and down to reveal more options)[/]")
+                    );
+            
+            switch (selection)
+            {
+                case "Check Balance":
+                    AccountDetails();
+                    break;
+                case "Transfer Funds":
+                    TransferFunds();
+                    break;
+                case "Money Exchange":
+                    MoneyExchange();
+                    break;
+                case "Take Loan":
+                    TakeLoan();
+                    break;
+                case "View Transactions":
+                    ViewTransaction();
+                    break;
+                case "Exit":
+                    return;
+            }
+            
+        }
+        //Transferring funds between accounts,
+        //Needs account information
+        //Needs sound
+        static void TransferFunds()
+        {
+                Console.Clear();
+                Logo.DisplayFullLogo();
+                AnsiConsole.Status()
+                    .AutoRefresh(true)
+                    .Spinner(Spinner.Known.Dots)
+                    .SpinnerStyle(Style.Parse("yellow bold"))
+                    .Start("[yellow]Transferring money...[/]", _ =>
+                    {
+                        AnsiConsole.MarkupLine("[yellow]Checking Account Balance...[/]");
+                        Thread.Sleep(5000);
+
+                        AnsiConsole.MarkupLine("[yellow]Checking Receiver...[/]");
+                        Thread.Sleep(5000);
+
+                    });
+                Console.Clear();
+                Logo.DisplayFullLogo();
+                AnsiConsole.MarkupLine(
+                    "\n[green]Transaction Complete![/]\nYou will now be redirected to the main menu.");
+                PlaySound(@"C:\Users\rasmu\Downloads\750240__universfield__coin-drop.wav");
+                Thread.Sleep(5000);
+                SignedIn();
+            
+        }
+
+        static void MoneyExchange()
+        {
+            while (true)
+            {
+                //Show account to change from
+                //Ask for currency to change to
+                //Ask for amount to change
+                //Show exchange
+                //Show the new currency in new account
+                var selection = AnsiConsole.Prompt(new SelectionPrompt<string>().Title("Choose Account to use for exchange")
+                    .AddChoices("Account 1", "Account 2", "Account 3", "Return to Main Menu"));
+                switch (selection)
+                {
+                    case "Account 1":
+                        //Access and use chosen account
+                        break;
+                    
+                    case "Account 2":
+                        //Access and use chosen account
+                        break;
+                    
+                    case "Account 3":
+                        //Access and use chosen account
+                        break;
+                    
+                    case "Return to Main Menu":
+                        SignedIn();
+                        break;
+                }
+                
+                var exchange = AnsiConsole.Prompt(new SelectionPrompt<string>().Title("What currency do you want to use?")
+                    .AddChoices("Search for currency", "Display currency", "Return to Previous Menu", "Return to Main Menu"));
+                switch (exchange)
+                {
+                    case "Search":
+                        Search();
+                        break;
+                    case "Display currencies":
+                        Currencies();
+                        break;
+                    case "Return to Previous Menu":
+                        continue;
+                    case "Return to Main Menu":
+                        SignedIn();
+                        break;
+                }
+
+                break;
+
+                static void Currencies()
+                {
+                    //Show currencies available to chose from
+                    //let user choose 
+                    ExchangingMoney();
+                }
+
+                static void Search()
+                {
+                    //Let user search for currencies
+                    //Let user choose currency
+                    ExchangingMoney();
+                }
+
+                static void ExchangingMoney()
+                {
+                    //Display Exchange
+                    //Update accounts
+                    //Return to main menu
+                }
+            }
+        }
+
+        static void TakeLoan()
+        {
+            //Ask for account to use
+            //Show maximum amount of money to Loan
+            //Loan transaction
+            //Return to Main Menu
+        }
+
+        static void ViewTransaction()
+        {
+            //show accounts where transactions has been made
+        }
 
 
     }
 
     public static async void LiveAccount3()
     {
-       
+     
     }
+
+    public static void PlaySound(string filePath)
+    {
+        using (SoundPlayer player = new SoundPlayer(filePath))
+        {
+            player.Load();
+            player.Play();
+        }
+        
+    }
+    
+
 }

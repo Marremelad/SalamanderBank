@@ -6,8 +6,10 @@ class Program
 {
     public static async Task Main(string[] args)
     {
-        Database.InitializeDatabase();
-        await Database.UpdateCurrenciesAsync();
-        Ui.DisplayMainMenu();
+        // Database.InitializeDatabase();
+        // await Database.UpdateCurrenciesAsync();
+        // Ui.DisplayMainMenu();
+        //Ui.LiveAccount2();
+        Ui.LiveAccount2();
     }
 }
