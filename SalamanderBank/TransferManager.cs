@@ -12,6 +12,8 @@ namespace SalamanderBank
     {
         public static Transfer GetTransfer(int transferId)
         {
+            // Selects a transfer based on transferId and joins relevant information
+            // from Users and Accounts tables.
             string transferQuery = @"
                 SELECT t.*, 
                        su.*, sa.*, 
@@ -26,20 +28,24 @@ namespace SalamanderBank
             using (var connection = new SQLiteConnection(Database._connectionString))
             {
                 connection.Open();
-
+                // Type hints informs Dapper which classes to use when mapping the information
+                // it gets back from the SQL query.
                 var transfer = connection.Query<Transfer, User, Account, User, Account, Transfer>(
                     transferQuery,
                     (transfer, senderUser, senderAccount, receiverUser, receiverAccount) =>
                     {
+                        // Sets the attributes of the Transfer object to the objects made from the joins.
                         transfer.SenderUser = senderUser;
                         transfer.SenderAccount = senderAccount;
                         transfer.ReceiverUser = receiverUser;
                         transfer.ReceiverAccount = receiverAccount;
                         return transfer;
                     },
+                    // Determines the value of the @ID parameter.
                     new { ID = transferId },
-                    splitOn: "id"    // "id" should mark each new object split point
-                ).FirstOrDefault();
+                    splitOn: "id"    // Creates a new group of columns whenever it encounters a column named "id".
+                                     // This allows Dapper to sequentially map each group of columns to each Class.
+                ).FirstOrDefault(); // Returns the first result found or returns null without throwing an exception.
                 return transfer;
             }
         }
