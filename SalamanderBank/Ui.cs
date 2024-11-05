@@ -127,18 +127,19 @@ public static class Ui
                 {
                     return email;
                 }
-                
                 Console.WriteLine();
-                string emailExists = "\u001b[38;2;255;69;0mPlease enter a valid email\u001b[0m";
+                string emailExists = "\u001b[38;2;255;69;0mThis email is already in use\u001b[0m";
                 Console.Write($"{emailExists}".PadLeft(emailExists.Length + (int)((Console.WindowWidth - emailExists.Length) / 1.7)));
                 Console.ResetColor();
             }
-            
-            Console.WriteLine();
-            string message = "\u001b[38;2;255;69;0mPlease enter a valid email\u001b[0m";
-            Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
-            Console.ResetColor();
-        
+            else
+            {
+                Console.WriteLine();
+                string message = "\u001b[38;2;255;69;0mPlease enter a valid email\u001b[0m";
+                Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
+                Console.ResetColor();
+            }
+
             Thread.Sleep(2000);
         }
     }
