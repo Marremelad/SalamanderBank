@@ -7,7 +7,7 @@ class Program
     public static async Task Main(string[] args)
     {
         Database.InitializeDatabase();
-        await Database.UpdateCurrenciesAsync();
+        await Currency.UpdateCurrenciesAsync();
         Ui.DisplayMainMenu();
     }
 }
