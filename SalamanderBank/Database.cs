@@ -166,6 +166,26 @@ namespace SalamanderBank
 			return 1;
 		}
 
+		// Method that checks if an email already exists in the database
+		// Returns true if the email exists, false otherwise
+		public static bool EmailExists(string email)
+		{
+			string query = "SELECT COUNT(*) FROM Users WHERE email = @Email;";
+
+			using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
+			{
+				connection.Open();
+
+				using (SQLiteCommand command = new SQLiteCommand(query, connection))
+				{
+					command.Parameters.AddWithValue("@Email", Escape(email));
+
+					long emailExists = (long)command.ExecuteScalar();
+
+					return emailExists > 0;
+				}
+			}
+		}
 
 		// Searches for a user and returns an array user ids that have similar first name, last name and email address
 		public static int[] SearchUser(string searchTerm)
