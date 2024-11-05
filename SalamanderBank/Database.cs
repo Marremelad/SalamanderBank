@@ -325,7 +325,7 @@ namespace SalamanderBank
 			}
 		}
 
-		// Adds a function that moves money from a sender to the Transfers table
+		// A function that moves money from the sender's account to the Transfers table
 		public static void TransferMoney(int senderUserId, int senderAccountId, int recieverUserId, int recieverAccountId, double amount)
 		{
 			using (var connection = new SQLiteConnection(_connectionString))
@@ -361,6 +361,35 @@ namespace SalamanderBank
 						int rows = command.ExecuteNonQuery();
 						Console.WriteLine($"{rows} row(s) updated in Users table.");
 					}
+				}
+			}
+		}
+
+		// A function that moves money from the Transfers table to the reciever's account
+		public static void ProcessTransfer(int transferId)
+		{
+			using (var connection = new SQLiteConnection(_connectionString))
+			{
+				connection.Open();
+
+				// Update the receiver's account balance
+				string updateRecieverQuery = "UPDATE Accounts SET balance = balance + (SELECT amount FROM Transfers WHERE id = @TransferId) WHERE id = (SELECT reciever_account_id FROM Transfers WHERE id = @TransferId);";
+				using (var updateRecieverCommand = new SQLiteCommand(updateRecieverQuery, connection))
+				{
+					updateRecieverCommand.Parameters.AddWithValue("@TransferId", transferId);
+
+					int rowsAffected = updateRecieverCommand.ExecuteNonQuery();
+					Console.WriteLine($"{rowsAffected} row(s) updated in Accounts table.");
+				}
+
+				// Transfers the money from the account to the Transfers table
+				string transferQuery = "UPDATE Transfers SET processed = 1 WHERE id = @TransferId;";
+				using (var command = new SQLiteCommand(transferQuery, connection))
+				{
+					command.Parameters.AddWithValue("@TransferId", transferId);
+
+					int rows = command.ExecuteNonQuery();
+					Console.WriteLine($"{rows} row(s) updated in Users table.");
 				}
 			}
 		}
