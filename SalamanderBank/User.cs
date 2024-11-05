@@ -3,19 +3,12 @@ namespace SalamanderBank
 {
     internal class User
     {
-        public int Id { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
+        public int ID { get; set; }
+        public int Type { get; set; }
+        public string First_name { get; set; }
+        public string Last_name { get; set; }
         public string Email { get; set; }
-        public string Password { get; set; }
-        
-        public User(int id, string firstName, string lastName, string email, string password)
-        {
-            Id = id;
-            FirstName = firstName;
-            LastName = lastName;
-            Email = email;
-            Password = password;
-        }
+        public string Password { get; set; }    
+        public string Verified {  get; set; }
     }
 }
