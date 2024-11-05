@@ -122,7 +122,7 @@ public static class Ui
             {
                 return password;
             }
-
+            
             Console.WriteLine();
             string message = "\u001b[38;2;255;69;0mPlease enter a valid email\u001b[0m";
             Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
@@ -166,7 +166,7 @@ public static class Ui
             Logo.DisplayFullLogo();
 
             Console.Write($"{FirstNameDisplay}\n{LastNameDisplay}\n{EmailDisplay}\n{PasswordDisplay}\n");
-            
+            //Writes out a error message where "email" is in red
             string message = $"A code has been sent to \u001b[38;2;34;139;34m{_registeredEmail}\u001b[0m, use it to verify your account.";
             string message2 = "Enter Code: ";
 
