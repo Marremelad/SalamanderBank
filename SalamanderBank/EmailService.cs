@@ -3,6 +3,7 @@ using MailKit.Net.Smtp;
 using DotNetEnv;
 namespace SalamanderBank;
 
+// Class for handling the formating and sending of emails.
 public static class EmailService
 {
     public static Guid Code;
