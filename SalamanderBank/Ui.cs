@@ -30,6 +30,8 @@ public static class Ui
     
     public static void DisplayMainMenu()
     {
+        Database.InitializeDatabase();
+        
         while (true)
         {
             Console.Clear();
