@@ -137,7 +137,6 @@ public static class Ui
                 Console.WriteLine();
                 string message = "\u001b[38;2;255;69;0mPlease enter a valid email\u001b[0m";
                 Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
-                Console.ResetColor();
             }
 
             Thread.Sleep(2000);
@@ -162,11 +161,9 @@ public static class Ui
             Console.WriteLine();
             string message = "\u001b[38;2;255;69;0mPassword has to be at least 8 characters long\u001b[0m";
             Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
-            Console.ResetColor();
-        
+            
             Thread.Sleep(3000);
         }
-        
     }
     
     private static void ValidateAccount()
@@ -185,7 +182,9 @@ public static class Ui
             Console.WriteLine();
             Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.45)));
             Console.WriteLine("\n");
-            Console.Write($"{message2}".PadLeft(message2.Length + ((Console.WindowWidth - message2.Length) / 2)));
+            Console.Write($"{message2}\n".PadLeft(message2.Length + (Console.WindowWidth - message2.Length) / 2));
+            Console.WriteLine();
+            Console.Write("".PadLeft("".Length + (int)((Console.WindowWidth - "".Length) / 2.6)));
             code = Console.ReadLine();
             
         } while (string.IsNullOrEmpty(code) || code != EmailService.Code.ToString());
