@@ -54,7 +54,7 @@ public static class Ui
                                 
                 case "Sign In":
                     throw new NotImplementedException();
-                    break;
+                    // break;
                 
                 case "Exit":
                     Console.WriteLine("Thank you for using SalamanderBank!");
@@ -73,9 +73,10 @@ public static class Ui
         _registeredLastName = GetLastName();
         _registeredEmail = GetEmail();
         _registeredPassword = GetPassword();
+
+        Database.AddUser(0, _registeredPassword, _registeredEmail, _registeredFirstName, _registeredLastName);
         
         EmailService.SendVerificationEmail(_registeredFirstName, _registeredEmail);
-        
         ValidateAccount();
     }
     
@@ -187,6 +188,8 @@ public static class Ui
             code = Console.ReadLine();
             
         } while (string.IsNullOrEmpty(code) || code != EmailService.Code.ToString());
+
+        Database.VerifyUser(_registeredLastName);
         
         AccountDetails();
     }
