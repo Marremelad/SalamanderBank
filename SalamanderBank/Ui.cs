@@ -1,4 +1,5 @@
 using System.Data.SQLite;
+using System.Media;
 using System.Text.RegularExpressions;
 using Spectre.Console;
 
@@ -206,5 +207,39 @@ public static class Ui
             
         Console.Clear();
         AnsiConsole.Write(table);
+    }
+    static void TransferFunds()
+    {
+        Console.Clear();
+        Logo.DisplayFullLogo();
+        AnsiConsole.Status()
+            .AutoRefresh(true)
+            .Spinner(Spinner.Known.Dots)
+            .SpinnerStyle(Style.Parse("yellow bold"))
+            .Start("[yellow]Transferring money...[/]", _ =>
+            {
+                AnsiConsole.MarkupLine("[yellow]Checking Account Balance...[/]");
+                Thread.Sleep(3000);
+
+                AnsiConsole.MarkupLine("[yellow]Checking Receiver...[/]");
+                Thread.Sleep(3000);
+
+            });
+        Console.Clear();
+        Logo.DisplayFullLogo();
+        AnsiConsole.MarkupLine(
+            "\n[green]Transaction Complete![/]\nYou will now be redirected to the main menu.");
+        PlaySound(@"C:\Users\rasmu\source\repos\SalamanderBank\SoundPath\cashier-quotka-chingquot-sound-effect-129698.wav");
+        Thread.Sleep(3000);
+            
+    }
+    static void PlaySound(string filePath)
+    {
+        using (SoundPlayer player = new SoundPlayer(filePath))
+        {
+            player.Load();
+            player.Play();
+        }
+        
     }
 }
