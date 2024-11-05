@@ -80,14 +80,14 @@ namespace SalamanderBank
 				Console.WriteLine($"Accounts table created.");
 			}
 
-			string createCurrenciesTableQuery = "CREATE TABLE IF NOT EXISTS Currencies (id INTEGER PRIMARY KEY, currency_code TEXT UNIQUE, value_in_SEK REAL);";
+			string createCurrenciesTableQuery = "CREATE TABLE IF NOT EXISTS Currencies (id INTEGER PRIMARY KEY, currency_code TEXT UNIQUE, exchange_rate REAL, last_updated TEXT);";
 			using (SQLiteCommand command = new SQLiteCommand(createCurrenciesTableQuery, connection))
 			{
 				int rowsAffected = command.ExecuteNonQuery();
 				Console.WriteLine($"Currencies table created.");
 			}
 
-			string createTransfersTableQuery = "CREATE TABLE IF NOT EXISTS Transfers (id INTEGER PRIMARY KEY, sender_user_id INTEGER, sender_account_id INTEGER, reciever_user_id INTEGER, reciever_account_id INTEGER, transfer_date DATETIME, amount REAL);";
+			string createTransfersTableQuery = "CREATE TABLE IF NOT EXISTS Transfers (id INTEGER PRIMARY KEY, sender_user_id INTEGER, sender_account_id INTEGER, reciever_user_id INTEGER, reciever_account_id INTEGER, transfer_date TEXT, amount REAL, processed INTEGER);";
 			using (SQLiteCommand command = new SQLiteCommand(createTransfersTableQuery, connection))
 			{
 				int rowsAffected = command.ExecuteNonQuery();
@@ -166,6 +166,26 @@ namespace SalamanderBank
 			return 1;
 		}
 
+		// Method that checks if an email already exists in the database
+		// Returns true if the email exists, false otherwise
+		public static bool EmailExists(string email)
+		{
+			string query = "SELECT COUNT(*) FROM Users WHERE email = @Email;";
+
+			using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
+			{
+				connection.Open();
+
+				using (SQLiteCommand command = new SQLiteCommand(query, connection))
+				{
+					command.Parameters.AddWithValue("@Email", Escape(email));
+
+					long emailExists = (long)command.ExecuteScalar();
+
+					return emailExists > 0;
+				}
+			}
+		}
 
 		// Searches for a user and returns an array user ids that have similar first name, last name and email address
 		public static int[] SearchUser(string searchTerm)
@@ -257,7 +277,7 @@ namespace SalamanderBank
 		// Accepts a hashed password and account ID, checks hashed password in SQLite
 		// Returns true if it matches
 		// Returns false if it doesn't match
-		public static bool VerifyPassword(string hashedPassword, int id)
+		public static bool VerifyPassword(string password, int id)
 		{
 			string actualPassword = null;
 
@@ -281,7 +301,7 @@ namespace SalamanderBank
 			}
 
 			var passwordHasher = new PasswordHasher<string>();
-			PasswordVerificationResult result = passwordHasher.VerifyHashedPassword(null, hashedPassword, actualPassword);
+			PasswordVerificationResult result = passwordHasher.VerifyHashedPassword(null, HashPassword(password), actualPassword);
 
 			return result == PasswordVerificationResult.Success;
 		}
@@ -301,6 +321,46 @@ namespace SalamanderBank
 
 					int rowsAffected = command.ExecuteNonQuery();
 					Console.WriteLine($"{rowsAffected} row(s) updated in Users table.");
+				}
+			}
+		}
+
+		// Adds a function that moves money from a sender to the Transfers table
+		public static void TransferMoney(int senderUserId, int senderAccountId, int recieverUserId, int recieverAccountId, double amount)
+		{
+			using (var connection = new SQLiteConnection(_connectionString))
+			{
+				connection.Open();
+				int rowsAffected;
+
+				// Update the sender's account balance
+				string updateSenderQuery = "UPDATE Accounts SET balance = balance - @Amount WHERE id = @SenderAccountId AND user_id = @SenderUserId;";
+				using (var updateSenderCommand = new SQLiteCommand(updateSenderQuery, connection))
+				{
+					updateSenderCommand.Parameters.AddWithValue("@Amount", amount);
+					updateSenderCommand.Parameters.AddWithValue("@SenderAccountId", senderAccountId);
+					updateSenderCommand.Parameters.AddWithValue("@SenderUserId", senderUserId);
+
+					rowsAffected = updateSenderCommand.ExecuteNonQuery();
+					Console.WriteLine($"{rowsAffected} row(s) updated in Accounts table.");
+				}
+
+				if (rowsAffected > 0)
+				{
+					// Transfers the money from the account to the Transfers table
+					string transferQuery = "INSERT INTO Transfers (sender_user_id, sender_account_id, reciever_user_id, reciever_account_id, transfer_date, amount) VALUES (@SenderUserId, @SenderAccountId, @RecieverUserId, @RecieverAccountId, @TransferDate, @Amount, 0);";
+					using (var command = new SQLiteCommand(transferQuery, connection))
+					{
+						command.Parameters.AddWithValue("@SenderUserId", senderUserId);
+						command.Parameters.AddWithValue("@SenderAccountId", senderAccountId);
+						command.Parameters.AddWithValue("@RecieverUserId", recieverUserId);
+						command.Parameters.AddWithValue("@RecieverAccountId", recieverAccountId);
+						command.Parameters.AddWithValue("@TransferDate", DateTime.Now);
+						command.Parameters.AddWithValue("@Amount", amount);
+
+						int rows = command.ExecuteNonQuery();
+						Console.WriteLine($"{rows} row(s) updated in Users table.");
+					}
 				}
 			}
 		}
