@@ -374,7 +374,7 @@ namespace SalamanderBank
 
 				// Update the receiver's account balance
 				string updateReceiverQuery = "UPDATE Accounts SET balance = balance + (SELECT amount FROM Transfers WHERE id = @TransferId) WHERE id = (SELECT receiver_account_id FROM Transfers WHERE id = @TransferId);";
-				using (var updateReceiverCommand = new SQLiteCommand(updatereceiverQuery, connection))
+				using (var updateReceiverCommand = new SQLiteCommand(updateReceiverQuery, connection))
 				{
 					updateReceiverCommand.Parameters.AddWithValue("@TransferId", transferId);
 
