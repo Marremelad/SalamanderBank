@@ -345,18 +345,18 @@ public static class Ui
                     .Start("[yellow]Transferring money...[/]", _ =>
                     {
                         AnsiConsole.MarkupLine("[yellow]Checking Account Balance...[/]");
-                        Thread.Sleep(5000);
+                        Thread.Sleep(3000);
 
                         AnsiConsole.MarkupLine("[yellow]Checking Receiver...[/]");
-                        Thread.Sleep(5000);
+                        Thread.Sleep(3000);
 
                     });
                 Console.Clear();
                 Logo.DisplayFullLogo();
                 AnsiConsole.MarkupLine(
                     "\n[green]Transaction Complete![/]\nYou will now be redirected to the main menu.");
-                PlaySound(@"C:\Users\rasmu\source\repos\SalamanderBank\SoundPath\750240__universfield__coin-drop.wav");
-                Thread.Sleep(5000);
+                PlaySound(@"C:\Users\rasmu\source\repos\SalamanderBank\SoundPath\cashier-quotka-chingquot-sound-effect-129698.wav");
+                Thread.Sleep(3000);
                 SignedIn();
             
         }
