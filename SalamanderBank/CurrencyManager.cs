@@ -9,7 +9,7 @@ using System.Data.SQLite;
 
 namespace SalamanderBank
 {
-    internal class Currency
+    internal class CurrencyManager
     {
         public static async Task UpdateCurrenciesAsync()
         {
