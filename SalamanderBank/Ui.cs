@@ -30,6 +30,8 @@ public static class Ui
     
     public static void DisplayMainMenu()
     {
+        Database.InitializeDatabase();
+        
         while (true)
         {
             Console.Clear();
@@ -51,8 +53,8 @@ public static class Ui
                     break;
                                 
                 case "Sign In":
-                    throw new NotImplementedException(); // DisplayLogin();
-                    //break;
+                    throw new NotImplementedException();
+                    // break;
                 
                 case "Exit":
                     Console.WriteLine("Thank you for using SalamanderBank!");
@@ -71,9 +73,10 @@ public static class Ui
         _registeredLastName = GetLastName();
         _registeredEmail = GetEmail();
         _registeredPassword = GetPassword();
+
+        Database.AddUser(0, _registeredPassword, _registeredEmail, _registeredFirstName, _registeredLastName);
         
         EmailService.SendVerificationEmail(_registeredFirstName, _registeredEmail);
-        
         ValidateAccount();
     }
     
@@ -117,10 +120,18 @@ public static class Ui
             
             Console.Write($"{FirstNameDisplay}\n{LastNameDisplay}\n{EmailDisplay}");
             
-            string? password = Console.ReadLine();
-            if (password != null && Regex.IsMatch(password, emailPattern))
+            string? email = Console.ReadLine();
+            if (email != null && Regex.IsMatch(email, emailPattern))
             {
-                return password;
+                if (!Database.EmailExists(email))
+                {
+                    return email;
+                }
+                
+                Console.WriteLine();
+                string emailExists = "\u001b[38;2;255;69;0mPlease enter a valid email\u001b[0m";
+                Console.Write($"{emailExists}".PadLeft(emailExists.Length + (int)((Console.WindowWidth - emailExists.Length) / 1.7)));
+                Console.ResetColor();
             }
             
             Console.WriteLine();
@@ -177,6 +188,8 @@ public static class Ui
             code = Console.ReadLine();
             
         } while (string.IsNullOrEmpty(code) || code != EmailService.Code.ToString());
+
+        Database.VerifyUser(_registeredEmail);
         
         AccountDetails();
     }

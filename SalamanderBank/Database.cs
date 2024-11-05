@@ -96,7 +96,7 @@ namespace SalamanderBank
 		}
 
 		// Adds a user
-		public static void AddUser(int type, string password, string email, string firstName, string lastName)
+		public static void AddUser(int type, string password, string? email, string? firstName, string? lastName)
 		{
 			// Query to insert a new user
 			string insertQuery = "INSERT INTO Users (type, password, email, first_name, last_name, verified) " +
@@ -123,9 +123,9 @@ namespace SalamanderBank
 
 		// Verifies a user by checking the email argument
 		// Return 0 if failed, 1 if succeeded
-		public static int VerifyUser(string email)
+		public static void VerifyUser(string? email)
 		{
-			string updateQuery = "UPDATE Users SET verified = 1 WHERE id = @Email;";
+			string updateQuery = "UPDATE Users SET verified = 1 WHERE email = @Email;";
 
 			using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
 			{
@@ -137,18 +137,13 @@ namespace SalamanderBank
 
 					int rowsAffected = updateCommand.ExecuteNonQuery();
 					Console.WriteLine($"{rowsAffected} row(s) updated in Users table.");
-
-					if (rowsAffected == 0) { return 0; }
 				}
 			}
-
-			// Return 1 to indicate success
-			return 1;
 		}
 
 		// Method that checks if an email already exists in the database
 		// Returns true if the email exists, false otherwise
-		public static bool EmailExists(string email)
+		public static bool EmailExists(string? email)
 		{
 			string query = "SELECT COUNT(*) FROM Users WHERE email = @Email;";
 
@@ -168,7 +163,7 @@ namespace SalamanderBank
 		}
 
 		// Searches for a user and returns an array user ids that have similar first name, last name and email address
-		public static int[] SearchUser(string searchTerm)
+		public static int[] SearchUser(string? searchTerm)
 		{
 			string searchQuery = "SELECT id FROM Users WHERE email LIKE %@search% OR first_name LIKE %@search% OR last_name LIKE %@search%;";
 			List<int> ids = new List<int>();
@@ -200,7 +195,7 @@ namespace SalamanderBank
 		}
 
 		// Escapes strings for SQL LIKE queries
-		public static string Escape(string input)
+		public static string Escape(string? input)
 		{
 			return input
 				.Replace("[", "\\[")
@@ -287,7 +282,7 @@ namespace SalamanderBank
 		}
 
 		// Accepts an email and a new password and updates the password in the database
-		public static void ChangePassword(string email, string newPassword)
+		public static void ChangePassword(string? email, string newPassword)
 		{
 			using (var connection = new SQLiteConnection(_connectionString))
 			{
