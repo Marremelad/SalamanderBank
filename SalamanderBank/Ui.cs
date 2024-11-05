@@ -355,7 +355,7 @@ public static class Ui
                 Logo.DisplayFullLogo();
                 AnsiConsole.MarkupLine(
                     "\n[green]Transaction Complete![/]\nYou will now be redirected to the main menu.");
-                PlaySound(@"C:\Users\rasmu\Downloads\750240__universfield__coin-drop.wav");
+                PlaySound(@"C:\Users\rasmu\source\repos\SalamanderBank\SoundPath\750240__universfield__coin-drop.wav");
                 Thread.Sleep(5000);
                 SignedIn();
             
