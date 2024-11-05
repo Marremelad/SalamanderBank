@@ -177,13 +177,13 @@ public static class Ui
             Logo.DisplayFullLogo();
 
             Console.Write($"{FirstNameDisplay}\n{LastNameDisplay}\n{EmailDisplay}\n{PasswordDisplay}\n");
-            //Writes out a error message where "email" is in red
-            string message = $"A code has been sent to \u001b[38;2;34;139;34m{_registeredEmail}\u001b[0m, use it to verify your account.";
+            //Writes out an error message where "email" is in red
+            string message = $"A code has been sent to \u001b[38;2;34;139;34m{_registeredEmail}\u001b[0m use it to verify your account.";
             string message2 = "Enter Code: ";
 
             Console.WriteLine();
-            Console.Write($"{message}".PadLeft(message.Length + ((Console.WindowWidth - message.Length) / 2)));
-            Console.WriteLine();
+            Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.45)));
+            Console.WriteLine("\n");
             Console.Write($"{message2}".PadLeft(message2.Length + ((Console.WindowWidth - message2.Length) / 2)));
             code = Console.ReadLine();
             
@@ -195,6 +195,7 @@ public static class Ui
     }
     
     private static void AccountDetails()
+        
     {
         var table = new Table();
         
