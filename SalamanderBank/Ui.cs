@@ -189,8 +189,90 @@ public static class Ui
         table.AddRow($"Name: {_registeredFirstName} {_registeredLastName}");
         table.AddRow($"Email: {_registeredEmail}");
         table.AddRow($"Balance: {AccountBalance:F2}");
-            
+           
+        
         Console.Clear();
         AnsiConsole.Write(table);
+       
+    }
+
+    public static async void LiveAccount()
+    {
+        Console.Clear();
+
+        // Display the logo at the top of the console
+        Logo.DisplayFullLogo();
+
+        // Create a new layout with limited space usage
+        var layout = new Layout("Root")
+            .SplitColumns(
+                new Layout("Left").Size(30),       // Set the width of the Left column
+                new Layout("Right").Size(70)       // Set the width of the Right column
+                    .SplitRows(
+                        new Layout("Top").Size(20),    // Set the height of the Top section
+                        new Layout("Bottom").Size(20)  // Set the height of the Bottom section
+                    )
+            );
+
+        // Update the Left section with initial text
+        layout["Left"].Update(
+            new Panel(
+                Align.Center(
+                    new Markup("[bold green]Hello SalamanderBank![/]"),
+                    VerticalAlignment.Middle
+                )
+            )
+        );
+
+        // Add content to the Right sections
+        layout["Top"].Update(new Panel("Top Content"));
+        layout["Bottom"].Update(new Panel("Bottom Content"));
+
+        // Render the layout first
+        AnsiConsole.Write(layout);
+
+        // Render the selection prompt separately
+        var selection = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .Title("[bold yellow]Please select an option:[/]")
+                .PageSize(10)
+                .AddChoices( "Check Balance", "Transfer Funds", "View Transactions", "Exit" )
+        );
+
+        // Perform actions based on the selection
+        AnsiConsole.MarkupLine($"[bold green]You selected:[/] {selection}");
+    }
+    
+    public static async void LiveAccount2()
+    {
+       // Logo.DisplayFullLogo();
+       
+       AnsiConsole.Status()
+           .Start("Transferring money", ctx =>
+           {
+               AnsiConsole.MarkupLine("The money is on the way.");
+               Thread.Sleep(2000);
+               
+               ctx.SpinnerStyle(Style.Parse("red"));
+               ctx.Spinner(Spinner.Known.Dots);
+               
+               
+               AnsiConsole.MarkupLine("Transfer Successful!");
+               Thread.Sleep(2000);
+           });
+
+       // var selection = AnsiConsole.Prompt(
+       //     new SelectionPrompt<string>()
+       //         .Title("[bold red]Welcome to SalamanderBank![/]")
+       //         .PageSize(10)
+       //         .AddChoices("Check Balance", "Transfer Funds", "Money Exchange", "Take Loan", "View Transactions",
+       //             "Exit"));
+
+
+    }
+
+    public static async void LiveAccount3()
+    {
+       
     }
 }
