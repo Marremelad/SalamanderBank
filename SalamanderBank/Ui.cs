@@ -62,10 +62,7 @@ public static class Ui
                     Thread.Sleep(2000);
                     return;
             }
-        
-            break;
         }
-                 
     }
 
     private static void CreateAccount()
@@ -78,6 +75,7 @@ public static class Ui
         Database.AddUser(0, _registeredPassword, _registeredEmail, _registeredFirstName, _registeredLastName);
         
         EmailService.SendVerificationEmail(_registeredFirstName, _registeredEmail);
+        
         ValidateAccount();
     }
     
@@ -88,6 +86,7 @@ public static class Ui
         {
             Console.Clear();
             Logo.DisplayFullLogo();
+            
             Console.Write($"{FirstNameDisplay}");
             
         } while (string.IsNullOrEmpty(name = Console.ReadLine()));
@@ -129,15 +128,15 @@ public static class Ui
                     return email;
                 }
                 Console.WriteLine();
-                string emailExists = "\u001b[38;2;255;69;0mThis email is already in use\u001b[0m";
-                Console.Write($"{emailExists}".PadLeft(emailExists.Length + (int)((Console.WindowWidth - emailExists.Length) / 1.7)));
+                string message1 = "\u001b[38;2;255;69;0mThis email is already in use\u001b[0m";
+                Console.Write($"{message1}".PadLeft(message1.Length + (int)((Console.WindowWidth - message1.Length) / 1.7)));
                 Console.ResetColor();
             }
             else
             {
                 Console.WriteLine();
-                string message = "\u001b[38;2;255;69;0mPlease enter a valid email\u001b[0m";
-                Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
+                string message2 = "\u001b[38;2;255;69;0mPlease enter a valid email\u001b[0m";
+                Console.Write($"{message2}".PadLeft(message2.Length + (int)((Console.WindowWidth - message2.Length) / 1.7)));
             }
 
             Thread.Sleep(2000);
@@ -161,6 +160,7 @@ public static class Ui
             
             Console.WriteLine();
             string message = "\u001b[38;2;255;69;0mPassword has to be at least 8 characters long\u001b[0m";
+            
             Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
             
             Thread.Sleep(3000);
@@ -176,16 +176,19 @@ public static class Ui
             Logo.DisplayFullLogo();
 
             Console.Write($"{FirstNameDisplay}\n{LastNameDisplay}\n{EmailDisplay}\n{PasswordDisplay}\n");
-            //Writes out an error message where "email" is in red
-            string message = $"A code has been sent to \u001b[38;2;34;139;34m{_registeredEmail}\u001b[0m use it to verify your account.";
+            
+            string message1 = $"A code has been sent to \u001b[38;2;34;139;34m{_registeredEmail}\u001b[0m use it to verify your account.";
             string message2 = "Enter Code: ";
 
             Console.WriteLine();
-            Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.45)));
+            Console.Write($"{message1}".PadLeft(message1.Length + (int)((Console.WindowWidth - message1.Length) / 1.45)));
+            
             Console.WriteLine("\n");
             Console.Write($"{message2}\n".PadLeft(message2.Length + (Console.WindowWidth - message2.Length) / 2));
+            
             Console.WriteLine();
             Console.Write("".PadLeft("".Length + (int)((Console.WindowWidth - "".Length) / 2.6)));
+            
             code = Console.ReadLine();
             
         } while (string.IsNullOrEmpty(code) || code != EmailService.Code.ToString());
@@ -196,7 +199,6 @@ public static class Ui
     }
     
     private static void AccountDetails()
-        
     {
         var table = new Table();
         
@@ -208,10 +210,12 @@ public static class Ui
         Console.Clear();
         AnsiConsole.Write(table);
     }
-    static void TransferFunds()
+    
+    private static void TransferFunds()
     {
         Console.Clear();
         Logo.DisplayFullLogo();
+        
         AnsiConsole.Status()
             .AutoRefresh(true)
             .Spinner(Spinner.Known.Dots)
@@ -225,21 +229,22 @@ public static class Ui
                 Thread.Sleep(3000);
 
             });
+        
         Console.Clear();
         Logo.DisplayFullLogo();
+        
         AnsiConsole.MarkupLine(
             "\n[green]Transaction Complete![/]\nYou will now be redirected to the main menu.");
-        PlaySound(@"C:\Users\rasmu\source\repos\SalamanderBank\SoundPath\cashier-quotka-chingquot-sound-effect-129698.wav");
-        Thread.Sleep(3000);
-            
-    }
-    static void PlaySound(string filePath)
-    {
-        using (SoundPlayer player = new SoundPlayer(filePath))
-        {
-            player.Load();
-            player.Play();
-        }
         
+        PlaySound(@"./Sounds/cashier-quotka-chingquot-sound-effect-129698.wav");
+        
+        Thread.Sleep(3000);
+    }
+    
+    private static void PlaySound(string filePath)
+    {
+        using SoundPlayer player = new SoundPlayer(filePath);
+        player.LoadAsync();
+        player.PlaySync();
     }
 }
