@@ -263,6 +263,7 @@ public static class Ui
             var login = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .PageSize(10)
+                    .HighlightStyle(new Style(new Color(225, 69, 0)))
                     .AddChoices(option1, option2, option3));
 
             switch (login.Trim())
@@ -283,293 +284,296 @@ public static class Ui
 
             break;
         }
-
+        //Second Menu after Signing in
         static void SignedIn()
         {
-            Console.Clear();
-            Logo.DisplayFullLogo();
-            var customStyle = new Style(new Color(225, 69, 0));
-            var table = new Table();
-            table.Border = TableBorder.Rounded;
-            table.BorderStyle = customStyle;
-            table.AddColumn("[bold yellow blink on rgb(190,40,0)] Welcome to SalamanderBank![/]").Centered();
-
-
-            AnsiConsole.Write(table);
-            AnsiConsole.WriteLine();
-            Console.ReadLine();
-
-            var selection = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .PageSize(3)
-                    .AddChoices("Check Balance", "Transfer Funds", "Money Exchange", "Take Loan", "View Transactions",
-                        "Exit")
-                    .MoreChoicesText("[grey](Move up and down to reveal more options)[/]")
-            );
-
-            switch (selection.Trim())
+            while (true)
             {
-                case "Check Balance":
-                    AccountDetails();
-                    break;
-                case "Transfer Funds":
-                    TransferFunds();
-                    break;
-                case "Money Exchange":
-                    MoneyExchange();
-                    break;
-                case "Take Loan":
-                    TakeLoan();
-                    break;
-                case "View Transactions":
-                    ViewTransaction();
-                    break;
-                case "Exit":
-                    return;
-            }
-            
-        }
+                Console.Clear();
+                Logo.DisplayFullLogo();
+                var customStyle = new Style(new Color(225, 69, 0));
+                var table = new Table();
+                table.Border = TableBorder.Rounded;
+                table.BorderStyle = customStyle;
+                table.AddColumn("[bold yellow blink on rgb(190,40,0)] Welcome to SalamanderBank![/]").Centered();
 
-        //Transferring funds between accounts,
-        //Needs account information
-        //Needs sound
-        static void TransferFunds()
-        {
-            Console.Clear();
-            Logo.DisplayFullLogo();
-            AnsiConsole.Status()
-                .AutoRefresh(true)
-                .Spinner(Spinner.Known.Dots)
-                .SpinnerStyle(Style.Parse("yellow bold"))
-                .Start("[yellow]Transferring money...[/]", _ =>
+                AnsiConsole.Write(table);
+                AnsiConsole.WriteLine();
+                Console.ReadLine();
+
+                var selection = AnsiConsole.Prompt(
+                    new SelectionPrompt<string>()
+                        .PageSize(3)
+                        .AddChoices("Check Balance", "Transfer Funds", "Money Exchange", "Take Loan",
+                            "View Transactions", "Exit")
+                        .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
+
+                switch (selection.Trim())
                 {
-                    AnsiConsole.MarkupLine("[yellow]Checking Account Balance...[/]");
-                    Thread.Sleep(3000);
-
-                    AnsiConsole.MarkupLine("[yellow]Checking Receiver...[/]");
-                    Thread.Sleep(3000);
-                });
-            Console.Clear();
-            Logo.DisplayFullLogo();
-            AnsiConsole.MarkupLine(
-                "\n[]Transaction Complete![/]\nYou will now be redirected to the main menu.");
-            PlaySound(
-                @"C:\Users\rasmu\source\repos\SalamanderBank\SalamanderBank\SoundPath\cashier-quotka-chingquot-sound-effect-129698.wav");
-            Thread.Sleep(3000);
-            SignedIn();
-        }
-
-        static void PlaySound(string filePath)
-        {
-            using (var player = new SoundPlayer(filePath))
-            {
-                player.Load();
-                player.Play();
-            }
-        }
-
-        static void MoneyExchange()
-        {
-            var selection = AnsiConsole.Prompt(new SelectionPrompt<string>()
-                .Title("Choose Account to use for exchange")
-                .AddChoices("Account 1", "Account 2", "Account 3", "Return to Main Menu"));
-
-            switch (selection)
-            {
-                case "Account 1":
-                    ExchangeMenu();
-                    break;
-                case "Account 2":
-
-                    break;
-                case "Account 3":
-
-                    break;
-                case "Return to Main Menu":
-
-                    break;
-            }
-
-
-            static void ExchangeMenu()
-            {
-                //Show account to change from
-                //Ask for currency to change to
-                //Ask for amount to change
-                //Show exchange
-                //Show the new currency in new account
-
-                var exchange = AnsiConsole.Prompt(new SelectionPrompt<string>()
-                    .Title("Please chose an option:")
-                    .AddChoices("Search for currency", "Display currency", "Return to Previous Menu",
-                        "Return to Main Menu"));
-                switch (exchange)
-                {
-                    case "Search":
-                        Search();
+                    case "Check Balance":
+                        AccountDetails();
                         break;
-                    case "Display currencies":
-                        Currencies();
+                    case "Transfer Funds":
+                        TransferFunds();
                         break;
-                    case "Return to Previous Menu":
+                    case "Money Exchange":
+                        MoneyExchange();
+                        break;
+                    case "Take Loan":
+                        TakeLoan();
+                        break;
+                    case "View Transactions":
+                        ViewTransaction();
+                        break;
+                    case "Exit":
                         return;
+                }
+
+            }
+
+            //Transferring funds between accounts,
+            //Needs account information
+            //Needs sound
+            static void TransferFunds()
+            {
+                Console.Clear();
+                Logo.DisplayFullLogo();
+                AnsiConsole.Status()
+                    .AutoRefresh(true)
+                    .Spinner(Spinner.Known.Dots)
+                    .SpinnerStyle(Style.Parse("yellow bold"))
+                    .Start("[yellow]Transferring money...[/]", _ =>
+                    {
+                        AnsiConsole.MarkupLine("[yellow]Checking Account Balance...[/]");
+                        Thread.Sleep(3000);
+
+                        AnsiConsole.MarkupLine("[yellow]Checking Receiver...[/]");
+                        Thread.Sleep(3000);
+                    });
+                Console.Clear();
+                Logo.DisplayFullLogo();
+                AnsiConsole.MarkupLine(
+                    "\n[]Transaction Complete![/]\nYou will now be redirected to the main menu.");
+                PlaySound(
+                    @"C:\Users\rasmu\source\repos\SalamanderBank\SalamanderBank\SoundPath\cashier-quotka-chingquot-sound-effect-129698.wav");
+                Thread.Sleep(3000);
+                SignedIn();
+            }
+
+            static void PlaySound(string filePath)
+            {
+                using (var player = new SoundPlayer(filePath))
+                {
+                    player.Load();
+                    player.Play();
+                }
+            }
+
+            static void MoneyExchange()
+            {
+                var selection = AnsiConsole.Prompt(new SelectionPrompt<string>()
+                    .Title("Choose Account to use for exchange")
+                    .AddChoices("Account 1", "Account 2", "Account 3", "Return to Main Menu"));
+
+                switch (selection)
+                {
+                    case "Account 1":// needs to display money on account
+                        Console.WriteLine($"Available amount: {AccountBalance:F2}SEK");
+                        ExchangeMenu();
+                        break;
+                    case "Account 2":
+
+                        break;
+                    case "Account 3":
+
+                        break;
                     case "Return to Main Menu":
+
                         break;
                 }
+
+
+                static void ExchangeMenu()
+                {
+                    //Show account to change from
+                    //Ask for currency to change to
+                    //Ask for amount to change
+                    //Show exchange
+                    //Show the new currency in new account
+
+                    var exchange = AnsiConsole.Prompt(new SelectionPrompt<string>()
+                        .Title("Please chose an option:")
+                        .AddChoices("Search for currency", "Display currency", "Return to Previous Menu",
+                            "Return to Main Menu"));
+                    switch (exchange)
+                    {
+                        case "Search for currency":
+                            Search();
+                            break;
+                        case "Display currency":
+                            Currencies();
+                            break;
+                        case "Return to Previous Menu":
+                            return;
+                        case "Return to Main Menu":
+                            return;
+                    }
+                }
+
+                static void Search()
+                {
+                    var currencies = new List<Currency>
+                    {
+                        new("US", "Dollar", "1234", "546", "USD"),
+                        new("EURO", "", "1234", "546", "EUR"),
+                        new("Danish", "Krone", "1234", "546", "NOK"),
+                        new("Japanese", "Yen", "1234", "546", "JPY"),
+                        new("Norwegian", "Krone", "1234", "546", "NOK"),
+                        new("Polish", "Zloty", "1234", "546", "PLN"),
+                        new("South African", "Rand", "1234", "546", "ZAR"),
+                        new("Swedish", "Krona", "1234", "546", "SEK"),
+                        new("Swiss", "Franc", "1234", "546", "CHF"),
+                        new("Brazilian", "Real", "1234", "546", "BRL"),
+                        new("Canadian", "Dollar", "1234", "546", "CAD")
+                    };
+
+
+                    Console.Write("Enter a search term (Country,Currency Name or Acronym): ");
+                    var searchTerm = Console.ReadLine();
+
+                    var filteredResults = currencies
+                        .Where(c => searchTerm != null &&
+                                    (c.Country.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+                                     || c.CurrencyName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+                                     || c.Acronym.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)))
+                        .ToList();
+                    if (filteredResults.Count == 0)
+                    {
+                        var retryPrompt = new SelectionPrompt<string>()
+                            .Title(
+                                "No matches found. Do you want to try again or return to precious menu?")
+                            .AddChoices("Retry", "Return");
+                        var userChoice = AnsiConsole.Prompt(retryPrompt);
+                        switch (userChoice)
+                        {
+                            case "Retry":
+                                Search();
+                                break;
+                            case "Return":
+                                MoneyExchange();
+                                break;
+                        }
+                    }
+
+                    // Present the filtered results as options for selection using a SelectionPrompt
+                    var prompt = new SelectionPrompt<string>()
+                        .Title("Select a currency:")
+                        .AddChoices(filteredResults.Select(c => $"{c.Country} - {c.CurrencyName}"));
+
+                    // Get the selected option
+                    var selectedOption = AnsiConsole.Prompt(prompt);
+
+                    // Find the selected Currency object based on the selection
+                    var selectedCurrency = filteredResults
+                        .FirstOrDefault(c => $"{c.Country} - {c.CurrencyName}" == selectedOption);
+
+                    if (selectedCurrency != null)
+                    {
+                        // Display the details of the selected currency in a table
+                        var table = new Table();
+                        table.AddColumn("Country");
+                        table.AddColumn("Currency Name");
+                        table.AddColumn("Acronym");
+                        table.AddColumn("We Sell");
+                        table.AddColumn("We Buy");
+
+                        table.AddRow(selectedCurrency.Country, selectedCurrency.CurrencyName,
+                            selectedCurrency.Acronym, selectedCurrency.Value1, selectedCurrency.Value2);
+
+                        // Render the table
+                        AnsiConsole.Write(table);
+
+                        var selection = new SelectionPrompt<string>()
+                            .Title("Do you want to exchange to this Currency?: y/n")
+                            .AddChoices("Yes", "No");
+                        var selectedOption2 = AnsiConsole.Prompt(selection);
+
+                        switch (selectedOption2)
+                        {
+                            case "Yes":
+                                ExchangingMoney();
+                                break;
+                            case "No":
+                                Console.WriteLine("Exchange Canceled." +
+                                                  "\n Returning to Previous Menu.");
+                                MoneyExchange();
+                                Console.Clear();
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("No currency or country found");
+                        
+                        
+                        
+                    }
+                }
             }
 
-            static void Search()
+            static void Currencies()
             {
-                var currencies = new List<Currency>
-                {
-                    new("US", "Dollar", "1234", "546", "USD"),
-                    new("EURO", "", "1234", "546", "EUR"),
-                    new("Danish", "Krone", "1234", "546", "NOK"),
-                    new("Japanese", "Yen", "1234", "546", "JPY"),
-                    new("Norwegian", "Krone", "1234", "546", "NOK"),
-                    new("Polish", "Zloty", "1234", "546", "PLN"),
-                    new("South African", "Rand", "1234", "546", "ZAR"),
-                    new("Swedish", "Krona", "1234", "546", "SEK"),
-                    new("Swiss", "Franc", "1234", "546", "CHF"),
-                    new("Brazilian", "Real", "1234", "546", "BRL"),
-                    new("Canadian", "Dollar", "1234", "546", "CAD")
-                };
+                var customStyle = new Style(new Color(225, 69, 0));
+                var table = new Table()
+                    .Title("Exchange Rates")
+                    .BorderColor(Color.Khaki1)
+                    .Border(TableBorder.Rounded)
+                    .BorderStyle(customStyle)
+                    .Alignment(Justify.Center);
+
+                //table.AddColumn(" ");//flag
+                table.AddColumn(" "); //Country name
+                table.AddColumn(" "); //Currency
+                table.AddColumn("Acronym");
+                table.AddColumn("[white] We Buy [/] ");
+                table.AddColumn("[white] We sell [/] ");
+
+                table.AddRow("US", "Dollar", "USD", "1234", "546");
+                table.AddRow("EURO", "", "EUR", "1234", "546");
+                table.AddRow("Danish", "Krone", "NOK", "1234", "546");
+                table.AddRow("Japanese", "Yen", "JPY", "1234", "546");
+                table.AddRow("Norwegian", "Krone", "NOK", "1234", "546");
+                table.AddRow("Polish", "Zloty", "PLN", "1234", "546");
+                table.AddRow("South African", "Rand", "ZAR", "1234", "546");
+                table.AddRow("Swedish", "Krona", "SEK", "1234", "546");
+                table.AddRow("Swiss", "Franc", "CHF", "1234", "546");
+                table.AddRow("Brazilian", "Real", "BRL", "1234", "546");
+                table.AddRow("Canadian", "Dollar", "CAD", "1234", "546");
+
+                table.Caption("This is the available [green]currencies[/] to choose from");
+
+                AnsiConsole.Write(table);
+
+                Console.WriteLine("[green] Witch Currency do you want to exchange to?");
 
 
-                Console.Write("Enter a search term (Country,Currency Name or Acronym): ");
-                var searchTerm = Console.ReadLine();
-
-                var filteredResults = currencies
-                    .Where(c => searchTerm != null &&
-                                (c.Country.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
-                                 || c.CurrencyName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
-                                 || c.Acronym.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)))
-                    .ToList();
-                if (filteredResults.Count == 0)
-                {
-                    var retryPrompt = new SelectionPrompt<string>()
-                        .Title(
-                            "No matches found. Do you want to try again or return to precious menu?")
-                        .AddChoices("Retry", "Return");
-                    var userChoice = AnsiConsole.Prompt(retryPrompt);
-                    switch (userChoice)
-                    {
-                        case "Retry":
-                            break;
-                        case "Return":
-                            MoneyExchange();
-                            break;
-                    }
-                }
-
-                // Present the filtered results as options for selection using a SelectionPrompt
-                var prompt = new SelectionPrompt<string>()
-                    .Title("Select a currency:")
-                    .AddChoices(filteredResults.Select(c => $"{c.Country} - {c.CurrencyName}"));
-
-                // Get the selected option
-                var selectedOption = AnsiConsole.Prompt(prompt);
-
-                // Find the selected Currency object based on the selection
-                var selectedCurrency = filteredResults
-                    .FirstOrDefault(c => $"{c.Country} - {c.CurrencyName}" == selectedOption);
-
-                if (selectedCurrency != null)
-                {
-                    // Display the details of the selected currency in a table
-                    var table = new Table();
-                    table.AddColumn("Country");
-                    table.AddColumn("Currency Name");
-                    table.AddColumn("Acronym");
-                    table.AddColumn("We Sell");
-                    table.AddColumn("We Buy");
-
-                    table.AddRow(selectedCurrency.Country, selectedCurrency.CurrencyName,
-                        selectedCurrency.Acronym, selectedCurrency.Value1, selectedCurrency.Value2);
-
-                    // Render the table
-                    AnsiConsole.Write(table);
-
-                    var selection = new SelectionPrompt<string>()
-                        .Title("Do you want to exchange to this Currency?: y/n")
-                        .AddChoices("Yes", "No");
-                    var selectedOption2 = AnsiConsole.Prompt(selection);
-
-                    switch (selectedOption2)
-                    {
-                        case "Yes":
-                            ExchangingMoney();
-                            break;
-                        case "No":
-                            Console.WriteLine("Exchange Canceled." +
-                                              "\n Returning to Previous Menu.");
-                            MoneyExchange();
-                            Console.Clear();
-                            break;
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("No currency or country found");
-                }
-                //Let user search for currencies
-                //Let user choose currency
+                //Show currencies available to chose from
+                //let user choose 
+                ExchangingMoney();
             }
+
+            static void ExchangingMoney()
+            {
+                
+                //Display Exchange
+                //Update accounts
+                //Return to main menu
+            }
+
         }
-
-        static void Currencies()
-        {
-            var customStyle = new Style(new Color(225, 69, 0));
-            var table = new Table()
-                .Title("Exchange Rates")
-                .BorderColor(Color.Khaki1)
-                .Border(TableBorder.Rounded)
-                .BorderStyle(customStyle)
-                .Alignment(Justify.Center);
-
-            //table.AddColumn(" ");//flag
-            table.AddColumn(" "); //Country name
-            table.AddColumn(" "); //Currency
-            table.AddColumn("Acronym");
-            table.AddColumn("[white] We Buy [/] ");
-            table.AddColumn("[white] We sell [/] ");
-
-            table.AddRow("US", "Dollar", "USD", "1234", "546");
-            table.AddRow("EURO", "", "EUR", "1234", "546");
-            table.AddRow("Danish", "Krone", "NOK", "1234", "546");
-            table.AddRow("Japanese", "Yen", "JPY", "1234", "546");
-            table.AddRow("Norwegian", "Krone", "NOK", "1234", "546");
-            table.AddRow("Polish", "Zloty", "PLN", "1234", "546");
-            table.AddRow("South African", "Rand", "ZAR", "1234", "546");
-            table.AddRow("Swedish", "Krona", "SEK", "1234", "546");
-            table.AddRow("Swiss", "Franc", "CHF", "1234", "546");
-            table.AddRow("Brazilian", "Real", "BRL", "1234", "546");
-            table.AddRow("Canadian", "Dollar", "CAD", "1234", "546");
-
-            table.Caption("This is the available [green]currencies[/] to choose from");
-
-            AnsiConsole.Write(table);
-
-            AnsiConsole.MarkupLine("[green] Witch Currency do you want to exchange to?");
-
-
-            //Show currencies available to chose from
-            //let user choose 
-            ExchangingMoney();
-        }
-
-        static void ExchangingMoney()
-        {
-            //Display Exchange
-            //Update accounts
-            //Return to main menu
-        }
-
-
-
     }
 
-    public static void TakeLoan()
+    static void TakeLoan()
     {
         {
             //Ask for account to use
@@ -580,7 +584,7 @@ public static class Ui
 
         
     }
-    public static void ViewTransaction()
+    static void ViewTransaction()
         {
             //show accounts where transactions has been made
         }
