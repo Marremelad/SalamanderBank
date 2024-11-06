@@ -9,7 +9,7 @@ class Program
         // Database.InitializeDatabase();
         // await Database.UpdateCurrenciesAsync();
         // Ui.DisplayMainMenu();
-        //Ui.LiveAccount2();
         Ui.LiveAccount2();
+        
     }
 }
