@@ -145,10 +145,10 @@ public static class Ui
                 {
                     return email;
                 }
+                
                 Console.WriteLine();
                 string message1 = "\u001b[38;2;255;69;0mThis email is already in use\u001b[0m";
                 Console.Write($"{message1}".PadLeft(message1.Length + (int)((Console.WindowWidth - message1.Length) / 1.7)));
-                Console.ResetColor();
             }
             else
             {
@@ -179,7 +179,6 @@ public static class Ui
             
             Console.WriteLine();
             string message = "\u001b[38;2;255;69;0mPassword has to be at least 8 characters long\u001b[0m";
-            
             Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
             
             Thread.Sleep(3000);
