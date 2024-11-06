@@ -10,9 +10,9 @@ namespace SalamanderBank
     {
         public int ID;
         public User User;
-        public Currency Currency;
+        public string Currency_code;
         public string Account_name;
-        public double Balance;
+        public decimal Balance;
         public int Status;
         public int Type;
         public float Interest;

@@ -14,6 +14,7 @@ namespace SalamanderBank
         public User ReceiverUser;
         public Account ReceiverAccount;
         public decimal Amount;
+        public DateTime TransferDate;
         public int Processed;
     }
 }
