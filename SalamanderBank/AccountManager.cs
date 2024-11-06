@@ -15,7 +15,7 @@ namespace SalamanderBank
             using (var connection = new SQLiteConnection(Database._connectionString))
             {
                 connection.Open();
-                var sql = "UPDATE Accounts SET balance = @balance WHERE ID = @ID";
+                var sql = "UPDATE Accounts SET Balance = @balance WHERE ID = @ID";
                 var affectedRows = connection.Execute(sql, new { balance = account.Balance, account.ID });
             }
         }
@@ -26,7 +26,7 @@ namespace SalamanderBank
                 connection.Open();
                 var sql = @"SELECT a.*, u.* 
                         FROM Accounts a 
-                        INNER JOIN Users u on u.id = a.user_id
+                        INNER JOIN Users u on u.ID = a.UserID
                         WHERE a.ID = @ID";
                 var account = connection.Query<Account, User, Account>(
                     sql,
@@ -36,12 +36,11 @@ namespace SalamanderBank
                         return acc;
                     },
                     new { ID = id },
-                    splitOn: "id"  // Use the `id` column to indicate where the User object starts
+                    splitOn: "ID"  // Use the `ID` column to indicate where the User object starts
                     ).FirstOrDefault();
 
                 return account;
             }
-
         }
     }
 }
