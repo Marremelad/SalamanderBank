@@ -11,7 +11,7 @@ public static class EmailService
     public static Guid Code;
 
     // Sends an email with specified details to the target email address.
-    private static void SendEmail(string name, string targetEmail, string subject, string message)
+    private static void SendEmail(string? name, string targetEmail, string subject, string message)
     {
         try
         {
@@ -62,7 +62,7 @@ public static class EmailService
     }
 
     // Sends a transaction confirmation email to the user.
-    public static void SendTransactionEmail(string name, string email)
+    public static void SendTransactionEmail(string? name, string email)
     {
         string htmlBody = $@"
         <html>
@@ -79,7 +79,7 @@ public static class EmailService
     }
 
     // Sends a transfer confirmation email to the user.
-    public static void SendTransferEmail(string name, string target, string email)
+    public static void SendTransferEmail(string? name, string target, string email)
     {
         string htmlBody = $@"
         <html>
