@@ -73,14 +73,15 @@ namespace SalamanderBank
 				Console.WriteLine($"Users table created.");
 			}
 
-			string createAccountsTableQuery = "CREATE TABLE IF NOT EXISTS Accounts (id INTEGER PRIMARY KEY, user_id INTEGER, currency_id INTEGER, account_name TEXT, balance REAL, status INTEGER, type INTEGER, interest REAL);";
+			// currency_code = SEK/USD/EUR/NOK, type 0 = normal account, type 1 = loan
+			string createAccountsTableQuery = "CREATE TABLE IF NOT EXISTS Accounts (id INTEGER PRIMARY KEY, user_id INTEGER, currency_code TEXT, account_name TEXT, balance REAL, status INTEGER, type INTEGER, interest REAL);";
 			using (SQLiteCommand command = new SQLiteCommand(createAccountsTableQuery, connection))
 			{
 				int rowsAffected = command.ExecuteNonQuery();
 				Console.WriteLine($"Accounts table created.");
 			}
 
-			string createCurrenciesTableQuery = "CREATE TABLE IF NOT EXISTS Currencies (id INTEGER PRIMARY KEY, currency_code TEXT UNIQUE, exchange_rate REAL, last_updated TEXT);";
+			string createCurrenciesTableQuery = "CREATE TABLE IF NOT EXISTS Currencies (currency_code TEXT UNIQUE, exchange_rate REAL, last_updated TEXT);";
 			using (SQLiteCommand command = new SQLiteCommand(createCurrenciesTableQuery, connection))
 			{
 				int rowsAffected = command.ExecuteNonQuery();
@@ -365,6 +366,27 @@ namespace SalamanderBank
 
 					int rows = command.ExecuteNonQuery();
 					Console.WriteLine($"{rows} row(s) updated in Users table.");
+				}
+			}
+		}
+
+		// A function that creates a bank account for a user
+		public static void CreateAccount(int userId, string currency_code, string accountName, double balance)
+		{
+			using (var connection = new SQLiteConnection(_connectionString))
+			{
+				connection.Open();
+
+				string insertQuery = "INSERT INTO Accounts (user_id, currency_code, account_name, balance) VALUES (@UserId, @CurrencyCode, @AccountName, @Balance);";
+				using (var command = new SQLiteCommand(insertQuery, connection))
+				{
+					command.Parameters.AddWithValue("@UserId", userId);
+					command.Parameters.AddWithValue("@CurrencyCode", currency_code);
+					command.Parameters.AddWithValue("@AccountName", accountName);
+					command.Parameters.AddWithValue("@Balance", balance);
+
+					int rowsAffected = command.ExecuteNonQuery();
+					Console.WriteLine($"{rowsAffected} row(s) inserted into Accounts table.");
 				}
 			}
 		}
