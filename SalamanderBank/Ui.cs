@@ -72,6 +72,8 @@ public static class Ui
                     Thread.Sleep(2000);
                     return;
             }
+
+            break;
         }
     }
 
