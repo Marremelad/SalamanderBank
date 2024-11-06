@@ -81,7 +81,7 @@ namespace SalamanderBank
 				Console.WriteLine($"Accounts table created.");
 			}
 
-			string createCurrenciesTableQuery = "CREATE TABLE IF NOT EXISTS Currencies (currency_code TEXT UNIQUE, exchange_rate REAL, last_updated TEXT);";
+			string createCurrenciesTableQuery = "CREATE TABLE IF NOT EXISTS Currencies (currency_code TEXT PRIMARY KEY, exchange_rate REAL, last_updated TEXT);";
 			using (SQLiteCommand command = new SQLiteCommand(createCurrenciesTableQuery, connection))
 			{
 				int rowsAffected = command.ExecuteNonQuery();
