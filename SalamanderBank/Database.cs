@@ -8,6 +8,7 @@ using System.IO;
 using Microsoft.AspNetCore.Identity;
 using DotNetEnv;
 using System.Text.Json;
+using Dapper;
 
 namespace SalamanderBank
 {
@@ -207,39 +208,26 @@ namespace SalamanderBank
 		}
 
 		// Login method that accepts email and password as arguments
-		public static object[] Login(string email, string password)
+		public static User? Login(string email, string password)
 		{
-			object[] userArray = null;
-
 			using (var connection = new SQLiteConnection(_connectionString))
 			{
 				connection.Open();
 
-				string query = "SELECT ID, Email, FirstName, LastName FROM Users WHERE Email = @Email AND Password = @Password";
-				using (var command = new SQLiteCommand(query, connection))
+				string sql = "SELECT * FROM Users WHERE Email = @Email";
+				var user = connection.QuerySingleOrDefault<User>(sql, new { Email = email });
+
+				if (VerifyPassword(password, user))
 				{
-					command.Parameters.AddWithValue("@Email", email);
-					command.Parameters.AddWithValue("@Password", HashPassword(password));
-
-					using (var reader = command.ExecuteReader())
-					{
-						if (reader.Read())
-						{
-							// Adds ID, email address, fist name and last name to the array
-							userArray = new object[]
-							{
-								reader.GetInt32(0),		// ID
-								reader.GetString(1),		// Email address
-								reader.GetString(2),		// First name
-								reader.GetString(3)		// Last name
-							};
-						}
-					}
+					Console.WriteLine("Login successful.");
+					return user;
 				}
+				else
+				{
+					Console.WriteLine("Login failed: No user found with matching email and password.");
+				}
+				return null;
 			}
-
-			// Returns an array
-			return userArray;
 		}
 
 		// Returns a hashed password that accepts an unhashed string password
@@ -250,34 +238,13 @@ namespace SalamanderBank
 			return hashedPassword;
 		}
 
-		// Accepts a hashed password and account ID, checks hashed password in SQLite
+		// Accepts a password and user object, checks hashed password in SQLite
 		// Returns true if it matches
 		// Returns false if it doesn't match
-		public static bool VerifyPassword(string password, int id)
+		public static bool VerifyPassword(string password, User user)
 		{
-			string actualPassword = null;
-
-			using (var connection = new SQLiteConnection(_connectionString))
-			{
-				connection.Open();
-
-				string query = "SELECT Password FROM Users WHERE ID = @Id";
-				using (var command = new SQLiteCommand(query, connection))
-				{
-					command.Parameters.AddWithValue("@Id", id);
-
-					using (var reader = command.ExecuteReader())
-					{
-						if (reader.Read())
-						{
-							actualPassword = (string)reader.GetString(0);		// Password
-						}
-					}
-				}
-			}
-
 			var passwordHasher = new PasswordHasher<string>();
-			PasswordVerificationResult result = passwordHasher.VerifyHashedPassword(null, HashPassword(password), actualPassword);
+			PasswordVerificationResult result = passwordHasher.VerifyHashedPassword(null, user.Password, password);
 
 			return result == PasswordVerificationResult.Success;
 		}
