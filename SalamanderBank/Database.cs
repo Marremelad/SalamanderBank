@@ -250,34 +250,13 @@ namespace SalamanderBank
 			return hashedPassword;
 		}
 
-		// Accepts a hashed password and account ID, checks hashed password in SQLite
+		// Accepts a password and user object, checks hashed password in SQLite
 		// Returns true if it matches
 		// Returns false if it doesn't match
-		public static bool VerifyPassword(string password, int id)
+		public static bool VerifyPassword(string password, User user)
 		{
-			string actualPassword = null;
-
-			using (var connection = new SQLiteConnection(_connectionString))
-			{
-				connection.Open();
-
-				string query = "SELECT Password FROM Users WHERE ID = @Id";
-				using (var command = new SQLiteCommand(query, connection))
-				{
-					command.Parameters.AddWithValue("@Id", id);
-
-					using (var reader = command.ExecuteReader())
-					{
-						if (reader.Read())
-						{
-							actualPassword = (string)reader.GetString(0);		// Password
-						}
-					}
-				}
-			}
-
 			var passwordHasher = new PasswordHasher<string>();
-			PasswordVerificationResult result = passwordHasher.VerifyHashedPassword(null, HashPassword(password), actualPassword);
+			PasswordVerificationResult result = passwordHasher.VerifyHashedPassword(null, user.Password, password);
 
 			return result == PasswordVerificationResult.Success;
 		}
