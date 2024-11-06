@@ -1,5 +1,4 @@
-﻿using System.Drawing.Configuration;
-using Pastel;
+﻿using Pastel;
 
 namespace SalamanderBank;
 

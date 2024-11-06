@@ -1,4 +1,3 @@
-using System.Data.SQLite;
 using System.Media;
 using System.Text.RegularExpressions;
 using Spectre.Console;
