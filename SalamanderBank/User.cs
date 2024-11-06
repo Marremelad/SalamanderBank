@@ -1,7 +1,7 @@
 ﻿
 namespace SalamanderBank
 {
-    internal class User
+    public class User
     {
         public int ID { get; set; }
         public int Type { get; set; }
