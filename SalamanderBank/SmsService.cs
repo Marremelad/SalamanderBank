@@ -3,31 +3,39 @@ using DotNetEnv;
 
 namespace SalamanderBank;
 
+// Service to handle sending SMS messages through the SMS API.
 public class SmsService
 {
-    public static async Task<string> SendSms(string phoneNumber, string message = "Hello from team salamander!")
+    // Method to send an SMS to the specified phone number.
+    public static async Task<string> SendSms(string phoneNumber, string message = "Hello from team Salamander!")
     {
         try
-        {Env.Load("./Credentials.env");
+        {
+            // Load environment variables for SMS API credentials.
+            Env.Load("./Credentials.env");
             var smsApiUsername = Env.GetString("SMS_API_USERNAME");
             var smsApiPassword = Env.GetString("SMS_API_PASSWORD");
 
+            // Set up HTTP client and authentication header.
             using var httpClient = new HttpClient();
             httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
                 "Basic", Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes($"{smsApiUsername}:{smsApiPassword}")));
 
+            // Prepare the data for the SMS request.
             var data = new List<KeyValuePair<string, string>>
             {
                 new KeyValuePair<string, string>("from", "Salamander"),
-                new KeyValuePair<string, string>("to", phoneNumber), // Replace dash with number to send sms to.
+                new KeyValuePair<string, string>("to", phoneNumber),
                 new KeyValuePair<string, string>("message", message)
             };
 
+            // Send the SMS via POST request and retrieve the response.
             using var content = new FormUrlEncodedContent(data);
             using var response = await httpClient.PostAsync("https://api.46elks.com/a1/sms", content);
             string responseContent = await response.Content.ReadAsStringAsync();
 
-            return responseContent; }
+            return responseContent;
+        }
         catch (Exception e)
         {
             Console.WriteLine($"Something went wrong while trying to send an SMS\n{e}");

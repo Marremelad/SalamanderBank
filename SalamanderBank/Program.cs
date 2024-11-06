@@ -1,6 +1,4 @@
-﻿using DotNetEnv;
-
-namespace SalamanderBank;
+﻿namespace SalamanderBank;
 
 class Program
 {
