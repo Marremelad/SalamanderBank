@@ -44,7 +44,7 @@ namespace SalamanderBank
             }
             
             // Converts the amount to the receiving accounts currency.
-            transfer.Amount = CurrencyManager.ConvertCurrency(transfer.Amount, transfer.SenderAccount.Currency_code, transfer.ReceiverAccount.Currency_code);
+            transfer.Amount = CurrencyManager.ConvertCurrency(transfer.Amount, transfer.SenderAccount.CurrencyCode, transfer.ReceiverAccount.CurrencyCode);
             transfer.ReceiverAccount.Balance += transfer.Amount;
             AccountManager.UpdateAccountBalance(transfer.ReceiverAccount);
             
@@ -52,7 +52,7 @@ namespace SalamanderBank
             using (var connection = new SQLiteConnection(Database._connectionString))
             {
                 connection.Open();
-                string query = "UPDATE Transfers SET processed = @processed WHERE ID = @ID";
+                string query = "UPDATE Transfers SET Processed = @processed WHERE ID = @ID";
                 var affectedRows = connection.Execute(query, new { processed = 1,transfer.ID });
                 transfer.Processed = 1;
             }
@@ -74,7 +74,7 @@ namespace SalamanderBank
             {
                 connection.Open();
                 string query = @"INSERT INTO Transfers 
-                 (sender_user_id, sender_account_id, receiver_user_id, receiver_account_id, transfer_date, amount, processed)
+                 (SenderUserID, SenderAccountID, ReceiverUserID, ReceiverAccountID, TransferDate, Amount, Processed)
                  VALUES(@SenderUser, @SenderAccount, @ReceiverUser, @ReceiverAccount, @TransferDate, @Amount, @Processed)";
 
                 var affectedRows = connection.Execute(query, new
@@ -118,10 +118,10 @@ namespace SalamanderBank
                        su.*, sa.*, 
                        ru.*, ra.*
                 FROM Transfers t
-                INNER JOIN Users su ON su.id = t.sender_user_id
-                INNER JOIN Accounts sa ON sa.id = t.sender_account_id
-                INNER JOIN Users ru ON ru.id = t.receiver_user_id
-                INNER JOIN Accounts ra ON ra.id = t.receiver_account_id
+                INNER JOIN Users su ON su.ID = t.SenderUserID
+                INNER JOIN Accounts sa ON sa.ID = t.SenderAccountID
+                INNER JOIN Users ru ON ru.ID = t.ReceiverUserID
+                INNER JOIN Accounts ra ON ra.ID = t.ReceiverAccountID
                 WHERE t.id = @ID";
 
             using (var connection = new SQLiteConnection(Database._connectionString))
