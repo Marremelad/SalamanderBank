@@ -66,7 +66,7 @@ namespace SalamanderBank
 		// Checks if the tables exist
 		private static void CreateTables(SQLiteConnection connection)
 		{
-			string createUsersTableQuery = "CREATE TABLE IF NOT EXISTS Users (id INTEGER PRIMARY KEY, type INTEGER, password TEXT, email TEXT NOT NULL UNIQUE, first_name TEXT, last_name TEXT, telephone TEXT, verified INTEGER);";
+			string createUsersTableQuery = "CREATE TABLE IF NOT EXISTS Users (ID INTEGER PRIMARY KEY, Type INTEGER, Password TEXT, Email TEXT NOT NULL UNIQUE, FirstName TEXT, LastName TEXT, Telephone TEXT, Verified INTEGER);";
 			using (SQLiteCommand command = new SQLiteCommand(createUsersTableQuery, connection))
 			{
 				int rowsAffected = command.ExecuteNonQuery();
@@ -74,21 +74,21 @@ namespace SalamanderBank
 			}
 
 			// currency_code = SEK/USD/EUR/NOK, type 0 = normal account, type 1 = loan
-			string createAccountsTableQuery = "CREATE TABLE IF NOT EXISTS Accounts (id INTEGER PRIMARY KEY, user_id INTEGER, currency_code TEXT, account_name TEXT, balance REAL, status INTEGER, type INTEGER, interest REAL);";
+			string createAccountsTableQuery = "CREATE TABLE IF NOT EXISTS Accounts (ID INTEGER PRIMARY KEY, UserID INTEGER, CurrencyCode TEXT, AccountName TEXT, Balance REAL, Status INTEGER, Type INTEGER, Interest REAL);";
 			using (SQLiteCommand command = new SQLiteCommand(createAccountsTableQuery, connection))
 			{
 				int rowsAffected = command.ExecuteNonQuery();
 				Console.WriteLine($"Accounts table created.");
 			}
 
-			string createCurrenciesTableQuery = "CREATE TABLE IF NOT EXISTS Currencies (currency_code TEXT PRIMARY KEY, exchange_rate REAL, last_updated TEXT);";
+			string createCurrenciesTableQuery = "CREATE TABLE IF NOT EXISTS Currencies (CurrencyCode TEXT PRIMARY KEY, ExchangeRate REAL, LastUpdated TEXT);";
 			using (SQLiteCommand command = new SQLiteCommand(createCurrenciesTableQuery, connection))
 			{
 				int rowsAffected = command.ExecuteNonQuery();
 				Console.WriteLine($"Currencies table created.");
 			}
 
-			string createTransfersTableQuery = "CREATE TABLE IF NOT EXISTS Transfers (id INTEGER PRIMARY KEY, sender_user_id INTEGER, sender_account_id INTEGER, receiver_user_id INTEGER, receiver_account_id INTEGER, transfer_date TEXT, amount REAL, processed INTEGER);";
+			string createTransfersTableQuery = "CREATE TABLE IF NOT EXISTS Transfers (ID INTEGER PRIMARY KEY, SenderUserID INTEGER, SenderAccountID INTEGER, ReceiverUserID INTEGER, ReceiverAccountID INTEGER, TransferDate TEXT, Amount REAL, Processed INTEGER);";
 			using (SQLiteCommand command = new SQLiteCommand(createTransfersTableQuery, connection))
 			{
 				int rowsAffected = command.ExecuteNonQuery();
@@ -100,7 +100,7 @@ namespace SalamanderBank
 		public static void AddUser(int type, string password, string? email, string? firstName, string? lastName)
 		{
 			// Query to insert a new user
-			string insertQuery = "INSERT INTO Users (type, password, email, first_name, last_name, verified) " +
+			string insertQuery = "INSERT INTO Users (Type, Password, Email, FirstName, LastName, Verified) " +
 								 "VALUES (@Type, @Password, @Email, @FirstName, @LastName, 0);";
 
 			using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
@@ -126,7 +126,7 @@ namespace SalamanderBank
 		// Return 0 if failed, 1 if succeeded
 		public static void VerifyUser(string? email)
 		{
-			string updateQuery = "UPDATE Users SET verified = 1 WHERE email = @Email;";
+			string updateQuery = "UPDATE Users SET Verified = 1 WHERE Email = @Email;";
 
 			using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
 			{
@@ -146,7 +146,7 @@ namespace SalamanderBank
 		// Returns true if the email exists, false otherwise
 		public static bool EmailExists(string? email)
 		{
-			string query = "SELECT COUNT(*) FROM Users WHERE email = @Email;";
+			string query = "SELECT COUNT(*) FROM Users WHERE Email = @Email;";
 
 			using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
 			{
@@ -166,7 +166,7 @@ namespace SalamanderBank
 		// Searches for a user and returns an array user ids that have similar first name, last name and email address
 		public static int[] SearchUser(string? searchTerm)
 		{
-			string searchQuery = "SELECT id FROM Users WHERE email LIKE %@search% OR first_name LIKE %@search% OR last_name LIKE %@search%;";
+			string searchQuery = "SELECT ID FROM Users WHERE Email LIKE %@search% OR FirstName LIKE %@search% OR LastName LIKE %@search%;";
 			List<int> ids = new List<int>();
 
 			using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
@@ -185,7 +185,7 @@ namespace SalamanderBank
 						while (reader.Read())
 						{
 							// Add each matching uid to the list
-							ids.Add(Convert.ToInt32(reader["id"]));
+							ids.Add(Convert.ToInt32(reader["ID"]));
 						}
 					}
 				}
@@ -215,7 +215,7 @@ namespace SalamanderBank
 			{
 				connection.Open();
 
-				string query = "SELECT id, email, first_name, last_name FROM Users WHERE email = @Email AND password = @Password";
+				string query = "SELECT ID, Email, FirstName, LastName FROM Users WHERE Email = @Email AND Password = @Password";
 				using (var command = new SQLiteCommand(query, connection))
 				{
 					command.Parameters.AddWithValue("@Email", email);
@@ -261,7 +261,7 @@ namespace SalamanderBank
 			{
 				connection.Open();
 
-				string query = "SELECT password FROM Users WHERE id = @Id";
+				string query = "SELECT Password FROM Users WHERE ID = @Id";
 				using (var command = new SQLiteCommand(query, connection))
 				{
 					command.Parameters.AddWithValue("@Id", id);
@@ -289,7 +289,7 @@ namespace SalamanderBank
 			{
 				connection.Open();
 
-				string query = "UPDATE Users SET password = @NewPassword WHERE email = @Email";
+				string query = "UPDATE Users SET Password = @NewPassword WHERE Email = @Email";
 				using (var command = new SQLiteCommand(query, connection))
 				{
 					command.Parameters.AddWithValue("@Email", Escape(email));
@@ -310,7 +310,7 @@ namespace SalamanderBank
 				int rowsAffected;
 
 				// Update the sender's account balance
-				string updateSenderQuery = "UPDATE Accounts SET balance = balance - @Amount WHERE id = @SenderAccountId AND user_id = @SenderUserId;";
+				string updateSenderQuery = "UPDATE Accounts SET Balance = Balance - @Amount WHERE ID = @SenderAccountId AND UserID = @SenderUserId;";
 				using (var updateSenderCommand = new SQLiteCommand(updateSenderQuery, connection))
 				{
 					updateSenderCommand.Parameters.AddWithValue("@Amount", amount);
@@ -324,7 +324,7 @@ namespace SalamanderBank
 				if (rowsAffected > 0)
 				{
 					// Transfers the money from the account to the Transfers table
-					string transferQuery = "INSERT INTO Transfers (sender_user_id, sender_account_id, receiver_user_id, receiver_account_id, transfer_date, amount) VALUES (@SenderUserId, @SenderAccountId, @ReceiverUserId, @ReceiverAccountId, @TransferDate, @Amount, 0);";
+					string transferQuery = "INSERT INTO Transfers (SenderUserID, SenderAccountID, ReceiverUserID, ReceiverAccountID, TransferDate, Amount) VALUES (@SenderUserId, @SenderAccountId, @ReceiverUserId, @ReceiverAccountId, @TransferDate, @Amount, 0);";
 					using (var command = new SQLiteCommand(transferQuery, connection))
 					{
 						command.Parameters.AddWithValue("@SenderUserId", senderUserId);
@@ -349,7 +349,7 @@ namespace SalamanderBank
 				connection.Open();
 
 				// Update the receiver's account balance
-				string updateReceiverQuery = "UPDATE Accounts SET balance = balance + (SELECT amount FROM Transfers WHERE id = @TransferId) WHERE id = (SELECT receiver_account_id FROM Transfers WHERE id = @TransferId);";
+				string updateReceiverQuery = "UPDATE Accounts SET Balance = Balance + (SELECT Amount FROM Transfers WHERE ID = @TransferId) WHERE ID = (SELECT ReceiverAccountID FROM Transfers WHERE ID = @TransferId);";
 				using (var updateReceiverCommand = new SQLiteCommand(updateReceiverQuery, connection))
 				{
 					updateReceiverCommand.Parameters.AddWithValue("@TransferId", transferId);
@@ -359,7 +359,7 @@ namespace SalamanderBank
 				}
 
 				// Transfers the money from the account to the Transfers table
-				string transferQuery = "UPDATE Transfers SET processed = 1 WHERE id = @TransferId;";
+				string transferQuery = "UPDATE Transfers SET Processed = 1 WHERE ID = @TransferId;";
 				using (var command = new SQLiteCommand(transferQuery, connection))
 				{
 					command.Parameters.AddWithValue("@TransferId", transferId);
@@ -377,7 +377,7 @@ namespace SalamanderBank
 			{
 				connection.Open();
 
-				string insertQuery = "INSERT INTO Accounts (user_id, currency_code, account_name, balance) VALUES (@UserId, @CurrencyCode, @AccountName, @Balance);";
+				string insertQuery = "INSERT INTO Accounts (UserID, CurrencyCode, AccountName, Balance) VALUES (@UserId, @CurrencyCode, @AccountName, @Balance);";
 				using (var command = new SQLiteCommand(insertQuery, connection))
 				{
 					command.Parameters.AddWithValue("@UserId", userId);

@@ -21,7 +21,7 @@ namespace SalamanderBank
 
 
                 // Retrieve the latest update time from the database
-                string lastUpdateQuery = "SELECT MAX(last_updated) FROM Currencies;";
+                string lastUpdateQuery = "SELECT MAX(LastUpdated) FROM Currencies;";
 
                 //Initalze a variable to store the data of the last update
                 DateTime lastUpdated = DateTime.MinValue;
@@ -90,13 +90,13 @@ namespace SalamanderBank
                                     //Define an SQL query insert or update the currency or update the currency exchange rate
                                     string upsertQuery = @"
 
-                                    INSERT INTO Currencies (currency_code, exchange_rate, last_updated)
+                                    INSERT INTO Currencies (CurrencyCode, ExchangeRate, LastUpdated)
 
                                     VALUES (@currencyCode, @exchangeRate, @lastUpdated)
 
-                                    ON CONFLICT(currency_code) 
+                                    ON CONFLICT(CurrencyCode) 
 
-                                    DO UPDATE SET exchange_rate = @exchangeRate, last_updated = @lastUpdated;";
+                                    DO UPDATE SET ExchangeRate = @exchangeRate, LastUpdated = @lastUpdated;";
 
                                     
                                     using (SQLiteCommand command = new SQLiteCommand(upsertQuery, connection))
@@ -134,7 +134,7 @@ namespace SalamanderBank
             decimal exchangeRate = 0;
 
             // Define a query to fetch the exchange rate for the specified currency code 
-            string query = "SELECT exchange_rate FROM Currencies WHERE currency_code = @currencyCode;";
+            string query = "SELECT ExchangeRate FROM Currencies WHERE CurrencyCode = @currencyCode;";
 
             using (SQLiteConnection connection = new SQLiteConnection(Database._connectionString))
             {
