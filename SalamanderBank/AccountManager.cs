@@ -54,6 +54,31 @@ namespace SalamanderBank
             }
         }
 
+        // A method that retreives all accounts where all any account's UserID column = user.ID
+        public static List<Account> GetAccountsFromUser(User user)
+        {
+            using (var connection = new SQLiteConnection(Database._connectionString))
+            {
+                connection.Open();
+                var sql = @"SELECT a.*, u.*
+                        FROM Accounts a
+                        INNER JOIN Users u on u.ID = a.UserID
+                        WHERE a.UserID = @UserID";
+                var accounts = connection.Query<Account, User, Account>(
+                    sql,
+                    (acc, user) =>
+                    {
+                        acc.User = user;  // Assuming Account has a property User to hold User info
+                        return acc;
+                    },
+                    new { UserID = user.ID },
+                    splitOn: "ID"  // Use the `ID` column to indicate where the User object starts
+                    ).ToList();
+
+                return accounts;
+            }
+        }
+
         // Method that converts the currency of an account
         public static Account ConvertAccountCurrency(Account account, string newCurrencyCode)
         {
