@@ -65,6 +65,7 @@ namespace SalamanderBank
                     account.Balance = newBalance;
                     account.CurrencyCode = currencyCode;
 					UpdateAccountBalance(account);
+                    UpdateAccountCurrency(account);
 				}
             }
 
