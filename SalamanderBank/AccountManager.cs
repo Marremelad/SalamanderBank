@@ -42,5 +42,25 @@ namespace SalamanderBank
                 return account;
             }
         }
+        // Method that converts the currency of an account
+        public static Account ConvertAccountCurrency(Account account, string currencyCode)
+        {
+            // Checks if it tries to convert to the same currency
+            if (account.CurrencyCode != currencyCode)
+            {
+                // The new balance will be calculated by CurrencyManager.ConvertCurrency
+                decimal newBalance = CurrencyManager.ConvertCurrency(account.Balance, account.CurrencyCode, currencyCode);
+
+                if (newBalance > 0)
+                {
+                    account.Balance = newBalance;
+                    account.CurrencyCode = currencyCode;
+					UpdateAccountBalance(account);
+				}
+            }
+
+            // Either way this method will return the same account, updated or not
+            return account;
+        }
     }
 }
