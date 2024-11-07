@@ -19,6 +19,7 @@ namespace SalamanderBank
                 var affectedRows = connection.Execute(sql, new { balance = account.Balance, account.ID });
             }
         }
+
 		public static void UpdateAccountCurrency(Account account)
 		{
 			using (var connection = new SQLiteConnection(Database._connectionString))
@@ -28,6 +29,7 @@ namespace SalamanderBank
 				var affectedRows = connection.Execute(sql, new { currencyCode = account.CurrencyCode, account.ID });
 			}
 		}
+
 		public static Account? GetAccount(int id)
         {
             using (var connection = new SQLiteConnection(Database._connectionString))
@@ -51,19 +53,20 @@ namespace SalamanderBank
                 return account;
             }
         }
+
         // Method that converts the currency of an account
-        public static Account ConvertAccountCurrency(Account account, string currencyCode)
+        public static Account ConvertAccountCurrency(Account account, string newCurrencyCode)
         {
             // Checks if it tries to convert to the same currency
-            if (account.CurrencyCode != currencyCode)
+            if (account.CurrencyCode != newCurrencyCode)
             {
                 // The new balance will be calculated by CurrencyManager.ConvertCurrency
-                decimal newBalance = CurrencyManager.ConvertCurrency(account.Balance, account.CurrencyCode, currencyCode);
+                decimal newBalance = CurrencyManager.ConvertCurrency(account.Balance, account.CurrencyCode, newCurrencyCode);
 
                 if (newBalance > 0)
                 {
                     account.Balance = newBalance;
-                    account.CurrencyCode = currencyCode;
+                    account.CurrencyCode = newCurrencyCode;
 					UpdateAccountBalance(account);
                     UpdateAccountCurrency(account);
 				}
