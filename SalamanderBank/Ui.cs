@@ -200,6 +200,21 @@ public static class Ui
         AnsiConsole.Write(table);
     }
 
+    public static void TitleScreen()
+    {
+        Console.Clear();
+        Logo.DisplayFullLogo();
+        var customStyle = new Style(new Color(225, 69, 0));
+        var table = new Table();
+        table.Border = TableBorder.Rounded;
+        table.BorderStyle = customStyle;
+        table.AddColumn("[bold yellow blink on rgb(190,40,0)] Welcome to SalamanderBank![/]").Centered();
+
+        AnsiConsole.Write(table);
+        AnsiConsole.WriteLine();
+        Console.ReadLine();
+    }
+
     public static async void LiveAccount()
     {
         Console.Clear();
@@ -362,6 +377,7 @@ public static class Ui
 
     public static async void LiveAccount2()
     {
+        TitleScreen();
         
         while (true) //First Menu 
         {
@@ -404,17 +420,6 @@ public static class Ui
         {
             while (true)
             {
-                Console.Clear();
-                Logo.DisplayFullLogo();
-                var customStyle = new Style(new Color(225, 69, 0));
-                var table = new Table();
-                table.Border = TableBorder.Rounded;
-                table.BorderStyle = customStyle;
-                table.AddColumn("[bold yellow blink on rgb(190,40,0)] Welcome to SalamanderBank![/]").Centered();
-
-                AnsiConsole.Write(table);
-                AnsiConsole.WriteLine();
-                Console.ReadLine();
 
                 var selection = AnsiConsole.Prompt(
                     new SelectionPrompt<string>()
@@ -635,58 +640,80 @@ public static class Ui
                 
             }
 
-            static void ExchangingMoney()
+            static async void ExchangingMoney()
             {
-                var customStyle = new Style(new Color(225, 69, 0));
-                AnsiConsole.Progress()
-                    .AutoRefresh(true) // Turn off auto refresh
-                    .AutoClear(false)   // Do not remove the task list when done
-                    .HideCompleted(false)   // Hide tasks as they are completed
-                    .Columns(
-                        new TaskDescriptionColumn(), 
-                        new ProgressBarColumn(), 
-                        new PercentageColumn(), 
-                        new RemainingTimeColumn(){Style = new Style(foreground: Color.Red)}, 
-                        new SpinnerColumn())
-                    .StartAsync(async ctx =>
-                    {
-                        // Define tasks
-                        var task1 = ctx.AddTask("[rgb(190,40,0)]Processing exchange request[/]");
-                        var task2 = ctx.AddTask("[rgb(190,40,0)]Updating account balances[/]");
-                        
-                        while (!ctx.IsFinished)
+                await AnsiConsole.Progress()
+                        .AutoRefresh(true) // Turn off auto refresh
+                        .AutoClear(false) // Do not remove the task list when done
+                        .HideCompleted(false) // Hide tasks as they are completed
+                        .Columns(
+                            new TaskDescriptionColumn(),
+                            new ProgressBarColumn(),
+                            new PercentageColumn(),
+                            new RemainingTimeColumn() { Style = new Style(foreground: Color.Red) },
+                            new SpinnerColumn())
+                        .StartAsync(async ctx =>
                         {
-                            // Simulate some work
-                            await Task.Delay(250);
+                            // Define task1 and task2
+                            var task1 = ctx.AddTask("[rgb(190,40,0)]Processing exchange request[/]");
+                            var task2 = ctx.AddTask("[rgb(190,40,0)]Updating account balances[/]");
 
-                            // Increment
-                            task1.Increment(1.5);
-                            task2.Increment(1.0);
-                            
-                            // Dynamically color-code the percentage text based on progress for task1
-                            string colorTask1 = task1.Value < 30 ? "red" : (task1.Value < 100 ? "yellow" : "green");
-                            task1.Description = $"[bold {colorTask1}]Processing exchange request: {task1.Value:0}%[/]";
+                            // Run task1 to completion
+                            await RunTaskAsync(task1, 2, ctx);
 
-                            // Dynamically color-code the percentage text based on progress for task2
-                            string colorTask2 = task2.Value < 30 ? "red" : (task2.Value < 100 ? "yellow" : "green");
-                            task2.Description = $"[bold {colorTask2}]Updating account balances: {task2.Value:0}%[/]";
-
-                            if (task1.IsFinished && task2.IsFinished)
-                            {
-                                break;
-                            }
-                        }
-                        
-                    }).GetAwaiter().GetResult();
+                            // Once task1 is done, run task2
+                            await RunTaskAsync(task2, 1.5, ctx);
+                            // // Define tasks
+                            // var task1 = ctx.AddTask("[rgb(190,40,0)]Processing exchange request[/]");
+                            // var task2 = ctx.AddTask("[rgb(190,40,0)]Updating account balances[/]");
+                            //
+                            // while (!ctx.IsFinished)
+                            // {
+                            //     // Simulate some work
+                            //     await Task.Delay(250);
+                            //
+                            //     // Increment
+                            //     task1.Increment(2);
+                            //     task2.Increment(1.0);
+                            //     
+                            //     // Dynamically color-code the percentage text based on progress for task1
+                            //     string colorTask1 = task1.Value < 30 ? "red" : (task1.Value < 100 ? "yellow" : "green");
+                            //     task1.Description = $"[bold {colorTask1}]Processing exchange request: {task1.Value:0}%[/]";
+                            //
+                            //     // Dynamically color-code the percentage text based on progress for task2
+                            //     string colorTask2 = task2.Value < 30 ? "red" : (task2.Value < 100 ? "yellow" : "green");
+                            //     task2.Description = $"[bold {colorTask2}]Updating account balances: {task2.Value:0}%[/]";
+                            //
+                            //     if (task1.IsFinished && task2.IsFinished)
+                            //     {
+                            //         break;
+                            //     }
+                        });
+                
+                // .GetAwaiter().GetResult();
                 Console.Clear();
                 Logo.DisplayFullLogo();
-                Console.WriteLine("Exchange request finished.");
+                //Console.WriteLine("Exchange request finished.");
                 AnsiConsole.MarkupLine("[bold green]Your exchange has been successfully processed.[/]");
                 Console.ReadLine();
-                
+                return;
+
                 //Display Exchange
                 //Update accounts
                 //Return to main menu
+
+                static async Task RunTaskAsync(ProgressTask task, double incrementValue, ProgressContext ctx)
+                {
+                    while (!task.IsFinished)
+                    {
+                        task.Increment(incrementValue); // Increment task progress
+
+                        // Dynamically color-code the task description
+                        string color = task.Value < 30 ? "red" : (task.Value < 100 ? "yellow" : "green");
+                        task.Description = $"[bold {color}] {task.Value:0}%[/]";
+                        await Task.Delay(250); // Simulate work
+                    }
+                }
             }
             static void TakeLoan()
             {
