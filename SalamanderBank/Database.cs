@@ -100,25 +100,29 @@ namespace SalamanderBank
 		// Adds a user
 		public static void AddUser(int type, string password, string? email, string? firstName, string? lastName, string? telephone)
 		{
-			// Query to insert a new user
-			string insertQuery = "INSERT INTO Users (Type, Password, Email, FirstName, LastName, Telephone, Verified) " +
-								 "VALUES (@Type, @Password, @Email, @FirstName, @LastName, @Telephone, 0);";
-
-			using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
+			// Check if the email already exists
+			if (!EmailExists(email))
 			{
-				connection.Open();
+				// Query to insert a new user
+				string insertQuery = "INSERT INTO Users (Type, Password, Email, FirstName, LastName, Telephone, Verified) " +
+									 "VALUES (@Type, @Password, @Email, @FirstName, @LastName, @Telephone, 0);";
 
-				// If email doesn't exist, proceed with insertion
-				using (SQLiteCommand insertCommand = new SQLiteCommand(insertQuery, connection))
+				using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
 				{
-					insertCommand.Parameters.AddWithValue("@Type", type);
-					insertCommand.Parameters.AddWithValue("@Password", HashPassword(password));  // Make sure to hash passwords in production
-					insertCommand.Parameters.AddWithValue("@Email", Escape(email));
-					insertCommand.Parameters.AddWithValue("@FirstName", Escape(firstName));
-					insertCommand.Parameters.AddWithValue("@LastName", Escape(lastName));
-					insertCommand.Parameters.AddWithValue("@Telephone", Escape(telephone));
-					int rowsAffected = insertCommand.ExecuteNonQuery();
-					Console.WriteLine($"{rowsAffected} row(s) inserted into Users table.");
+					connection.Open();
+
+					// If email doesn't exist, proceed with insertion
+					using (SQLiteCommand insertCommand = new SQLiteCommand(insertQuery, connection))
+					{
+						insertCommand.Parameters.AddWithValue("@Type", type);
+						insertCommand.Parameters.AddWithValue("@Password", HashPassword(password));  // Make sure to hash passwords in production
+						insertCommand.Parameters.AddWithValue("@Email", Escape(email));
+						insertCommand.Parameters.AddWithValue("@FirstName", Escape(firstName));
+						insertCommand.Parameters.AddWithValue("@LastName", Escape(lastName));
+						insertCommand.Parameters.AddWithValue("@Telephone", Escape(telephone));
+						int rowsAffected = insertCommand.ExecuteNonQuery();
+						Console.WriteLine($"{rowsAffected} row(s) inserted into Users table.");
+					}
 				}
 			}
 		}
