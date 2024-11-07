@@ -54,6 +54,7 @@ public static class Ui
             var login = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .PageSize(10)
+                    .HighlightStyle(new Style(new Color(225, 69, 0)))
                     .AddChoices(option1, option2, option3));
             
             // Handling user selection from the main menu.
