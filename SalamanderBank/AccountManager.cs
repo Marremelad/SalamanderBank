@@ -19,7 +19,16 @@ namespace SalamanderBank
                 var affectedRows = connection.Execute(sql, new { balance = account.Balance, account.ID });
             }
         }
-        public static Account? GetAccount(int id)
+		public static void UpdateAccountCurrency(Account account)
+		{
+			using (var connection = new SQLiteConnection(Database._connectionString))
+			{
+				connection.Open();
+				var sql = "UPDATE Accounts SET CurrencyCode = @currencyCode WHERE ID = @ID";
+				var affectedRows = connection.Execute(sql, new { currencyCode = account.CurrencyCode, account.ID });
+			}
+		}
+		public static Account? GetAccount(int id)
         {
             using (var connection = new SQLiteConnection(Database._connectionString))
             {
