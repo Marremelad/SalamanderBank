@@ -8,7 +8,7 @@ namespace SalamanderBank
 {
     public class Currency
     {
-        public string Currency_code;
-        public float Exchange_rate;
+        public string CurrencyCode;
+        public float ExchangeRate;
     }
 }
