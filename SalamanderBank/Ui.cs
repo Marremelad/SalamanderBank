@@ -33,6 +33,9 @@ public static class Ui
     private static string PasswordDisplay => $"Password: {_registeredPassword}".PadLeft(_registeredPassword != null ?
         "Password: ".Length + _registeredPassword.Length + (int)DisplayPadding : "Password: ".Length + (int)DisplayPadding);
     
+    // String representing valid email pattern.
+    private static readonly string EmailPattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
+    
     // Starting account balance.
     private const decimal AccountBalance = 1500.75m;
     
@@ -95,9 +98,9 @@ public static class Ui
         ValidateAccount();
     }
 
+    // Method for signing in to account.
     private static void SignIn()
     {
-        string emailPattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
         
         while (true)
         {
@@ -107,11 +110,12 @@ public static class Ui
             Console.Write($"{EmailDisplay}");
             
             string? email = Console.ReadLine();
-            if (email != null && Regex.IsMatch(email, emailPattern))
+            if (email != null && Regex.IsMatch(email, EmailPattern))
             {
                 if (Database.EmailExists(email))
                 {
                     _registeredEmail = email;
+                    
                     while (true)
                     {
                         Console.Clear();
@@ -120,7 +124,6 @@ public static class Ui
                         Console.Write($"{EmailDisplay}\n{PasswordDisplay}");
 
                         string? password = Console.ReadLine();
-                        
                         if (!string.IsNullOrEmpty(password) && password.Length >= 8)
                         {
                             var user = Database.Login(email, password);
@@ -151,9 +154,12 @@ public static class Ui
 
     private static void UserValues(User? user)
     {
-        _registeredFirstName = user?.FirstName;
-        _registeredLastName = user?.LastName;
-        _registeredPassword = user?.Password;
+        if (user != null)
+        {
+            _registeredFirstName = user.FirstName;
+            _registeredLastName = user.LastName;
+            _registeredPassword = user.Password;
+        }
     }
     
     // Method to get the first name from user input.
@@ -191,8 +197,6 @@ public static class Ui
     // Method to get the email from user input with validation.
     private static string GetEmail()
     {
-        string emailPattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
-        
         while (true)
         {
             Console.Clear();
@@ -201,7 +205,7 @@ public static class Ui
             Console.Write($"{FirstNameDisplay}\n{LastNameDisplay}\n{EmailDisplay}");
             
             string? email = Console.ReadLine();
-            if (email != null && Regex.IsMatch(email, emailPattern))
+            if (email != null && Regex.IsMatch(email, EmailPattern))
             {
                 if (!Database.EmailExists(email))
                 {
