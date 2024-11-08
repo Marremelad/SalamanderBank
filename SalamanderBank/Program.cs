@@ -4,12 +4,12 @@ namespace SalamanderBank;
 
 class Program
 {
-    public static async Task Main(string[] args)
+    public static Task Main(string[] args)
     {
         // Database.InitializeDatabase();
         // await Database.UpdateCurrenciesAsync();
         // Ui.DisplayMainMenu();
         Ui.LiveAccount2();
-        
+        return Task.CompletedTask;
     }
 }
