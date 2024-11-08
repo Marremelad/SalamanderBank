@@ -127,7 +127,7 @@ public static class Ui
                         if (!string.IsNullOrEmpty(password) && password.Length >= 8)
                         {
                             var user = Database.Login(email, password);
-                            UserValues(user);
+                            SetUserValues(user);
                             break;
                         }
                         
@@ -152,7 +152,8 @@ public static class Ui
         AccountDetails();
     }
 
-    private static void UserValues(User? user)
+    // Method that assigns the database values to a user object.
+    private static void SetUserValues(User? user)
     {
         if (user != null)
         {
