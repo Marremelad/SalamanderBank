@@ -20,17 +20,17 @@ namespace SalamanderBank
             }
         }
 
-		public static void UpdateAccountCurrency(Account account)
-		{
-			using (var connection = new SQLiteConnection(Database._connectionString))
-			{
-				connection.Open();
-				var sql = "UPDATE Accounts SET CurrencyCode = @currencyCode WHERE ID = @ID";
-				var affectedRows = connection.Execute(sql, new { currencyCode = account.CurrencyCode, account.ID });
-			}
-		}
+        public static void UpdateAccountCurrency(Account account)
+        {
+            using (var connection = new SQLiteConnection(Database._connectionString))
+            {
+                connection.Open();
+                var sql = "UPDATE Accounts SET CurrencyCode = @currencyCode WHERE ID = @ID";
+                var affectedRows = connection.Execute(sql, new { currencyCode = account.CurrencyCode, account.ID });
+            }
+        }
 
-		public static Account? GetAccount(int id)
+        public static Account? GetAccount(int id)
         {
             using (var connection = new SQLiteConnection(Database._connectionString))
             {
@@ -92,17 +92,17 @@ namespace SalamanderBank
                 {
                     account.Balance = newBalance;
                     account.CurrencyCode = newCurrencyCode;
-					UpdateAccountBalance(account);
+                    UpdateAccountBalance(account);
                     UpdateAccountCurrency(account);
-				}
+                }
             }
 
             // Either way this method will return the same account, updated or not
             return account;
         }
 
-		// Creates an account for the user used as an argument
-		public static void CreateAccount(User user, string currencyCode, string accountName, int type, float interest)
+        // Creates an account for the user used as an argument
+        public static void CreateAccount(User user, string currencyCode, string accountName, int type, float interest)
         {
             using (var connection = new SQLiteConnection(Database._connectionString))
             {
