@@ -87,7 +87,7 @@ public static class Ui
         _registeredPassword = GetPassword();
 
         // Adding new user to the database.
-        Database.AddUser(0, _registeredPassword, _registeredEmail, _registeredFirstName, _registeredLastName);
+        //Database.AddUser(0, _registeredPassword, _registeredEmail, _registeredFirstName, _registeredLastName);
         
         // Sending verification email to the registered email.
         EmailService.SendVerificationEmail(_registeredFirstName, _registeredEmail);
