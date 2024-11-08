@@ -151,9 +151,9 @@ public static class Ui
 
     private static void UserValues(User? user)
     {
-        _registeredFirstName = user.FirstName;
-        _registeredLastName = user.LastName;
-        _registeredPassword = user.Password;
+        _registeredFirstName = user?.FirstName;
+        _registeredLastName = user?.LastName;
+        _registeredPassword = user?.Password;
     }
     
     // Method to get the first name from user input.
