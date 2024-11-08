@@ -104,14 +104,23 @@ namespace SalamanderBank
         // Creates an account for the user used as an argument
         public static void CreateAccount(User user, string currencyCode, string accountName, int type, float interest)
         {
-            using (var connection = new SQLiteConnection(Database._connectionString))
+            // Checks if the account name is already in use
+            if (user.Accounts.Any(acc => acc.AccountName == accountName))
             {
-                connection.Open();
-                var sql = "INSERT INTO Accounts (UserID, CurrencyCode, AccountName, Balance, Status, Type, Interest) VALUES (@UserID, @CurrencyCode, @AccountName, @Balance, @Status, @Type, @Interest)";
-                var affectedRows = connection.Execute(sql, new { UserID = user.ID, CurrencyCode = currencyCode, AccountName = accountName, Balance = 0, Status = 1, Type = type, Interest = interest });
-                Console.WriteLine($"{affectedRows} rows inserted into Accounts.");
+                Console.WriteLine("Account name already in use.");
+                return;
+            }
+            else
+            {
+                using (var connection = new SQLiteConnection(Database._connectionString))
+                {
+                    connection.Open();
+                    var sql = "INSERT INTO Accounts (UserID, CurrencyCode, AccountName, Balance, Status, Type, Interest) VALUES (@UserID, @CurrencyCode, @AccountName, @Balance, @Status, @Type, @Interest)";
+                    var affectedRows = connection.Execute(sql, new { UserID = user.ID, CurrencyCode = currencyCode, AccountName = accountName, Balance = 0, Status = 1, Type = type, Interest = interest });
+                    Console.WriteLine($"{affectedRows} rows inserted into Accounts.");
 
-                GetAccountsFromUser(user);
+                    GetAccountsFromUser(user);
+                }
             }
         }
     }
