@@ -65,8 +65,8 @@ public static class Ui
                     break;
                                 
                 case "Sign In":
-                    throw new NotImplementedException();
-                    // break;
+                    SignIn();
+                    break;
                 
                 case "Exit":
                     Console.WriteLine("Thank you for using SalamanderBank!");
@@ -87,12 +87,73 @@ public static class Ui
         _registeredPassword = GetPassword();
 
         // Adding new user to the database.
-        Database.AddUser(0, _registeredPassword, _registeredEmail, _registeredFirstName, _registeredLastName);
+        Database.AddUser(0, _registeredPassword, _registeredEmail, _registeredFirstName, _registeredLastName, "0707070707");
         
         // Sending verification email to the registered email.
         EmailService.SendVerificationEmail(_registeredFirstName, _registeredEmail);
         
         ValidateAccount();
+    }
+
+    private static void SignIn()
+    {
+        string emailPattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
+        
+        while (true)
+        {
+            Console.Clear();
+            Logo.DisplayFullLogo();
+            
+            Console.Write($"{EmailDisplay}");
+            
+            string? email = Console.ReadLine();
+            if (email != null && Regex.IsMatch(email, emailPattern))
+            {
+                if (Database.EmailExists(email))
+                {
+                    _registeredEmail = email;
+                    while (true)
+                    {
+                        Console.Clear();
+                        Logo.DisplayFullLogo();
+                
+                        Console.Write($"{EmailDisplay}\n{PasswordDisplay}");
+
+                        string? password = Console.ReadLine();
+                        
+                        if (!string.IsNullOrEmpty(password) && password.Length >= 8)
+                        {
+                            var user = Database.Login(email, password);
+                            UserValues(user);
+                            break;
+                        }
+                        
+                        Console.WriteLine();
+                        string message = "\u001b[38;2;255;69;0mIncorrect password\u001b[0m";
+                        Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
+                        Thread.Sleep(2000);
+                    }
+
+                    break;
+                }
+            }
+            else
+            {
+                Console.WriteLine();
+                string message2 = "\u001b[38;2;255;69;0mNo account with this email exists\u001b[0m";
+                Console.Write($"{message2}".PadLeft(message2.Length + (int)((Console.WindowWidth - message2.Length) / 1.7)));
+                Thread.Sleep(2000);
+            }
+        }
+        
+        AccountDetails();
+    }
+
+    private static void UserValues(User? user)
+    {
+        _registeredFirstName = user.FirstName;
+        _registeredLastName = user.LastName;
+        _registeredPassword = user.Password;
     }
     
     // Method to get the first name from user input.
