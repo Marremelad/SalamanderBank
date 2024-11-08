@@ -13,6 +13,9 @@ public static class Ui
     private static string? _registeredEmail;
     private static string? _registeredPassword;
 
+    // Field storing user object.
+    private static User? _user;
+
     // Padding for aligning display elements based on the console window width.
     private static readonly double DisplayPadding = (Console.WindowWidth / 2.25);
     private const double MenuPadding = 2.1;
@@ -126,8 +129,9 @@ public static class Ui
                         string? password = Console.ReadLine();
                         if (!string.IsNullOrEmpty(password) && password.Length >= 8)
                         {
-                            var user = Database.Login(email, password);
-                            SetUserValues(user);
+                            _user = Database.Login(email, password);
+                            SetUserValues(_user);
+                            
                             break;
                         }
                         
