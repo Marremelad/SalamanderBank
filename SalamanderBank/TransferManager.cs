@@ -11,6 +11,44 @@ namespace SalamanderBank
     internal class TransferManager
     {
         public static Queue<Transfer> TransferQueue = new();
+        public static void PopulateQueueFromDB()
+        {
+            // Selects a transfer based on Processed status and orders the transfers
+            // by TransferDate so the oldest transfer is processed first in the Queue.
+            string queryUnprocessedTransfers = @"
+                SELECT t.*, 
+                       su.*, sa.*, 
+                       ru.*, ra.*
+                FROM Transfers t
+                INNER JOIN Users su ON su.ID = t.SenderUserID
+                INNER JOIN Accounts sa ON sa.ID = t.SenderAccountID
+                INNER JOIN Users ru ON ru.ID = t.ReceiverUserID
+                INNER JOIN Accounts ra ON ra.ID = t.ReceiverAccountID
+                WHERE t.Processed = @Processed
+                ORDER BY t.TransferDate DESC";
+
+            using (var connection = new SQLiteConnection(Database._connectionString))
+            {
+                connection.Open();
+                // Type hints informs Dapper which classes to use when mapping the information
+                // it gets back from the SQL query.
+                var transferList = connection.Query<Transfer, User, Account, User, Account, Transfer>(
+                    queryUnprocessedTransfers,
+                    (transfer, senderUser, senderAccount, receiverUser, receiverAccount) =>
+                    {
+                        // Sets the attributes of the Transfer object to the objects made from the joins.
+                        transfer.SenderUser = senderUser;
+                        transfer.SenderAccount = senderAccount;
+                        transfer.ReceiverUser = receiverUser;
+                        transfer.ReceiverAccount = receiverAccount;
+                        return transfer;
+                    },
+                    new { Processed = 0 },
+                    splitOn: "id"
+                ).ToList();
+                TransferQueue = new Queue<Transfer>(transferList);
+            } 
+        }
         public static void ProcessQueue()
         {
             while (true)
