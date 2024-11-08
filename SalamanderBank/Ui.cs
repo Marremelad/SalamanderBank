@@ -104,66 +104,64 @@ public static class Ui
     // Method for signing in to account.
     private static void SignIn()
     {
-        
         while (true)
         {
-            Console.Clear();
-            Logo.DisplayFullLogo();
-            
-            Console.Write($"{EmailDisplay}");
-            
+            Console.Clear(); // Clear the console.
+            Logo.DisplayFullLogo(); // Display the full logo.
+
+            Console.Write($"{EmailDisplay}"); // Display email prompt.
+
             string? email = Console.ReadLine();
-            if (email != null && Regex.IsMatch(email, EmailPattern))
+            if (email != null && Regex.IsMatch(email, EmailPattern)) // Check if email is valid.
             {
-                if (Database.EmailExists(email))
+                if (Database.EmailExists(email)) // Check if email exists in the database.
                 {
-                    _registeredEmail = email;
-                    
+                    _registeredEmail = email; // Store registered email.
+
                     while (true)
                     {
-                        Console.Clear();
-                        Logo.DisplayFullLogo();
-                
-                        Console.Write($"{EmailDisplay}\n{PasswordDisplay}");
+                        Console.Clear(); // Clear the console.
+                        Logo.DisplayFullLogo(); // Display the full logo again.
+
+                        Console.Write($"{EmailDisplay}\n{PasswordDisplay}"); // Display email and password prompts.
 
                         string? password = Console.ReadLine();
-                        if (!string.IsNullOrEmpty(password) && password.Length >= 8)
+                        if (!string.IsNullOrEmpty(password) && password.Length >= 8) // Check if password meets criteria.
                         {
-                            _user = Database.Login(email, password);
-                            SetUserValues(_user);
-                            
+                            _user = Database.Login(email, password); // Log in the user.
+                            SetUserValues(); // Set user-related values after login.
                             break;
                         }
-                        
+
                         Console.WriteLine();
                         string message = "\u001b[38;2;255;69;0mIncorrect password\u001b[0m";
-                        Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
-                        Thread.Sleep(2000);
+                        Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7))); // Display error message for incorrect password.
+                        Thread.Sleep(2000); // Wait before retry.
                     }
 
-                    break;
+                    break; // Exit loop once logged in.
                 }
             }
             else
             {
                 Console.WriteLine();
                 string message2 = "\u001b[38;2;255;69;0mNo account with this email exists\u001b[0m";
-                Console.Write($"{message2}".PadLeft(message2.Length + (int)((Console.WindowWidth - message2.Length) / 1.7)));
-                Thread.Sleep(2000);
+                Console.Write($"{message2}".PadLeft(message2.Length + (int)((Console.WindowWidth - message2.Length) / 1.7))); // Display error message if email doesn't exist.
+                Thread.Sleep(2000); // Wait before retry.
             }
         }
-        
-        AccountDetails();
+
+        AccountDetails(); // Display account details.
     }
 
     // Method that assigns the database values to a user object.
-    private static void SetUserValues(User? user)
+    private static void SetUserValues()
     {
-        if (user != null)
+        if (_user != null)
         {
-            _registeredFirstName = user.FirstName;
-            _registeredLastName = user.LastName;
-            _registeredPassword = user.Password;
+            _registeredFirstName = _user.FirstName;
+            _registeredLastName = _user.LastName;
+            _registeredPassword = _user.Password;
         }
     }
     
