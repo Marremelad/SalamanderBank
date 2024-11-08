@@ -106,48 +106,45 @@ public static class Ui
     {
         while (true)
         {
-            Console.Clear(); // Clear the console.
-            Logo.DisplayFullLogo(); // Display the full logo.
+            Console.Clear();
+            Logo.DisplayFullLogo();
 
-            Console.Write($"{EmailDisplay}"); // Display email prompt.
+            Console.Write($"{EmailDisplay}");
 
             var email = Console.ReadLine();
-            if (email != null && Regex.IsMatch(email, EmailPattern)) // Check if email is valid.
+        
+            // Validate email format and check if it exists in the database.
+            if (email != null && Regex.IsMatch(email, EmailPattern))
             {
-                if (!Database.EmailExists(email)) continue; // Check if email exists in the database.
-                _registeredEmail = email; // Store registered email.
+                if (!Database.EmailExists(email)) continue;
+                _registeredEmail = email;
 
                 while (true)
                 {
-                    Console.Clear(); // Clear the console.
-                    Logo.DisplayFullLogo(); // Display the full logo again.
-
-                    Console.Write($"{EmailDisplay}\n{PasswordDisplay}"); // Display email and password prompts.
+                    Console.Clear();
+                    Logo.DisplayFullLogo();
+                    Console.Write($"{EmailDisplay}\n{PasswordDisplay}");
 
                     var password = Console.ReadLine();
-                    if (!string.IsNullOrEmpty(password) && password.Length >= 8) // Check if password meets criteria.
+                
+                    // Authenticate user if password meets criteria.
+                    if (!string.IsNullOrEmpty(password) && password.Length >= 8)
                     {
-                        _user = Database.Login(email, password); // Log in the user.
-                        SetUserValues(); // Set user-related values after login.
+                        _user = Database.Login(email, password);
+                        SetUserValues();
                         break;
                     }
 
+                    // Display error message for incorrect password.
                     Console.WriteLine();
                     var message = "\u001b[38;2;255;69;0mIncorrect password\u001b[0m";
-                    Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7))); // Display error message for incorrect password.
-                    Thread.Sleep(2000); // Wait before retry.
+                    Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
+                    Thread.Sleep(2000);
                 }
 
-                break; // Exit loop once logged in.
+                break;
             }
-            
-            Console.WriteLine();
-            var message2 = "\u001b[38;2;255;69;0mNo account with this email exists\u001b[0m";
-            Console.Write($"{message2}".PadLeft(message2.Length + (int)((Console.WindowWidth - message2.Length) / 1.7))); // Display error message if email doesn't exist.
-            Thread.Sleep(2000); // Wait before retry.
         }
-
-        AccountDetails(); // Display account details.
     }
 
     // Method that assigns the database values to a user object.
