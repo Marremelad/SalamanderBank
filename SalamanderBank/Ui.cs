@@ -13,6 +13,9 @@ public static class Ui
     private static string? _registeredEmail;
     private static string? _registeredPassword;
 
+    // Field storing user object.
+    private static User? _user;
+
     // Padding for aligning display elements based on the console window width.
     private static readonly double DisplayPadding = (Console.WindowWidth / 2.25);
     private const double MenuPadding = 2.1;
@@ -32,6 +35,9 @@ public static class Ui
     // Display formatted password with padding.
     private static string PasswordDisplay => $"Password: {_registeredPassword}".PadLeft(_registeredPassword != null ?
         "Password: ".Length + _registeredPassword.Length + (int)DisplayPadding : "Password: ".Length + (int)DisplayPadding);
+    
+    // String representing valid email pattern.
+    private static readonly string EmailPattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
     
     // Starting account balance.
     private const decimal AccountBalance = 1500.75m;
@@ -65,8 +71,8 @@ public static class Ui
                     break;
                                 
                 case "Sign In":
-                    throw new NotImplementedException();
-                    // break;
+                    SignIn();
+                    break;
                 
                 case "Exit":
                     Console.WriteLine("Thank you for using SalamanderBank!");
@@ -76,6 +82,8 @@ public static class Ui
 
             break;
         }
+        
+        AccountDetails();
     }
 
     // Method to create a new account.
@@ -87,12 +95,68 @@ public static class Ui
         _registeredPassword = GetPassword();
 
         // Adding new user to the database.
-        Database.AddUser(0, _registeredPassword, _registeredEmail, _registeredFirstName, _registeredLastName);
+        Database.AddUser(0, _registeredPassword, _registeredEmail, _registeredFirstName, _registeredLastName, "0707070707");
         
         // Sending verification email to the registered email.
         EmailService.SendVerificationEmail(_registeredFirstName, _registeredEmail);
         
         ValidateAccount();
+    }
+
+    // Method for signing in to account.
+    private static void SignIn()
+    {
+        while (true)
+        {
+            Console.Clear();
+            Logo.DisplayFullLogo();
+
+            Console.Write($"{EmailDisplay}");
+
+            var email = Console.ReadLine();
+        
+            // Validate email format and check if it exists in the database.
+            if (email != null && Regex.IsMatch(email, EmailPattern))
+            {
+                if (!Database.EmailExists(email)) continue;
+                _registeredEmail = email;
+
+                while (true)
+                {
+                    Console.Clear();
+                    Logo.DisplayFullLogo();
+                    Console.Write($"{EmailDisplay}\n{PasswordDisplay}");
+
+                    var password = Console.ReadLine();
+                
+                    // Authenticate user if password meets criteria.
+                    _user = Database.Login(email, password);
+                    if (_user != null)
+                    {
+                        SetUserValues();
+                        break;
+                    }
+
+                    // Display error message for incorrect password.
+                    Console.WriteLine();
+                    var message = "\u001b[38;2;255;69;0mIncorrect password\u001b[0m";
+                    Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
+                    Thread.Sleep(2000);
+                }
+
+                break;
+            }
+        }
+        
+    }
+
+    // Method that assigns the database values to a user object.
+    private static void SetUserValues()
+    {
+        if (_user == null) return;
+        _registeredFirstName = _user.FirstName;
+        _registeredLastName = _user.LastName;
+        _registeredPassword = _user.Password;
     }
     
     // Method to get the first name from user input.
@@ -130,8 +194,6 @@ public static class Ui
     // Method to get the email from user input with validation.
     private static string GetEmail()
     {
-        string emailPattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
-        
         while (true)
         {
             Console.Clear();
@@ -139,8 +201,8 @@ public static class Ui
             
             Console.Write($"{FirstNameDisplay}\n{LastNameDisplay}\n{EmailDisplay}");
             
-            string? email = Console.ReadLine();
-            if (email != null && Regex.IsMatch(email, emailPattern))
+            var email = Console.ReadLine();
+            if (email != null && Regex.IsMatch(email, EmailPattern))
             {
                 if (!Database.EmailExists(email))
                 {
@@ -148,13 +210,13 @@ public static class Ui
                 }
                 
                 Console.WriteLine();
-                string message1 = "\u001b[38;2;255;69;0mThis email is already in use\u001b[0m";
+                var message1 = "\u001b[38;2;255;69;0mThis email is already in use\u001b[0m";
                 Console.Write($"{message1}".PadLeft(message1.Length + (int)((Console.WindowWidth - message1.Length) / 1.7)));
             }
             else
             {
                 Console.WriteLine();
-                string message2 = "\u001b[38;2;255;69;0mPlease enter a valid email\u001b[0m";
+                var message2 = "\u001b[38;2;255;69;0mPlease enter a valid email\u001b[0m";
                 Console.Write($"{message2}".PadLeft(message2.Length + (int)((Console.WindowWidth - message2.Length) / 1.7)));
             }
 
@@ -172,14 +234,14 @@ public static class Ui
                 
             Console.Write($"{FirstNameDisplay}\n{LastNameDisplay}\n{EmailDisplay}\n{PasswordDisplay}");
 
-            string? password = Console.ReadLine();
+            var password = Console.ReadLine();
             if (!string.IsNullOrEmpty(password) && password.Length >= 8)
             {
                 return password;
             }
             
             Console.WriteLine();
-            string message = "\u001b[38;2;255;69;0mPassword has to be at least 8 characters long\u001b[0m";
+            var message = "\u001b[38;2;255;69;0mPassword has to be at least 8 characters long\u001b[0m";
             Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
             
             Thread.Sleep(3000);
@@ -197,8 +259,8 @@ public static class Ui
 
             Console.Write($"{FirstNameDisplay}\n{LastNameDisplay}\n{EmailDisplay}\n{PasswordDisplay}\n");
             
-            string message1 = $"A code has been sent to \u001b[38;2;34;139;34m{_registeredEmail}\u001b[0m use it to verify your account.";
-            string message2 = "Enter Code: ";
+            var message1 = $"A code has been sent to \u001b[38;2;34;139;34m{_registeredEmail}\u001b[0m use it to verify your account.";
+            var message2 = "Enter Code: ";
 
             Console.WriteLine();
             Console.Write($"{message1}".PadLeft(message1.Length + (int)((Console.WindowWidth - message1.Length) / 1.45)));
