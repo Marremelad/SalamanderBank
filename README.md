@@ -19,6 +19,7 @@ Packages:
 * [Pastel](https://www.nuget.org/packages/Pastel)
 * [DotNetEnv](https://www.nuget.org/packages/DotNetEnv/)
 * [SQLite](https://system.data.sqlite.org/index.html/doc/trunk/www/index.wiki)
+* [Dapper](https://www.learndapper.com/)
 
 Files:
 * In your entry point directory, create a file named Credentials.env and add the environmental variables EMAIL and EMAIL_PASSWORD for sending emails and the environmental variables SMS_API_USERNAME and SMS_API_PASSWORD for sending SMS messages.

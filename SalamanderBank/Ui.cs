@@ -116,9 +116,21 @@ public static class Ui
             var email = Console.ReadLine();
         
             // Validate email format and check if it exists in the database.
+            string? message;
             if (email != null && Regex.IsMatch(email, EmailPattern))
             {
-                if (!Database.EmailExists(email)) continue;
+                if (!Database.EmailExists(email))
+                {
+                    // Display error message if email does not exist in the database.
+                    Console.WriteLine();
+                    message = "\u001b[38;2;255;69;0mNo account has been registered with this email\u001b[0m";
+                    Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
+                    Thread.Sleep(2000);
+                    
+                    continue;
+                }
+               
+                // Assign the value of email in _registeredEmail.
                 _registeredEmail = email;
 
                 while (true)
@@ -139,15 +151,20 @@ public static class Ui
 
                     // Display error message for incorrect password.
                     Console.WriteLine();
-                    var message = "\u001b[38;2;255;69;0mIncorrect password\u001b[0m";
+                    message = "\u001b[38;2;255;69;0mIncorrect password\u001b[0m";
                     Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
                     Thread.Sleep(2000);
                 }
 
                 break;
             }
+            
+            // Display error message for invalid email format.
+            Console.WriteLine();
+            message = "\u001b[38;2;255;69;0mPlease enter a valid email address\u001b[0m";
+            Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
+            Thread.Sleep(2000);
         }
-        
     }
 
     // Method that assigns the database values to a user object.
@@ -216,7 +233,7 @@ public static class Ui
             else
             {
                 Console.WriteLine();
-                var message2 = "\u001b[38;2;255;69;0mPlease enter a valid email\u001b[0m";
+                var message2 = "\u001b[38;2;255;69;0mPlease enter a valid email address\u001b[0m";
                 Console.Write($"{message2}".PadLeft(message2.Length + (int)((Console.WindowWidth - message2.Length) / 1.7)));
             }
 
