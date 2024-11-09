@@ -67,7 +67,7 @@ namespace SalamanderBank
         // Checks if the tables exist
         private static void CreateTables(SQLiteConnection connection)
         {
-            string createUsersTableQuery = "CREATE TABLE IF NOT EXISTS Users (ID INTEGER PRIMARY KEY, Type INTEGER, Password TEXT, Email TEXT NOT NULL UNIQUE, FirstName TEXT, LastName TEXT, Telephone TEXT, Verified INTEGER);";
+            string createUsersTableQuery = "CREATE TABLE IF NOT EXISTS Users (ID INTEGER PRIMARY KEY, Type INTEGER, Password TEXT, Email TEXT NOT NULL UNIQUE, FirstName TEXT, LastName TEXT, PhoneNumber TEXT, Verified INTEGER);";
             using (SQLiteCommand command = new SQLiteCommand(createUsersTableQuery, connection))
             {
                 int rowsAffected = command.ExecuteNonQuery();
@@ -98,14 +98,14 @@ namespace SalamanderBank
         }
 
         // Adds a user
-        public static void AddUser(int type, string password, string? email, string? firstName, string? lastName, string telephone = "")
+        public static void AddUser(int type, string password, string? email, string? firstName, string? lastName, string phoneNumber = null)
         {
             // Check if the email already exists
             if (!EmailExists(email))
             {
                 // Query to insert a new user
-                string insertQuery = "INSERT INTO Users (Type, Password, Email, FirstName, LastName, Telephone, Verified) " +
-                                                "VALUES (@Type, @Password, @Email, @FirstName, @LastName, @Telephone, 0);";
+                string insertQuery = "INSERT INTO Users (Type, Password, Email, FirstName, LastName, PhoneNumber, Verified) " +
+                                                "VALUES (@Type, @Password, @Email, @FirstName, @LastName, @PhoneNumber, 0);";
 
                 using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
                 {
@@ -119,7 +119,13 @@ namespace SalamanderBank
                         insertCommand.Parameters.AddWithValue("@Email", Escape(email));
                         insertCommand.Parameters.AddWithValue("@FirstName", Escape(firstName));
                         insertCommand.Parameters.AddWithValue("@LastName", Escape(lastName));
-                        insertCommand.Parameters.AddWithValue("@Telephone", Escape(telephone));
+
+                        // Set @PhoneNumber to NULL if phoneNumber is null
+                        if (phoneNumber == null)
+                            insertCommand.Parameters.AddWithValue("@PhoneNumber", DBNull.Value);
+                        else
+                            insertCommand.Parameters.AddWithValue("@PhoneNumber", Escape(phoneNumber));
+
                         int rowsAffected = insertCommand.ExecuteNonQuery();
                         Console.WriteLine($"{rowsAffected} row(s) inserted into Users table.");
                     }
