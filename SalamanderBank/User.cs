@@ -10,6 +10,7 @@ namespace SalamanderBank
         public string Email { get; set; }
         public string Password { get; set; }
         public string Telephone { get; set; }
-        public string Verified {  get; set; }
+        public string Verified { get; set; }
+        public List<Account> Accounts = new List<Account>();
     }
 }
