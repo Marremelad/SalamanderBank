@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SalamanderBank
 {
-    internal class Transfer
+    public class Transfer
     {
         public int ID;
         public User SenderUser;

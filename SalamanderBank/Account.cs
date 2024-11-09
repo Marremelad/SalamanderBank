@@ -16,5 +16,6 @@ namespace SalamanderBank
         public int Status;
         public int Type;
         public float Interest;
+        public List<Transfer> TransferList = [];
     }
 }
