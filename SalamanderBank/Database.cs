@@ -98,7 +98,7 @@ namespace SalamanderBank
         }
 
         // Adds a user
-        public static void AddUser(int type, string password, string? email, string? firstName, string? lastName, string? telephone = null)
+        public static void AddUser(int type, string password, string? email, string? firstName, string? lastName, string telephone = "")
         {
             // Check if the email already exists
             if (!EmailExists(email))
