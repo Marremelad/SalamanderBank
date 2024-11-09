@@ -147,6 +147,7 @@ public static class Ui
                     {
                         SetUserValues();
                         
+                        // Prompt for account verification if account was not verified during creation.
                         if (UserIsVerified()) continue;
                         VerifyAccount();
                         break;
@@ -169,6 +170,7 @@ public static class Ui
         }
     }
 
+    // Checks if user account is verified.
     private static bool UserIsVerified()
     {
         return _user?.Verified is "1";
