@@ -12,6 +12,7 @@ public static class Ui
     private static string? _registeredLastName;
     private static string? _registeredEmail;
     private static string? _registeredPassword;
+    private static string? _verified;
 
     // Field storing user object.
     private static User? _user;
@@ -100,7 +101,7 @@ public static class Ui
         // Sending verification email to the registered email.
         EmailService.SendVerificationEmail(_registeredFirstName, _registeredEmail);
         
-        ValidateAccount();
+        VerifyAccount();
     }
 
     // Method for signing in to account.
@@ -141,14 +142,14 @@ public static class Ui
 
                     var password = Console.ReadLine();
                 
-                    // Authenticate user if password meets criteria.
+                    // Authenticate user if password matches.
                     _user = Database.Login(email, password);
-                    if (_user != null)
-                    {
-                        SetUserValues();
-                        break;
-                    }
+                    SetUserValues();
 
+                    if (UserIsVerified()) break;
+                    
+                    VerifyAccount();
+                    
                     // Display error message for incorrect password.
                     Console.WriteLine();
                     message = "\u001b[38;2;255;69;0mIncorrect password\u001b[0m";
@@ -167,6 +168,11 @@ public static class Ui
         }
     }
 
+    private static bool UserIsVerified()
+    {
+        return _user?.Verified is "1";
+    }
+
     // Method that assigns the database values to a user object.
     private static void SetUserValues()
     {
@@ -174,6 +180,7 @@ public static class Ui
         _registeredFirstName = _user.FirstName;
         _registeredLastName = _user.LastName;
         _registeredPassword = _user.Password;
+        _verified = _user.Verified;
     }
     
     // Method to get the first name from user input.
@@ -266,7 +273,7 @@ public static class Ui
     }
     
     // Method to validate the account through a verification code.
-    private static void ValidateAccount()
+    private static void VerifyAccount()
     {
         string? code;
         do
