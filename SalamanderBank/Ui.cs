@@ -148,7 +148,8 @@ public static class Ui
                         SetUserValues();
                         
                         // Prompt for account verification if account was not verified during creation.
-                        if (UserIsVerified()) continue;
+                        if (UserIsVerified()) break;
+                        
                         VerifyAccount();
                         break;
                     }
