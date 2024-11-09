@@ -12,6 +12,7 @@ public static class Ui
     private static string? _registeredLastName;
     private static string? _registeredEmail;
     private static string? _registeredPassword;
+    private static string? _verified;
 
     // Field storing user object.
     private static User? _user;
@@ -98,9 +99,7 @@ public static class Ui
         Database.AddUser(0, _registeredPassword, _registeredEmail, _registeredFirstName, _registeredLastName, "0707070707");
         
         // Sending verification email to the registered email.
-        EmailService.SendVerificationEmail(_registeredFirstName, _registeredEmail);
-        
-        ValidateAccount();
+        VerifyAccount();
     }
 
     // Method for signing in to account.
@@ -141,21 +140,26 @@ public static class Ui
 
                     var password = Console.ReadLine();
                 
-                    // Authenticate user if password meets criteria.
+                    // Authenticate user if password matches.
                     _user = Database.Login(email, password);
+
                     if (_user != null)
                     {
                         SetUserValues();
+                        
+                        // Prompt for account verification if account was not verified during creation.
+                        if (UserIsVerified()) break;
+                        
+                        VerifyAccount();
                         break;
                     }
-
+                    
                     // Display error message for incorrect password.
                     Console.WriteLine();
                     message = "\u001b[38;2;255;69;0mIncorrect password\u001b[0m";
                     Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
                     Thread.Sleep(2000);
                 }
-
                 break;
             }
             
@@ -167,6 +171,12 @@ public static class Ui
         }
     }
 
+    // Checks if user account is verified.
+    private static bool UserIsVerified()
+    {
+        return _user?.Verified is "1";
+    }
+
     // Method that assigns the database values to a user object.
     private static void SetUserValues()
     {
@@ -174,6 +184,7 @@ public static class Ui
         _registeredFirstName = _user.FirstName;
         _registeredLastName = _user.LastName;
         _registeredPassword = _user.Password;
+        _verified = _user.Verified;
     }
     
     // Method to get the first name from user input.
@@ -266,15 +277,17 @@ public static class Ui
     }
     
     // Method to validate the account through a verification code.
-    private static void ValidateAccount()
+    private static void VerifyAccount()
     {
+        EmailService.SendVerificationEmail(_registeredFirstName, _registeredEmail);
+        
         string? code;
         do
         {
             Console.Clear();
             Logo.DisplayFullLogo();
 
-            Console.Write($"{FirstNameDisplay}\n{LastNameDisplay}\n{EmailDisplay}\n{PasswordDisplay}\n");
+            // Console.Write($"{FirstNameDisplay}\n{LastNameDisplay}\n{EmailDisplay}\n{PasswordDisplay}\n");
             
             var message1 = $"A code has been sent to \u001b[38;2;34;139;34m{_registeredEmail}\u001b[0m use it to verify your account.";
             var message2 = "Enter Code: ";
