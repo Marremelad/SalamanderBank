@@ -82,6 +82,8 @@ public static class Ui
 
             break;
         }
+        
+        AccountDetails();
     }
 
     // Method to create a new account.
@@ -128,9 +130,9 @@ public static class Ui
                     var password = Console.ReadLine();
                 
                     // Authenticate user if password meets criteria.
-                    if (!string.IsNullOrEmpty(password) && password.Length >= 8)
+                    _user = Database.Login(email, password);
+                    if (_user != null)
                     {
-                        _user = Database.Login(email, password);
                         SetUserValues();
                         break;
                     }
@@ -145,6 +147,7 @@ public static class Ui
                 break;
             }
         }
+        
     }
 
     // Method that assigns the database values to a user object.
