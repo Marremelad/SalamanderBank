@@ -99,8 +99,6 @@ public static class Ui
         Database.AddUser(0, _registeredPassword, _registeredEmail, _registeredFirstName, _registeredLastName, "0707070707");
         
         // Sending verification email to the registered email.
-        EmailService.SendVerificationEmail(_registeredFirstName, _registeredEmail);
-        
         VerifyAccount();
     }
 
@@ -144,11 +142,15 @@ public static class Ui
                 
                     // Authenticate user if password matches.
                     _user = Database.Login(email, password);
-                    SetUserValues();
 
-                    if (UserIsVerified()) break;
-                    
-                    VerifyAccount();
+                    if (_user != null)
+                    {
+                        SetUserValues();
+                        
+                        if (UserIsVerified()) continue;
+                        VerifyAccount();
+                        break;
+                    }
                     
                     // Display error message for incorrect password.
                     Console.WriteLine();
@@ -156,7 +158,6 @@ public static class Ui
                     Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
                     Thread.Sleep(2000);
                 }
-
                 break;
             }
             
@@ -275,13 +276,15 @@ public static class Ui
     // Method to validate the account through a verification code.
     private static void VerifyAccount()
     {
+        EmailService.SendVerificationEmail(_registeredFirstName, _registeredEmail);
+        
         string? code;
         do
         {
             Console.Clear();
             Logo.DisplayFullLogo();
 
-            Console.Write($"{FirstNameDisplay}\n{LastNameDisplay}\n{EmailDisplay}\n{PasswordDisplay}\n");
+            // Console.Write($"{FirstNameDisplay}\n{LastNameDisplay}\n{EmailDisplay}\n{PasswordDisplay}\n");
             
             var message1 = $"A code has been sent to \u001b[38;2;34;139;34m{_registeredEmail}\u001b[0m use it to verify your account.";
             var message2 = "Enter Code: ";
