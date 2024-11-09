@@ -212,7 +212,7 @@ namespace SalamanderBank
         }
 
         // Login method that accepts email and password as arguments
-        public static User? Login(string email, string password)
+        public static User? Login(string email, string? password)
         {
             using (var connection = new SQLiteConnection(_connectionString))
             {
@@ -245,7 +245,7 @@ namespace SalamanderBank
         // Accepts a password and user object, checks hashed password in SQLite
         // Returns true if it matches
         // Returns false if it doesn't match
-        public static bool VerifyPassword(string password, User user)
+        public static bool VerifyPassword(string? password, User user)
         {
             var passwordHasher = new PasswordHasher<string>();
             PasswordVerificationResult result = passwordHasher.VerifyHashedPassword(null, user.Password, password);
