@@ -12,7 +12,7 @@ public static class Ui
     private static string? _registeredLastName;
     private static string? _registeredEmail;
     private static string? _registeredPassword;
-
+    
     // Field storing user object.
     private static User? _user;
 
@@ -97,83 +97,94 @@ public static class Ui
         // Adding new user to the database.
         Database.AddUser(0, _registeredPassword, _registeredEmail, _registeredFirstName, _registeredLastName, "0707070707");
         
-        // Sending verification email to the registered email.
-        EmailService.SendVerificationEmail(_registeredFirstName, _registeredEmail);
-        
-        ValidateAccount();
+        // Verify user account.
+        VerifyAccount();
     }
 
     // Method for signing in to account.
     private static void SignIn()
     {
+        Console.Clear();
+        Logo.DisplayFullLogo();
+        
+        GetEmailOnSignIn();
+        GetPasswordOnSignIn();
+        
+        SetUserValues();
+        IsVerified();
+        
+        AccountDetails();
+    }
+
+    // Method to get email input on sign in attempt.
+    private static void GetEmailOnSignIn()
+    {
+        string? email;
         while (true)
         {
             Console.Clear();
             Logo.DisplayFullLogo();
+            Console.Write(EmailDisplay);
 
-            Console.Write($"{EmailDisplay}");
+            email = Console.ReadLine();
 
-            var email = Console.ReadLine();
-        
-            // Validate email format and check if it exists in the database.
             string? message;
             if (email != null && Regex.IsMatch(email, EmailPattern))
             {
-                if (!Database.EmailExists(email))
-                {
-                    // Display error message if email does not exist in the database.
-                    Console.WriteLine();
-                    message = "\u001b[38;2;255;69;0mNo account has been registered with this email\u001b[0m";
-                    Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
-                    Thread.Sleep(2000);
-                    
-                    continue;
-                }
-               
-                // Assign the value of email in _registeredEmail.
-                _registeredEmail = email;
-
-                while (true)
-                {
-                    Console.Clear();
-                    Logo.DisplayFullLogo();
-                    Console.Write($"{EmailDisplay}\n{PasswordDisplay}");
-
-                    var password = Console.ReadLine();
+                if (Database.EmailExists(email)) break;
                 
-                    // Authenticate user if password meets criteria.
-                    _user = Database.Login(email, password);
-                    if (_user != null)
-                    {
-                        SetUserValues();
-                        break;
-                    }
-
-                    // Display error message for incorrect password.
-                    Console.WriteLine();
-                    message = "\u001b[38;2;255;69;0mIncorrect password\u001b[0m";
-                    Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
-                    Thread.Sleep(2000);
-                }
-
-                break;
+                Console.WriteLine();
+                message = "\u001b[38;2;255;69;0mNo account with this email exists\u001b[0m";
+                Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
+                Thread.Sleep(2000);
             }
+            else
+            {
+                Console.WriteLine();
+                message = "\u001b[38;2;255;69;0mInvalid email format\u001b[0m";
+                Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
+                Thread.Sleep(2000);
+            }
+        }
+
+        _registeredEmail = email;
+    }
+
+    // Method to get password on sign in attempt.
+    private static void GetPasswordOnSignIn()
+    {
+        while (true)
+        {
+            Console.Clear();
+            Logo.DisplayFullLogo();
+            Console.Write($"{EmailDisplay}\n{PasswordDisplay}");
+
+            var password = Console.ReadLine();
+            _user = Database.Login(_registeredEmail, password);
+
+            if (_user != null) break;
             
-            // Display error message for invalid email format.
             Console.WriteLine();
-            message = "\u001b[38;2;255;69;0mPlease enter a valid email address\u001b[0m";
+            var message = "\u001b[38;2;255;69;0mIncorrect password\u001b[0m";
             Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
             Thread.Sleep(2000);
         }
     }
 
+    // Method to check if account is verified.
+    private static void IsVerified()
+    {
+        if (_user?.Verified == "1") return;
+        VerifyAccount();
+    }
+   
+    
     // Method that assigns the database values to a user object.
     private static void SetUserValues()
     {
         if (_user == null) return;
         _registeredFirstName = _user.FirstName;
         _registeredLastName = _user.LastName;
-        _registeredPassword = _user.Password;
     }
     
     // Method to get the first name from user input.
@@ -266,15 +277,16 @@ public static class Ui
     }
     
     // Method to validate the account through a verification code.
-    private static void ValidateAccount()
+    private static void VerifyAccount()
     {
+        // Sending verification email to the registered email.
+        EmailService.SendVerificationEmail(_registeredFirstName, _registeredEmail);
+        
         string? code;
         do
         {
             Console.Clear();
             Logo.DisplayFullLogo();
-
-            Console.Write($"{FirstNameDisplay}\n{LastNameDisplay}\n{EmailDisplay}\n{PasswordDisplay}\n");
             
             var message1 = $"A code has been sent to \u001b[38;2;34;139;34m{_registeredEmail}\u001b[0m use it to verify your account.";
             var message2 = "Enter Code: ";
