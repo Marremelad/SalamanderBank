@@ -301,7 +301,7 @@ namespace SalamanderBank
                 if (rowsAffected > 0)
                 {
                     // Transfers the money from the account to the Transfers table
-                    string transferQuery = "INSERT INTO Transfers (SenderUserID, SenderAccountID, ReceiverUserID, ReceiverAccountID, TransferDate, Amount) VALUES (@SenderUserId, @SenderAccountId, @ReceiverUserId, @ReceiverAccountId, @TransferDate, @Amount, 0);";
+                    string transferQuery = "INSERT INTO Transfers (SenderUserID, SenderAccountID, ReceiverUserID, ReceiverAccountID, TransferDate, Amount, Processed) VALUES (@SenderUserId, @SenderAccountId, @ReceiverUserId, @ReceiverAccountId, @TransferDate, @Amount, 0);";
                     using (var command = new SQLiteCommand(transferQuery, connection))
                     {
                         command.Parameters.AddWithValue("@SenderUserId", senderUserId);
@@ -343,27 +343,6 @@ namespace SalamanderBank
 
                     int rows = command.ExecuteNonQuery();
                     Console.WriteLine($"{rows} row(s) updated in Users table.");
-                }
-            }
-        }
-
-        // A function that creates a bank account for a user
-        public static void CreateAccount(int userId, string currency_code, string accountName, double balance)
-        {
-            using (var connection = new SQLiteConnection(_connectionString))
-            {
-                connection.Open();
-
-                string insertQuery = "INSERT INTO Accounts (UserID, CurrencyCode, AccountName, Balance) VALUES (@UserId, @CurrencyCode, @AccountName, @Balance);";
-                using (var command = new SQLiteCommand(insertQuery, connection))
-                {
-                    command.Parameters.AddWithValue("@UserId", userId);
-                    command.Parameters.AddWithValue("@CurrencyCode", currency_code);
-                    command.Parameters.AddWithValue("@AccountName", accountName);
-                    command.Parameters.AddWithValue("@Balance", balance);
-
-                    int rowsAffected = command.ExecuteNonQuery();
-                    Console.WriteLine($"{rowsAffected} row(s) inserted into Accounts table.");
                 }
             }
         }
