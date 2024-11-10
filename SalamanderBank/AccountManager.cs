@@ -10,6 +10,44 @@ namespace SalamanderBank
 {
     internal class AccountManager
     {
+        public static void GetAccountTransferHistory(Account account)
+        {
+            string transferQuery = @"
+                SELECT t.*, 
+                       su.*, sa.*, 
+                       ru.*, ra.*
+                FROM Transfers t
+                INNER JOIN Users su ON su.ID = t.SenderUserID
+                INNER JOIN Accounts sa ON sa.ID = t.SenderAccountID
+                INNER JOIN Users ru ON ru.ID = t.ReceiverUserID
+                INNER JOIN Accounts ra ON ra.ID = t.ReceiverAccountID
+                WHERE sa.id = @ID OR ra.id = @ID
+                ORDER BY t.TransferDate DESC";
+
+            using (var connection = new SQLiteConnection(Database._connectionString))
+            {
+                connection.Open();
+                // Type hints informs Dapper which classes to use when mapping the information
+                // it gets back from the SQL query.
+                var transferList = connection.Query<Transfer, User, Account, User, Account, Transfer>(
+                    transferQuery,
+                    (transfer, senderUser, senderAccount, receiverUser, receiverAccount) =>
+                    {
+                        // Sets the attributes of the Transfer object to the objects made from the joins.
+                        transfer.SenderUser = senderUser;
+                        transfer.SenderAccount = senderAccount;
+                        transfer.ReceiverUser = receiverUser;
+                        transfer.ReceiverAccount = receiverAccount;
+                        return transfer;
+                    },
+                    // Determines the value of the @ID parameter.
+                    new { ID = account.ID },
+                    splitOn: "id"    // Creates a new group of columns whenever it encounters a column named "id".
+                                     // This allows Dapper to sequentially map each group of columns to each Class.
+                ).ToList();
+                account.TransferList = transferList;
+            }
+        }
         public static void UpdateAccountBalance(Account account)
         {
             using (var connection = new SQLiteConnection(Database._connectionString))
