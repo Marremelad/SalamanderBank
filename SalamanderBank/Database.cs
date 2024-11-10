@@ -346,26 +346,5 @@ namespace SalamanderBank
                 }
             }
         }
-
-        // A function that creates a bank account for a user
-        public static void CreateAccount(int userId, string currency_code, string accountName, double balance)
-        {
-            using (var connection = new SQLiteConnection(_connectionString))
-            {
-                connection.Open();
-
-                string insertQuery = "INSERT INTO Accounts (UserID, CurrencyCode, AccountName, Balance) VALUES (@UserId, @CurrencyCode, @AccountName, @Balance);";
-                using (var command = new SQLiteCommand(insertQuery, connection))
-                {
-                    command.Parameters.AddWithValue("@UserId", userId);
-                    command.Parameters.AddWithValue("@CurrencyCode", currency_code);
-                    command.Parameters.AddWithValue("@AccountName", accountName);
-                    command.Parameters.AddWithValue("@Balance", balance);
-
-                    int rowsAffected = command.ExecuteNonQuery();
-                    Console.WriteLine($"{rowsAffected} row(s) inserted into Accounts table.");
-                }
-            }
-        }
     }
 }
