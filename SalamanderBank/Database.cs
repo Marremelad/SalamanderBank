@@ -218,7 +218,7 @@ namespace SalamanderBank
         }
 
         // Login method that accepts email and password as arguments
-        public static User? Login(string email, string? password)
+        public static User? Login(string? email, string? password)
         {
             using (var connection = new SQLiteConnection(_connectionString))
             {
