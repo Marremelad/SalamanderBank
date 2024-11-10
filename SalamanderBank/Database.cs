@@ -301,7 +301,7 @@ namespace SalamanderBank
                 if (rowsAffected > 0)
                 {
                     // Transfers the money from the account to the Transfers table
-                    string transferQuery = "INSERT INTO Transfers (SenderUserID, SenderAccountID, ReceiverUserID, ReceiverAccountID, TransferDate, Amount) VALUES (@SenderUserId, @SenderAccountId, @ReceiverUserId, @ReceiverAccountId, @TransferDate, @Amount, 0);";
+                    string transferQuery = "INSERT INTO Transfers (SenderUserID, SenderAccountID, ReceiverUserID, ReceiverAccountID, TransferDate, Amount, Processed) VALUES (@SenderUserId, @SenderAccountId, @ReceiverUserId, @ReceiverAccountId, @TransferDate, @Amount, 0);";
                     using (var command = new SQLiteCommand(transferQuery, connection))
                     {
                         command.Parameters.AddWithValue("@SenderUserId", senderUserId);
