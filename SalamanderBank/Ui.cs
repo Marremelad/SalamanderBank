@@ -89,6 +89,7 @@ public static class Ui
     // Method to create a new account.
     private static void CreateAccount()
     { 
+        // Set values for user information.
         _registeredFirstName = GetFirstName();
         _registeredLastName = GetLastName();
         _registeredEmail = GetEmail();
