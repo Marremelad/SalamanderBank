@@ -187,13 +187,43 @@ namespace SalamanderBank
                 using (SQLiteCommand updateCommand = new SQLiteCommand(updateQuery, connection))
                 {
                     string newHashedPassword = HashPassword(newPassword);
-                    user.Password = newHashedPassword;
+                    
 
 					updateCommand.Parameters.AddWithValue("@NewPassword", newHashedPassword);
                     updateCommand.Parameters.AddWithValue("@UserID", user.ID);
 
                     int rowsAffected = updateCommand.ExecuteNonQuery();
+                    if (rowsAffected > 0)
+                    {
+						user.Password = newHashedPassword;
+					}
                     Console.WriteLine($"{rowsAffected} row(s) updated in Users table.");
+                }
+            }
+        }
+
+        // Updates user phone number
+        // Accepts a User object and a new phone number
+        // Updates the User object's phone number
+        public static void UpdateUserPhoneNumber(User user, string newPhoneNumber)
+        {
+            string updateQuery = "UPDATE Users SET PhoneNumber = @NewPhoneNumber WHERE ID = @UserID;";
+
+            using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (SQLiteCommand updateCommand = new SQLiteCommand(updateQuery, connection))
+                {
+                    updateCommand.Parameters.AddWithValue("@NewPhoneNumber", Escape(newPhoneNumber));
+                    updateCommand.Parameters.AddWithValue("@UserID", user.ID);
+
+                    int rowsAffected = updateCommand.ExecuteNonQuery();
+                    Console.WriteLine($"{rowsAffected} row(s) updated in Users table.");
+                    if (rowsAffected > 0)
+                    {
+						user.PhoneNumber = newPhoneNumber;
+					}
                 }
             }
         }
