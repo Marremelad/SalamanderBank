@@ -174,9 +174,10 @@ namespace SalamanderBank
             }
         }
 
-        // Updates user password
-        // Accepts a User object and a new password
-        public static void UpdateUserPassword(User user, string newPassword)
+		// Updates user password
+		// Accepts a User object and a new password
+		// Updates the User object's password
+		public static void UpdateUserPassword(User user, string newPassword)
         {
             string updateQuery = "UPDATE Users SET Password = @NewPassword WHERE ID = @UserID;";
 
@@ -193,18 +194,20 @@ namespace SalamanderBank
                     updateCommand.Parameters.AddWithValue("@UserID", user.ID);
 
                     int rowsAffected = updateCommand.ExecuteNonQuery();
-                    if (rowsAffected > 0)
-                    {
+                    Console.WriteLine($"{rowsAffected} row(s) updated in Users table.");
+
+					// Checks if account successfully updated
+					if (rowsAffected > 0)
+					{
+						// Updates the User object's password
 						user.Password = newHashedPassword;
 					}
-                    Console.WriteLine($"{rowsAffected} row(s) updated in Users table.");
-                }
+				}
             }
         }
 
         // Updates user phone number
         // Accepts a User object and a new phone number
-        // Updates the User object's phone number
         public static void UpdateUserPhoneNumber(User user, string newPhoneNumber)
         {
             string updateQuery = "UPDATE Users SET PhoneNumber = @NewPhoneNumber WHERE ID = @UserID;";
@@ -220,9 +223,40 @@ namespace SalamanderBank
 
                     int rowsAffected = updateCommand.ExecuteNonQuery();
                     Console.WriteLine($"{rowsAffected} row(s) updated in Users table.");
+					
+                    // Checks if account successfully updated
+					if (rowsAffected > 0)
+                    {
+						// Updates the User object's phone number
+						user.PhoneNumber = newPhoneNumber;
+					}
+                }
+            }
+        }
+
+        // Updates user email
+        // Accepts a User object and a new email
+        public static void UpdateUserEmail(User user, string newEmail)
+        {
+            string updateQuery = "UPDATE Users SET Email = @NewEmail WHERE ID = @UserID;";
+
+            using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (SQLiteCommand updateCommand = new SQLiteCommand(updateQuery, connection))
+                {
+                    updateCommand.Parameters.AddWithValue("@NewEmail", Escape(newEmail));
+                    updateCommand.Parameters.AddWithValue("@UserID", user.ID);
+
+                    int rowsAffected = updateCommand.ExecuteNonQuery();
+                    Console.WriteLine($"{rowsAffected} row(s) updated in Users table.");
+
+                    // Checks if account successfully updated
                     if (rowsAffected > 0)
                     {
-						user.PhoneNumber = newPhoneNumber;
+						// Updates the User object's email
+						user.Email = newEmail;
 					}
                 }
             }
