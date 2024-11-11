@@ -174,6 +174,94 @@ namespace SalamanderBank
             }
         }
 
+		// Updates user password
+		// Accepts a User object and a new password
+		// Updates the User object's password
+		public static void UpdateUserPassword(User user, string newPassword)
+        {
+            string updateQuery = "UPDATE Users SET Password = @NewPassword WHERE ID = @UserID;";
+
+            using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (SQLiteCommand updateCommand = new SQLiteCommand(updateQuery, connection))
+                {
+                    string newHashedPassword = HashPassword(newPassword);
+                    
+
+					updateCommand.Parameters.AddWithValue("@NewPassword", newHashedPassword);
+                    updateCommand.Parameters.AddWithValue("@UserID", user.ID);
+
+                    int rowsAffected = updateCommand.ExecuteNonQuery();
+                    Console.WriteLine($"{rowsAffected} row(s) updated in Users table.");
+
+					// Checks if account successfully updated
+					if (rowsAffected > 0)
+					{
+						// Updates the User object's password
+						user.Password = newHashedPassword;
+					}
+				}
+            }
+        }
+
+        // Updates user phone number
+        // Accepts a User object and a new phone number
+        public static void UpdateUserPhoneNumber(User user, string newPhoneNumber)
+        {
+            string updateQuery = "UPDATE Users SET PhoneNumber = @NewPhoneNumber WHERE ID = @UserID;";
+
+            using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (SQLiteCommand updateCommand = new SQLiteCommand(updateQuery, connection))
+                {
+                    updateCommand.Parameters.AddWithValue("@NewPhoneNumber", Escape(newPhoneNumber));
+                    updateCommand.Parameters.AddWithValue("@UserID", user.ID);
+
+                    int rowsAffected = updateCommand.ExecuteNonQuery();
+                    Console.WriteLine($"{rowsAffected} row(s) updated in Users table.");
+					
+                    // Checks if account successfully updated
+					if (rowsAffected > 0)
+                    {
+						// Updates the User object's phone number
+						user.PhoneNumber = newPhoneNumber;
+					}
+                }
+            }
+        }
+
+        // Updates user email
+        // Accepts a User object and a new email
+        public static void UpdateUserEmail(User user, string newEmail)
+        {
+            string updateQuery = "UPDATE Users SET Email = @NewEmail WHERE ID = @UserID;";
+
+            using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (SQLiteCommand updateCommand = new SQLiteCommand(updateQuery, connection))
+                {
+                    updateCommand.Parameters.AddWithValue("@NewEmail", Escape(newEmail));
+                    updateCommand.Parameters.AddWithValue("@UserID", user.ID);
+
+                    int rowsAffected = updateCommand.ExecuteNonQuery();
+                    Console.WriteLine($"{rowsAffected} row(s) updated in Users table.");
+
+                    // Checks if account successfully updated
+                    if (rowsAffected > 0)
+                    {
+						// Updates the User object's email
+						user.Email = newEmail;
+					}
+                }
+            }
+        }
+
         // Searches for a user and returns an array user ids that have similar first name, last name and email address
         public static int[] SearchUser(string? searchTerm)
         {
