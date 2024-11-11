@@ -174,6 +174,30 @@ namespace SalamanderBank
             }
         }
 
+        // Updates user password
+        // Accepts a User object and a new password
+        public static void UpdateUserPassword(User user, string newPassword)
+        {
+            string updateQuery = "UPDATE Users SET Password = @NewPassword WHERE ID = @UserID;";
+
+            using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
+            {
+                connection.Open();
+
+                using (SQLiteCommand updateCommand = new SQLiteCommand(updateQuery, connection))
+                {
+                    string newHashedPassword = HashPassword(newPassword);
+                    user.Password = newHashedPassword;
+
+					updateCommand.Parameters.AddWithValue("@NewPassword", newHashedPassword);
+                    updateCommand.Parameters.AddWithValue("@UserID", user.ID);
+
+                    int rowsAffected = updateCommand.ExecuteNonQuery();
+                    Console.WriteLine($"{rowsAffected} row(s) updated in Users table.");
+                }
+            }
+        }
+
         // Searches for a user and returns an array user ids that have similar first name, last name and email address
         public static int[] SearchUser(string? searchTerm)
         {
