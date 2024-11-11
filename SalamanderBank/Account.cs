@@ -17,8 +17,6 @@ namespace SalamanderBank
         public int Type;
         public float Interest;
         public List<Transfer> TransferList = [];
-
-        // Creates a dictionary that stores an account type and an interest rate
         public static Dictionary<int, float> AccountTypes = new Dictionary<int, float>
         {
             { 0, 0.01f },
