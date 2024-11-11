@@ -213,7 +213,7 @@ public static class Ui
         Console.ReadLine();
     }
 
-    public static async void  LiveAccount()
+    public static void  LiveAccount()
     {
         Console.Clear();
 
@@ -260,7 +260,7 @@ public static class Ui
         // Perform actions based on the selection
         AnsiConsole.MarkupLine($"[bold green]You selected:[/] {selection}");
 
-        static void Currency()
+        // static void Currency()
         {
             // var customStyle = new Style(new Color(225, 69, 0));
             // var table = new Table()
@@ -328,7 +328,7 @@ public static class Ui
             //let user choose 
         }
 
-        static void MoneyExchange()
+        // static void MoneyExchange()
         {
             // var exchangeRates = new Dictionary<string, (string Currency, string Acronym, double BuyRate, double SellRate)>
             //        {
@@ -413,8 +413,10 @@ public static class Ui
         //Second Menu after Signing in
         static void SignedIn()
         {
+            
             Console.Clear();
             Logo.DisplayFullLogo();
+            AccountDetails();
             while (true) // Second Menu loop
             {
                 var selection = AnsiConsole.Prompt(
@@ -448,6 +450,8 @@ public static class Ui
             }
 
             //Needs account information
+            //Needs to show the transaction been made between accounts
+            
             static void TransferFunds()
             {
                 Console.Clear();
@@ -495,11 +499,11 @@ public static class Ui
                     case "Account 1": // needs to display money on account
                         ExchangeMenu();
                         break;
-                    case "Account 2":
-
+                    case "Account 2":// needs to display money on account
+                        ExchangeMenu();
                         break;
-                    case "Account 3":
-
+                    case "Account 3":// needs to display money on account
+                        ExchangeMenu();
                         break;
                     case "Return to Main Menu":
 
@@ -511,7 +515,6 @@ public static class Ui
                 {
                     //Show account to change from
                     //Ask for currency to change to
-                    //Ask for amount to change
                     //Show exchange
                     //Show the new currency in new account
                     while (true) // Keep Exchange Menu open until exit
@@ -539,136 +542,140 @@ public static class Ui
                 {
                     while (true)
                     {
-                        Console.Clear();
-                        Logo.DisplayFullLogo();
-
-                        Console.Write("Enter a search term (Country,Currency or Acronym(SEK)): ");
-                        var searchTerm = Console.ReadLine()?.ToLower();
-                        var filteredResults = ExchangeRates.Where(c => string.Equals(c.Value.Country, searchTerm, StringComparison.OrdinalIgnoreCase) || 
-                                                                       string.Equals(c.Value.CurrencyName, searchTerm, StringComparison.OrdinalIgnoreCase) || string.Equals(c.Value.Acronym, searchTerm, StringComparison.OrdinalIgnoreCase))
-                            .ToList();
-
-
-                        if (filteredResults.Count == 0)
-                        {
-                            var retryPrompt = new SelectionPrompt<string>().HighlightStyle(new Style(new Color(225, 69, 0)))
-                                .Title("No matches found. Do you want to try again or return to the previous menu?")
-                                .AddChoices("Retry", "Return");
-
-                            var userChoice = AnsiConsole.Prompt(retryPrompt);
-                            if (userChoice == "Retry")
-                                continue;
-                            ExchangeMenu();
-                            return;
-                        }
-
-                        // Present the filtered results as options for selection using a SelectionPrompt
-                        var prompt = new SelectionPrompt<string>().Title("Select a currency:")
-                            .HighlightStyle(new Style(new Color(225, 69, 0)))
-                            .AddChoices(filteredResults.Select(c => $"{c.Value.Country} - {c.Value.CurrencyName}"));
-
-                        // Get the selected option
-                        var selectedOption = AnsiConsole.Prompt(prompt);
-                        var selectedCurrency = filteredResults.FirstOrDefault(c => $"{c.Value.Country} - {c.Value.CurrencyName}" == selectedOption).Value;
-
-                        if (selectedCurrency == default) return;
-                        // Display the details of the selected currency in a table
-                        var table = new Table();
-                        table.AddColumn("Country");
-                        table.AddColumn("Currency Name");
-                        table.AddColumn("Acronym");
-                        table.AddColumn("We Sell");
-                        table.AddColumn("We Buy");
-
-                        table.AddRow(selectedCurrency.Country, selectedCurrency.CurrencyName, selectedCurrency.Acronym, selectedCurrency.SellRate.ToString(CultureInfo.InvariantCulture), selectedCurrency.BuyRate.ToString(CultureInfo.InvariantCulture));
-                        Console.Clear();
-                        Logo.DisplayFullLogo();
-                        AnsiConsole.Write(table);
-
-                        var selection = new SelectionPrompt<string>().Title("Do you want to exchange to this Currency?: y/n")
-                            .HighlightStyle(new Style(new Color(225, 69, 0)))
-                            .AddChoices("Yes", "No");
-                        var userDecision = AnsiConsole.Prompt(selection);
-
-                        if (userDecision == "Yes")
-                        {
-                            ExchangingMoney();
-                        }
-
-                        Console.WriteLine("Exchange Canceled. Returning to Previous Menu.");
-                        Thread.Sleep(1000);
-                        ExchangeMenu();
+                        
+                        //Bellow is original code, DON'T TOUCH ITS WORKING
+                        // Console.Clear();
+                        //                         Logo.DisplayFullLogo();
+                        //                         
+                        //                         Console.Write("Enter a search term (Country,Currency or Acronym(SEK)): ");
+                        //                         var searchTerm = Console.ReadLine()?.ToLower();
+                        // var filteredResults = ExchangeRates.Where(c => string.Equals(c.Value.Country, searchTerm, StringComparison.OrdinalIgnoreCase) || 
+                        //                                                string.Equals(c.Value.CurrencyName, searchTerm, StringComparison.OrdinalIgnoreCase) || string.Equals(c.Value.Acronym, searchTerm, StringComparison.OrdinalIgnoreCase))
+                        //     .ToList();
+                        //
+                        // if (filteredResults.Count == 0)
+                        // {
+                        //     Console.Clear();
+                        //     Logo.DisplayFullLogo();
+                        //     var retryPrompt = new SelectionPrompt<string>().HighlightStyle(new Style(new Color(225, 69, 0)))
+                        //         .Title("No matches found. Do you want to try again or return to the previous menu?")
+                        //         .AddChoices("Retry", "Return");
+                        //
+                        //     var userChoice = AnsiConsole.Prompt(retryPrompt);
+                        //     if (userChoice == "Retry")
+                        //         continue;
+                        //     ExchangeMenu();
+                        //     return;
+                        // }
+                        //
+                        // // Present the filtered results as options for selection using a SelectionPrompt
+                        // var prompt = new SelectionPrompt<string>().Title("Select a currency:")
+                        //     .HighlightStyle(new Style(new Color(225, 69, 0)))
+                        //     .AddChoices(filteredResults.Select(c => $"{c.Value.Country} - {c.Value.CurrencyName}"));
+                        //
+                        // // Get the selected option
+                        // var selectedOption = AnsiConsole.Prompt(prompt);
+                        // var selectedCurrency = filteredResults.FirstOrDefault(c => $"{c.Value.Country} - {c.Value.CurrencyName}" == selectedOption).Value;
+                        //
+                        // if (selectedCurrency == default) return;
+                        // // Display the details of the selected currency in a table
+                        // var table = new Table();
+                        // table.AddColumn("Country");
+                        // table.AddColumn("Currency Name");
+                        // table.AddColumn("Acronym");
+                        // table.AddColumn("We Sell");
+                        // table.AddColumn("We Buy");
+                        //
+                        // table.AddRow(selectedCurrency.Country, selectedCurrency.CurrencyName, selectedCurrency.Acronym, selectedCurrency.SellRate.ToString(CultureInfo.InvariantCulture), selectedCurrency.BuyRate.ToString(CultureInfo.InvariantCulture));
+                        // Console.Clear();
+                        // Logo.DisplayFullLogo();
+                        // AnsiConsole.Write(table);
+                        //
+                        // var selection = new SelectionPrompt<string>().Title("Do you want to exchange to this Currency?: y/n")
+                        //     .HighlightStyle(new Style(new Color(225, 69, 0)))
+                        //     .AddChoices("Yes", "No");
+                        // var userDecision = AnsiConsole.Prompt(selection);
+                        //
+                        // if (userDecision == "Yes")
+                        // {
+                        //     ExchangingMoney();
+                        // }
+                        //
+                        // Console.WriteLine("Exchange Canceled. Returning to Previous Menu.");
+                        // Thread.Sleep(1000);
+                        // ExchangeMenu();
 
                     }
                 }
 
                 static void Currencies()
                 {
+                    //Writes out currencies that are available for exchange
                     var customStyle = new Style(new Color(225, 69, 0));
 
                     var prompt = new SelectionPrompt<string>()
                         .Title("[bold underline rgb(190,40,0)]Select an Exchange Rate[/]")
-                        .PageSize(10)
+                        .PageSize(3)
                         .HighlightStyle(customStyle);
-
+                    //Writes out every currency available in dictionary, needs to connect with GetExchangeRates
                     foreach (var rate in ExchangeRates)
                         prompt.AddChoice(
                             $"[bold white]{rate.Key,-5}[/] | {rate.Value.Country,-25} | {rate.Value.CurrencyName,-10} | {rate.Value.Acronym,-5} | {rate.Value.BuyRate,10:F2} | {rate.Value.SellRate,10:F2}");
                     var selectedRate = AnsiConsole.Prompt(prompt);
                     AnsiConsole.MarkupLine($"[bold yellow]You selected:[/] {selectedRate}. " +
                                            $"\nWe will now begin the process of exchanging your money.");
-                    
+                    Thread.Sleep(1000);
                     ExchangingMoney();
-                    
-                    
                 }
 
                 static void ExchangingMoney()
                 {
+                    var customStyle = new Style(new Color(225, 69, 0));
                     Console.Clear();
                     Logo.DisplayFullLogo();
                     AnsiConsole.Progress()
-                        .AutoRefresh(true) // Turn off auto refresh
-                        .AutoClear(false) // Do not remove the task list when done
-                        .HideCompleted(false) // Hide tasks as they are completed
+                        .AutoRefresh(true)
+                        .AutoClear(false)
+                        .HideCompleted(false)
                         .Columns(
                             new TaskDescriptionColumn(),
                             new ProgressBarColumn(),
-                            new PercentageColumn(),
-                            new RemainingTimeColumn { Style = new Style(Color.Red) },
+                            new RemainingTimeColumn { Style = customStyle },
                             new SpinnerColumn())
                         .StartAsync(async ctx =>
                         {
-                            // Define task1 and task2
+                            // Defines task1 and task2
                             var task1 = ctx.AddTask("[rgb(190,40,0)]Processing exchange request[/]");
                             var task2 = ctx.AddTask("[rgb(190,40,0)]Updating account balances[/]");
 
-                            // Run task1 to completion
-                            await RunTaskAsync(task1, 2);
+                            // Runs task1 to completion
+                            await RunTaskAsync(task1, 2, "Processing exchange request");
 
                             // Once task1 is done, run task2
-                            await RunTaskAsync(task2, 1.5);
-                        });
-                    
-                    Console.Clear();
+                            await RunTaskAsync(task2, 1.5, "Updating account balances");
+                            
+                        }).GetAwaiter().GetResult();
+                    Console.Clear(); 
                     Logo.DisplayFullLogo();
-                    
+                    AnsiConsole.MarkupLine("[bold green]Your exchange has been successfully processed.[/]");//Needs to be centered
+                   
                     Console.ReadLine();
                     SignedIn();
+                   
+                    return;
 
-                    static async Task RunTaskAsync(ProgressTask task, double incrementValue)
+                    static async Task RunTaskAsync(ProgressTask task, double incrementValue, string contextDescription)
                     {
                         while (!task.IsFinished)
                         {
                             task.Increment(incrementValue); // Increment task progress
 
                             // Dynamically color-code the task description
-                            var color = task.Value < 30 ? "red" : task.Value < 100 ? "yellow" : "green";
-                            // task.Description = $"[bold {color}] {task.Value:0}%[/]";
-                            await Task.Delay(250); // Simulate work
+                            var color = task.Value < 30 ? "rgb(190,40,0)" : task.Value < 100 ? "yellow" : "green";
+                            task.Description = $"[bold {color}] {contextDescription} {task.Value:0}%[/]";
+                            await Task.Delay(250); // Simulate work 
                         }
                     }
-                    AnsiConsole.MarkupLine("[bold green]Your exchange has been successfully processed.[/]");
                 }
             }
 
@@ -732,7 +739,7 @@ public static class Ui
             Acronym = acronym;
         }
     }
-    // Static dictionary shared across methods
+    // Static dictionary
     public static readonly
         Dictionary<string, (string Country, string CurrencyName, string Acronym, double BuyRate, double SellRate)>
         ExchangeRates =
