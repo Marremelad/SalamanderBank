@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data.SQLite;
+using Dapper;
 
 namespace SalamanderBank
 {
@@ -11,39 +12,35 @@ namespace SalamanderBank
     {
 
         // Adds a user
-        public static void AddUser(int type, string password, string? email, string? firstName, string? lastName, string phoneNumber = null)
+        public static User? AddUser(int type, string password, string? email, string? firstName, string? lastName, string phoneNumber = null)
         {
             // Check if the email already exists
             if (!EmailExists(email))
             {
                 // Query to insert a new user
-                string insertQuery = "INSERT INTO Users (Type, Password, Email, FirstName, LastName, PhoneNumber, Verified) " +
-                                                "VALUES (@Type, @Password, @Email, @FirstName, @LastName, @PhoneNumber, 0);";
+                string insertQuery = @"
+                    INSERT INTO Users (Type, Password, Email, FirstName, LastName, PhoneNumber, Verified) 
+                    VALUES (@Type, @Password, @Email, @FirstName, @LastName, @PhoneNumber, 0);
+                    SELECT * FROM Users WHERE Id = last_insert_rowid();";
 
                 using (SQLiteConnection connection = new SQLiteConnection(DB._connectionString))
                 {
                     connection.Open();
 
                     // If email doesn't exist, proceed with insertion
-                    using (SQLiteCommand insertCommand = new SQLiteCommand(insertQuery, connection))
+                    var parameters = new
                     {
-                        insertCommand.Parameters.AddWithValue("@Type", type);
-                        insertCommand.Parameters.AddWithValue("@Password", Auth.HashPassword(password));  // Make sure to hash passwords in production
-                        insertCommand.Parameters.AddWithValue("@Email", DB.Escape(email));
-                        insertCommand.Parameters.AddWithValue("@FirstName", DB.Escape(firstName));
-                        insertCommand.Parameters.AddWithValue("@LastName", DB.Escape(lastName));
-
-                        // Set @PhoneNumber to NULL if phoneNumber is null
-                        if (phoneNumber == null)
-                            insertCommand.Parameters.AddWithValue("@PhoneNumber", DBNull.Value);
-                        else
-                            insertCommand.Parameters.AddWithValue("@PhoneNumber", DB.Escape(phoneNumber));
-
-                        int rowsAffected = insertCommand.ExecuteNonQuery();
-                        Console.WriteLine($"{rowsAffected} row(s) inserted into Users table.");
-                    }
-                }
+                        Type = type,
+                        Password = Auth.HashPassword(password),
+                        Email = DB.Escape(email),
+                        FirstName = DB.Escape(firstName),
+                        LastName = DB.Escape(lastName),
+                        PhoneNumber = phoneNumber == null ? null : DB.Escape(phoneNumber)
+                    };
+                    User user = connection.QuerySingle<User>(insertQuery, parameters);
+                }   
             }
+            return null;
         }
 
         // Verifies a user by checking the email argument
