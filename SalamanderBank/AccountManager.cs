@@ -34,6 +34,8 @@ namespace SalamanderBank
                     (transfer, senderUser, senderAccount, receiverUser, receiverAccount) =>
                     {
                         // Sets the attributes of the Transfer object to the objects made from the joins.
+                        senderAccount.User = senderUser;
+                        receiverAccount.User = receiverUser;
                         transfer.SenderUser = senderUser;
                         transfer.SenderAccount = senderAccount;
                         transfer.ReceiverUser = receiverUser;
@@ -112,8 +114,11 @@ namespace SalamanderBank
                     new { UserID = user.ID },
                     splitOn: "ID"  // Use the `ID` column to indicate where the User object starts
                     ).ToList();
-
                 user.Accounts = accounts;
+                foreach(Account acc in user.Accounts) 
+                {
+                    GetAccountTransferHistory(acc);
+                }
             }
         }
 

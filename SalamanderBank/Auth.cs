@@ -24,6 +24,7 @@ namespace SalamanderBank
                 if (VerifyPassword(password, user))
                 {
                     Console.WriteLine("Login successful.");
+                    AccountManager.GetAccountsFromUser(user);
                     return user;
                 }
                 else
