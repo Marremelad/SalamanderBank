@@ -62,46 +62,38 @@ public static class Ui
     public static void DisplayMainMenu()
     {
         DB.InitializeDatabase();
-        
         TitleScreen();
         
-        while (true)
+        Console.Clear();
+        Logo.DisplayFullLogo();
+            
+        // Menu options with padding for alignment.
+        string option1 = "Create Account".PadLeft("Create Account".Length + (int)((Console.WindowWidth - "Create Account".Length) / MenuPadding));
+        string option2 = "Sign In".PadLeft("Sign In".Length + (int)((Console.WindowWidth - "Sign In".Length) / MenuPadding));
+        string option3 = "Exit".PadLeft("Exit".Length + (int)((Console.WindowWidth - "Exit".Length) / 2.1 ));
+            
+        var login = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .PageSize(10)
+                .HighlightStyle(new Style(new Color(225, 69, 0)))
+                .AddChoices(option1, option2, option3));
+            
+        // Handling user selection from the main menu.
+        switch (login.Trim())
         {
-            Console.Clear();
-            Logo.DisplayFullLogo();
-            
-            // Menu options with padding for alignment.
-            string option1 = "Create Account".PadLeft("Create Account".Length + (int)((Console.WindowWidth - "Create Account".Length) / MenuPadding));
-            string option2 = "Sign In".PadLeft("Sign In".Length + (int)((Console.WindowWidth - "Sign In".Length) / MenuPadding));
-            string option3 = "Exit".PadLeft("Exit".Length + (int)((Console.WindowWidth - "Exit".Length) / 2.1 ));
-            
-            var login = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .PageSize(10)
-                    .HighlightStyle(new Style(new Color(225, 69, 0)))
-                    .AddChoices(option1, option2, option3));
-            
-            // Handling user selection from the main menu.
-            switch (login.Trim())
-            {
-                case "Create Account":
-                    CreateAccount();
-                    break;
+            case "Create Account":
+                CreateAccount();
+                break;
                                 
-                case "Sign In":
-                    SignIn();
-                    break;
+            case "Sign In":
+                SignIn();
+                break;
                 
-                case "Exit":
-                    Console.WriteLine("Thank you for using SalamanderBank!");
-                    Thread.Sleep(2000);
-                    return;
-            }
-
-            break;
+            case "Exit":
+                Console.WriteLine("Thank you for using SalamanderBank!");
+                Thread.Sleep(2000);
+                return;
         }
-        
-        AccountDetails();
     }
     
     //Second Menu after Signing in
@@ -111,39 +103,36 @@ public static class Ui
         Logo.DisplayFullLogo();
         AccountDetails();
         
-        while (true) // Second Menu loop
+        var selection = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .PageSize(3)
+                .HighlightStyle(new Style(new Color(225, 69, 0)))
+                .AddChoices("Accounts", "Transfer Funds", "Money Exchange", "Take Loan",
+                    "View Transactions", "Exit")
+                .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
+        
+        switch (selection)
         {
-            var selection = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .PageSize(3)
-                    .HighlightStyle(new Style(new Color(225, 69, 0)))
-                    .AddChoices("Accounts", "Transfer Funds", "Money Exchange", "Take Loan",
-                        "View Transactions", "Exit")
-                    .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
-
-            switch (selection)
-            {
-                case "Check Balance":
-                    AccountDetails();
-                    break;
-                case "Transfer Funds":
-                    TransferFunds();
-                    break;
-                case "Money Exchange":
-                    //MoneyExchange();
-                    throw new NotImplementedException();
-                    break;
-                case "Take Loan":
-                    //TakeLoan();
-                    throw new NotImplementedException();
-                    break;
-                case "View Transactions": 
-                    //ViewTransaction();
-                    throw new NotImplementedException();
-                    break;
-                case "Exit":
-                    return;
-            }
+            case "Accounts":
+                BankAccounts();
+                break;
+            case "Transfer Funds":
+                TransferFunds();
+                break;
+            case "Money Exchange":
+                //MoneyExchange();
+                throw new NotImplementedException();
+                break;
+            case "Take Loan":
+                //TakeLoan();
+                throw new NotImplementedException();
+                break;
+            case "View Transactions": 
+                //ViewTransaction();
+                throw new NotImplementedException();
+                break;
+            case "Exit":
+                return;
         }
     }
 
@@ -157,8 +146,10 @@ public static class Ui
         _registeredPassword = GetPassword();
 
         // Adding new user to the database.
+       
         UserManager.AddUser(0, _registeredPassword, _registeredEmail, _registeredFirstName, _registeredLastName, "0707070707");
         
+        // AccountManager.CreateAccount();
         // Verify user account.
         VerifyAccount();
     }
@@ -232,7 +223,7 @@ public static class Ui
             Thread.Sleep(2000);
         }
     }
-
+    
     // Method to check if account is verified.
     private static void IsVerified()
     {
@@ -376,9 +367,9 @@ public static class Ui
     {
         Console.Clear();
         Logo.DisplayFullLogo();
-
+        
         var table = new Table();
-
+        
         table.AddColumn("Account Information");
         table.AddRow($"Name: {_registeredFirstName} {_registeredLastName}");
         table.AddRow($"Email: {_registeredEmail}");
@@ -388,6 +379,11 @@ public static class Ui
         table.AddRow($"Password: {_registeredPassword}");
         table.Alignment(Justify.Center);
         AnsiConsole.Write(table);
+    }
+
+    private static void BankAccounts()
+    {
+        
     }
     
     // Method to transfer funds with a loading animation.
