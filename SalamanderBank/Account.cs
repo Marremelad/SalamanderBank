@@ -19,7 +19,7 @@ namespace SalamanderBank
         public List<Transfer> TransferList = [];
         public static Dictionary<int, float> AccountTypes = new Dictionary<int, float>
         {
-            { 0, 0.01f },
+            { 0, 0.00f },
             { 1, 30.00f },
             { 2, 20.0f }
         };
