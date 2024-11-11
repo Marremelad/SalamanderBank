@@ -14,7 +14,7 @@ namespace SalamanderBank
         public static async Task UpdateCurrenciesAsync()
         {
             //Open a connection to the SQLite database 
-            using (SQLiteConnection connection = new SQLiteConnection(Database._connectionString))
+            using (SQLiteConnection connection = new SQLiteConnection(DB._connectionString))
             {
 
                 connection.Open();
@@ -136,7 +136,7 @@ namespace SalamanderBank
             // Define a query to fetch the exchange rate for the specified currency code 
             string query = "SELECT ExchangeRate FROM Currencies WHERE CurrencyCode = @currencyCode;";
 
-            using (SQLiteConnection connection = new SQLiteConnection(Database._connectionString))
+            using (SQLiteConnection connection = new SQLiteConnection(DB._connectionString))
             {
                 connection.Open();
 
