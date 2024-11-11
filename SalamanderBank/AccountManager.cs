@@ -24,7 +24,7 @@ namespace SalamanderBank
                 WHERE sa.id = @ID OR ra.id = @ID
                 ORDER BY t.TransferDate DESC";
 
-            using (var connection = new SQLiteConnection(Database._connectionString))
+            using (var connection = new SQLiteConnection(DB._connectionString))
             {
                 connection.Open();
                 // Type hints informs Dapper which classes to use when mapping the information
@@ -50,7 +50,7 @@ namespace SalamanderBank
         }
         public static void UpdateAccountBalance(Account account)
         {
-            using (var connection = new SQLiteConnection(Database._connectionString))
+            using (var connection = new SQLiteConnection(DB._connectionString))
             {
                 connection.Open();
                 var sql = "UPDATE Accounts SET Balance = @balance WHERE ID = @ID";
@@ -60,7 +60,7 @@ namespace SalamanderBank
 
         public static void UpdateAccountCurrency(Account account)
         {
-            using (var connection = new SQLiteConnection(Database._connectionString))
+            using (var connection = new SQLiteConnection(DB._connectionString))
             {
                 connection.Open();
                 var sql = "UPDATE Accounts SET CurrencyCode = @currencyCode WHERE ID = @ID";
@@ -70,7 +70,7 @@ namespace SalamanderBank
 
         public static Account? GetAccount(int id)
         {
-            using (var connection = new SQLiteConnection(Database._connectionString))
+            using (var connection = new SQLiteConnection(DB._connectionString))
             {
                 connection.Open();
                 var sql = @"SELECT a.*, u.* 
@@ -95,7 +95,7 @@ namespace SalamanderBank
         // A method that retreives all accounts where all any account's UserID column = user.ID
         public static void GetAccountsFromUser(User user)
         {
-            using (var connection = new SQLiteConnection(Database._connectionString))
+            using (var connection = new SQLiteConnection(DB._connectionString))
             {
                 connection.Open();
                 var sql = @"SELECT a.*, u.*
@@ -150,7 +150,7 @@ namespace SalamanderBank
             }
             else
             {
-                using (var connection = new SQLiteConnection(Database._connectionString))
+                using (var connection = new SQLiteConnection(DB._connectionString))
                 {
                     connection.Open();
                     var sql = "INSERT INTO Accounts (UserID, CurrencyCode, AccountName, Balance, Status, Type, Interest) VALUES (@UserID, @CurrencyCode, @AccountName, @Balance, @Status, @Type, @Interest)";

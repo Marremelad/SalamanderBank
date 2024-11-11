@@ -45,7 +45,7 @@ public static class Ui
     // Main menu display and selection handling method.
     public static void DisplayMainMenu()
     {
-        Database.InitializeDatabase();
+        DB.InitializeDatabase();
         
         while (true)
         {
@@ -96,7 +96,7 @@ public static class Ui
         _registeredPassword = GetPassword();
 
         // Adding new user to the database.
-        Database.AddUser(0, _registeredPassword, _registeredEmail, _registeredFirstName, _registeredLastName, "0707070707");
+        UserManager.AddUser(0, _registeredPassword, _registeredEmail, _registeredFirstName, _registeredLastName, "0707070707");
         
         // Verify user account.
         VerifyAccount();
@@ -132,7 +132,7 @@ public static class Ui
             string? message;
             if (email != null && Regex.IsMatch(email, EmailPattern))
             {
-                if (Database.EmailExists(email)) break;
+                if (UserManager.EmailExists(email)) break;
                 
                 Console.WriteLine();
                 message = "\u001b[38;2;255;69;0mNo account with this email exists\u001b[0m";
@@ -161,7 +161,7 @@ public static class Ui
             Console.Write($"{EmailDisplay}\n{PasswordDisplay}");
 
             var password = Console.ReadLine();
-            _user = Database.Login(_registeredEmail, password);
+            _user = Auth.Login(_registeredEmail, password);
 
             if (_user != null) break;
             
@@ -233,7 +233,7 @@ public static class Ui
             var email = Console.ReadLine();
             if (email != null && Regex.IsMatch(email, EmailPattern))
             {
-                if (!Database.EmailExists(email))
+                if (!UserManager.EmailExists(email))
                 {
                     return email;
                 }
@@ -305,7 +305,7 @@ public static class Ui
             
         } while (string.IsNullOrEmpty(code) || code != EmailService.Code.ToString());
 
-        Database.VerifyUser(_registeredEmail);
+        UserManager.VerifyUser(_registeredEmail);
         
         AccountDetails();
     }

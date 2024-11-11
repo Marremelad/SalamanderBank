@@ -27,7 +27,7 @@ namespace SalamanderBank
                 WHERE t.Processed = @Processed
                 ORDER BY t.TransferDate DESC";
 
-            using (var connection = new SQLiteConnection(Database._connectionString))
+            using (var connection = new SQLiteConnection(DB._connectionString))
             {
                 connection.Open();
                 // Type hints informs Dapper which classes to use when mapping the information
@@ -87,7 +87,7 @@ namespace SalamanderBank
             AccountManager.UpdateAccountBalance(transfer.ReceiverAccount);
             
             // Marks the transfer as processed in the database.
-            using (var connection = new SQLiteConnection(Database._connectionString))
+            using (var connection = new SQLiteConnection(DB._connectionString))
             {
                 connection.Open();
                 string query = "UPDATE Transfers SET Processed = @processed WHERE ID = @ID";
@@ -108,7 +108,7 @@ namespace SalamanderBank
             transfer.SenderAccount.Balance -= transfer.Amount;
             AccountManager.UpdateAccountBalance(transfer.SenderAccount);
             TransferQueue.Enqueue(transfer);
-            using (var connection = new SQLiteConnection(Database._connectionString))
+            using (var connection = new SQLiteConnection(DB._connectionString))
             {
                 connection.Open();
                 string query = @"INSERT INTO Transfers 
@@ -162,7 +162,7 @@ namespace SalamanderBank
                 INNER JOIN Accounts ra ON ra.ID = t.ReceiverAccountID
                 WHERE t.id = @ID";
 
-            using (var connection = new SQLiteConnection(Database._connectionString))
+            using (var connection = new SQLiteConnection(DB._connectionString))
             {
                 connection.Open();
                 // Type hints informs Dapper which classes to use when mapping the information
