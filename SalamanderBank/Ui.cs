@@ -43,9 +43,27 @@ public static class Ui
     private const decimal AccountBalance = 1500.75m;
     
     // Main menu display and selection handling method.
+    
+    private static void TitleScreen()
+    {
+        Console.Clear();
+        Logo.DisplayFullLogo();
+        var customStyle = new Style(new Color(225, 69, 0));
+        var table = new Table();
+        table.Border = TableBorder.Rounded;
+        table.BorderStyle = customStyle;
+        table.AddColumn("[bold yellow blink on rgb(190,40,0)] Welcome to SalamanderBank![/]").Centered();
+
+        AnsiConsole.Write(table);
+        AnsiConsole.WriteLine();
+        Console.ReadLine();
+    }
+    
     public static void DisplayMainMenu()
     {
         DB.InitializeDatabase();
+        
+        TitleScreen();
         
         while (true)
         {
