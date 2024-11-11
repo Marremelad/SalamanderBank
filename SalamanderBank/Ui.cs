@@ -542,8 +542,60 @@ public static class Ui
                 {
                     while (true)
                     {
-                        
-                        //Bellow is original code, DON'T TOUCH ITS WORKING
+                            string currentInput= "";
+                            while (true)
+                            {
+                                
+                                AnsiConsole.MarkupLine("Press the first letter of the acronym you are looking for:");
+                                ConsoleKeyInfo keyInfo = Console.ReadKey(intercept: true); // Read a key press
+                                char pressedKey = char.ToUpper(keyInfo.KeyChar); // Convert to uppercase for consistency
+
+                                // Filter the acronyms based on the first letter of the key
+                                var filteredAcronyms = ExchangeRates
+                                    .Where(a => a.Key.StartsWith(pressedKey.ToString(),
+                                        StringComparison.OrdinalIgnoreCase))
+                                    .ToDictionary(a => a.Key, a => a.Value);
+
+                                // Check if there are matching acronyms
+                                if (!filteredAcronyms.Any())
+                                {
+                                    AnsiConsole.MarkupLine($"[red]No acronyms found starting with '{pressedKey}'[/]");
+                                    return;
+                                }
+
+                                if (keyInfo.Key == ConsoleKey.Enter)
+                                {
+                                    ExchangingMoney();
+                                }
+
+                                if (keyInfo.Key == ConsoleKey.Backspace && currentInput.Length > 0)
+                                {
+                                    currentInput = currentInput.Substring(currentInput.Length - 1);
+                                }
+                                else
+                                {
+                                    currentInput += keyInfo.KeyChar;
+                                }
+                                
+                                var acronymKeys = filteredAcronyms.Keys.ToList();
+                                
+                                var selection = new SelectionPrompt<string>()
+                                    .Title($"Currencies found: '{pressedKey}':")
+                                    .PageSize(10)
+                                    .AddChoices(acronymKeys); 
+
+                                var chosenAcronym = AnsiConsole.Prompt(selection);
+                                ExchangingMoney();
+                                break;
+
+                               
+                                var selectedAcronym = filteredAcronyms[chosenAcronym];
+                                AnsiConsole.MarkupLine(
+                                    $"[green]You selected:[/] {chosenAcronym} - {selectedAcronym.CurrencyName} ({selectedAcronym.Country})");
+                                AnsiConsole.MarkupLine(
+                                    $"Buy Rate: {selectedAcronym.BuyRate}, Sell Rate: {selectedAcronym.SellRate}");
+                            }
+                            //Bellow is original code, DON'T TOUCH ITS WORKING
                         // Console.Clear();
                         //                         Logo.DisplayFullLogo();
                         //                         
@@ -628,7 +680,7 @@ public static class Ui
                     ExchangingMoney();
                 }
 
-                static void ExchangingMoney()
+                static void ExchangingMoney()//Maybe add the currency choosen
                 {
                     var customStyle = new Style(new Color(225, 69, 0));
                     Console.Clear();
@@ -658,7 +710,7 @@ public static class Ui
                     Console.Clear(); 
                     Logo.DisplayFullLogo();
                     AnsiConsole.MarkupLine("[bold green]Your exchange has been successfully processed.[/]");//Needs to be centered
-                   
+                   //Maybe add the exchange details, currency, acronym, value etc. 
                     Console.ReadLine();
                     SignedIn();
                    
