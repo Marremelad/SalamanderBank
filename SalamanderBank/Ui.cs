@@ -42,8 +42,7 @@ public static class Ui
     // Starting account balance.
     private const decimal AccountBalance = 1500.75m;
     
-    // Main menu display and selection handling method.
-    
+    // Title screen.
     private static void TitleScreen()
     {
         Console.Clear();
@@ -59,6 +58,7 @@ public static class Ui
         Console.ReadLine();
     }
     
+    // Main menu display and selection handling method.
     public static void DisplayMainMenu()
     {
         DB.InitializeDatabase();
