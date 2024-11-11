@@ -117,7 +117,7 @@ public static class Ui
                 new SelectionPrompt<string>()
                     .PageSize(3)
                     .HighlightStyle(new Style(new Color(225, 69, 0)))
-                    .AddChoices("Check Balance", "Transfer Funds", "Money Exchange", "Take Loan",
+                    .AddChoices("Accounts", "Transfer Funds", "Money Exchange", "Take Loan",
                         "View Transactions", "Exit")
                     .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
 
