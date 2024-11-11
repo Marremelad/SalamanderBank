@@ -103,6 +103,49 @@ public static class Ui
         
         AccountDetails();
     }
+    
+    //Second Menu after Signing in
+    static void SignedIn()
+    {
+        Console.Clear();
+        Logo.DisplayFullLogo();
+        AccountDetails();
+        
+        while (true) // Second Menu loop
+        {
+            var selection = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .PageSize(3)
+                    .HighlightStyle(new Style(new Color(225, 69, 0)))
+                    .AddChoices("Check Balance", "Transfer Funds", "Money Exchange", "Take Loan",
+                        "View Transactions", "Exit")
+                    .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
+
+            switch (selection)
+            {
+                case "Check Balance":
+                    AccountDetails();
+                    break;
+                case "Transfer Funds":
+                    TransferFunds();
+                    break;
+                case "Money Exchange":
+                    //MoneyExchange();
+                    throw new NotImplementedException();
+                    break;
+                case "Take Loan":
+                    //TakeLoan();
+                    throw new NotImplementedException();
+                    break;
+                case "View Transactions": 
+                    //ViewTransaction();
+                    throw new NotImplementedException();
+                    break;
+                case "Exit":
+                    return;
+            }
+        }
+    }
 
     // Method to create a new account.
     private static void CreateAccount()
@@ -132,7 +175,7 @@ public static class Ui
         SetUserValues();
         IsVerified();
         
-        AccountDetails();
+        SignedIn();
     }
 
     // Method to get email input on sign in attempt.
@@ -325,20 +368,25 @@ public static class Ui
 
         UserManager.VerifyUser(_registeredEmail);
         
-        AccountDetails();
+        SignedIn();
     }
     
     // Method to display account details in a formatted table.
     private static void AccountDetails()
     {
+        Console.Clear();
+        Logo.DisplayFullLogo();
+
         var table = new Table();
-        
+
         table.AddColumn("Account Information");
         table.AddRow($"Name: {_registeredFirstName} {_registeredLastName}");
         table.AddRow($"Email: {_registeredEmail}");
-        table.AddRow($"Balance: {AccountBalance:F2}");
-            
-        Console.Clear();
+        table.AddRow($"Total Balance: {AccountBalance:F2}");
+        table.Border = TableBorder.Rounded;
+        table.BorderStyle = new Style(ConsoleColor.DarkRed);
+        table.AddRow($"Password: {_registeredPassword}");
+        table.Alignment(Justify.Center);
         AnsiConsole.Write(table);
     }
     
