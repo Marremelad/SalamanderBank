@@ -159,7 +159,7 @@ namespace SalamanderBank
         }
 
         // Creates an account for the user used as an argument
-        public static void CreateAccount(User user, string currencyCode, string accountName, int type)
+        public static void CreateAccount(User user, string currencyCode, string accountName, int type, decimal balance = 0)
         {
             // Checks if the account name is already in use
             if (user.Accounts.Any(acc => acc.AccountName == accountName))
@@ -178,7 +178,7 @@ namespace SalamanderBank
 
                     // Inserts the account into SQL
                     var sql = "INSERT INTO Accounts (UserID, CurrencyCode, AccountName, Balance, Status, Type, Interest) VALUES (@UserID, @CurrencyCode, @AccountName, @Balance, @Status, @Type, @Interest)";
-                    var affectedRows = connection.Execute(sql, new { UserID = user.ID, CurrencyCode = currencyCode, AccountName = accountName, Balance = 0, Status = 1, Type = type, Interest = interest });
+                    var affectedRows = connection.Execute(sql, new { UserID = user.ID, CurrencyCode = currencyCode, AccountName = accountName, Balance = balance, Status = 1, Type = type, Interest = interest });
                     Console.WriteLine($"{affectedRows} rows inserted into Accounts.");
 
                     GetAccountsFromUser(user);
