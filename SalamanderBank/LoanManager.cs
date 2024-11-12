@@ -12,21 +12,37 @@ namespace SalamanderBank
 {
     public class LoanManager
     {
-        // Method to check if a loan is allowed based on the current balance and outstanding loans
-        public static bool IsLoanAllowed(Account account)
+        // Method to fetch thé user by their ID
+        public static User GetUserByID (int userID)
         {
-            // Calculate the total balance of the account (all accounts for the user)
-            decimal totalBalance = GetTotalBalance(account.User);
+            // Delegates to USerManager to fetch user deatils by ID
+            return UserManager.GetUserByID(userID);
+        }
 
-            // Retrieve the sum of all outstanding loans for the user
-            decimal totalLoans = GetTotalLoans(account.User);
+        // Method to check if a loan is allowed based on the current balance and outstanding loans
+        public static bool IsLoanAllowed(int userID)
+        {
+            // Fetch the user object based on the provided userID
+            User user = GetUserByID(userID);
+            if (user == null)
+            {
+                Console.WriteLine("User not found.");
+                return false;
+            }
 
-            // Calculate the available amount for new loans
+            // Calculate the total balance of all the accounts for the user
+            decimal totalBalance = GetTotalBalance(user);
+
+            // Retrieve the total sum of all outstanding loans for the user
+            decimal totalLoans = GetTotalLoans(user);
+
+            // Calculate the available amount for new loans based on the total balance
             decimal availableToLoan = (totalBalance * 5) - totalLoans;
 
-            // Check if the current loans do not exceed the available amount
+            // Return true if the current loans do not exceed the available loan limit
             return totalLoans <= availableToLoan;
         }
+
         //Metod to fetch the total sum of loans for the given user
         public static decimal GetTotalLoans(User user)
         {
@@ -65,22 +81,38 @@ namespace SalamanderBank
         }
 
         //Method to add a loan to the database for the given user
-        public static bool AddLoan(User user, decimal loanAmount, decimal interestRate)
+        public static bool AddLoan(int userID, decimal loanAmount, decimal interestRate)
         {
-            // Check if the loan is allowed based on current balance and outstanding loans
-            var account = user.Accounts.FirstOrDefault(); // Find an account for the user
+            // Fetch the user object based on the provided userID
+            User user = GetUserByID(userID);
+            if (user == null)
+            {
+                Console.WriteLine("Användare ej funnen.");
+                return false;
+            }
 
-            // If no account exist or loan exceeds the allowable limit, reject the loan
-            if (account != null && !LoanManager.IsLoanAllowed(account))
+            // Fetch the user's account information (Assuming the user has at least one account)
+            var account = user.Accounts.FirstOrDefault();
+            if (account == null)
+            {
+                Console.WriteLine("No account exists for user.");
+                return false;
+            }
+
+            // Check if the loan is allowed based on the available balance and outstanding loans
+            if (!IsLoanAllowed(userID))
             {
                 Console.WriteLine("Loan exceeds allowable limit.");
                 return false;
             }
 
+
+            //---------------------------------
+
             // SQL query to insert the loan into the Loans table 
             string insertLoanQuery = @"
         INSERT INTO Loans (UserID, Amount, InterestRate)
-        VALUES (@UserID, @Amount, @InterestRate, @DueDate, @Status)";
+        VALUES (@UserID, @Amount, @InterestRate, @Status)";
 
             // using Dapper to execute the insert operation            
             using (var connection = new SQLiteConnection(DB._connectionString))
@@ -110,7 +142,47 @@ namespace SalamanderBank
         }
 
 
+        // New method to collect loan input from the user
+        public static void CollectLoanInput()
+        {
+            // Prompt the user for their ID
+            Console.WriteLine("Enter your user ID:");
+            int userId;
+            while (!int.TryParse(Console.ReadLine(), out userId) || userId <= 0)
+            {
+                Console.WriteLine("Please enter a valid positive integer for the user ID.");
+            }
 
+            // Create a User object
+            User user = new User { ID = userId }; // Assume User object is created based on input
 
+            // Prompt for loan amount
+            Console.WriteLine("Enter loan amount:");
+            decimal loanAmount;
+            while (!decimal.TryParse(Console.ReadLine(), out loanAmount) || loanAmount <= 0)
+            {
+                Console.WriteLine("Please enter a valid positive amount for the loan.");
+            }
+
+            // Prompt for interest rate
+            Console.WriteLine("Enter interest rate (e.g., 5.5 for 5.5%):");
+            decimal interestRate;
+            while (!decimal.TryParse(Console.ReadLine(), out interestRate) || interestRate <= 0)
+            {
+                Console.WriteLine("Please enter a valid positive interest rate.");
+            }
+
+            // Call AddLoan to add the loan to the database
+            bool loanAdded = AddLoan(userId, loanAmount, interestRate);
+
+            if (loanAdded)
+            {
+                Console.WriteLine("Loan has been successfully added!");
+            }
+            else
+            {
+                Console.WriteLine("Failed to add the loan.");
+            }
+        }
     }
 }

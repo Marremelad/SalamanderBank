@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace SalamanderBank
 {
+   
     public class Loan
     {
         public int LoanId { get; set; }
         public int UserId { get; set; }
         public decimal Amount { get; set; }
         public decimal InterestRate { get; set; }
-        
         public string Status { get; set; }
 
         // Constructor for initializing Loan objects

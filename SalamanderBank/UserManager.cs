@@ -39,7 +39,7 @@ namespace SalamanderBank
                         Verified = verified
                     };
                     User user = connection.QuerySingle<User>(insertQuery, parameters);
-                }   
+                }
             }
             return null;
         }
@@ -92,8 +92,8 @@ namespace SalamanderBank
             using (SQLiteConnection connection = new SQLiteConnection(DB._connectionString))
             {
                 connection.Open();
-                count = connection.ExecuteScalar<int>(query, new {PhoneNumber = phoneNumber});
-                
+                count = connection.ExecuteScalar<int>(query, new { PhoneNumber = phoneNumber });
+
             }
             return count > 0;
         }
@@ -114,7 +114,7 @@ namespace SalamanderBank
             }
         }
 
-		// Updates user password
+        // Updates user password
         public static void ChangePassword(string? email, string newPassword)
         {
             using (var connection = new SQLiteConnection(DB._connectionString))
@@ -133,10 +133,10 @@ namespace SalamanderBank
             }
         }
 
-		// Accepts a User object and a new password
-		// Updates the User object's password
+        // Accepts a User object and a new password
+        // Updates the User object's password
         // Accepts an email and a new password and updates the password in the database
-		public static void UpdateUserPassword(User user, string newPassword)
+        public static void UpdateUserPassword(User user, string newPassword)
         {
             string updateQuery = "UPDATE Users SET Password = @NewPassword WHERE ID = @UserID;";
 
@@ -147,21 +147,21 @@ namespace SalamanderBank
                 using (SQLiteCommand updateCommand = new SQLiteCommand(updateQuery, connection))
                 {
                     string newHashedPassword = Auth.HashPassword(newPassword);
-                    
 
-					updateCommand.Parameters.AddWithValue("@NewPassword", newHashedPassword);
+
+                    updateCommand.Parameters.AddWithValue("@NewPassword", newHashedPassword);
                     updateCommand.Parameters.AddWithValue("@UserID", user.ID);
 
                     int rowsAffected = updateCommand.ExecuteNonQuery();
                     Console.WriteLine($"{rowsAffected} row(s) updated in Users table.");
 
-					// Checks if account successfully updated
-					if (rowsAffected > 0)
-					{
-						// Updates the User object's password
-						user.Password = newHashedPassword;
-					}
-				}
+                    // Checks if account successfully updated
+                    if (rowsAffected > 0)
+                    {
+                        // Updates the User object's password
+                        user.Password = newHashedPassword;
+                    }
+                }
             }
         }
 
@@ -182,13 +182,13 @@ namespace SalamanderBank
 
                     int rowsAffected = updateCommand.ExecuteNonQuery();
                     Console.WriteLine($"{rowsAffected} row(s) updated in Users table.");
-					
+
                     // Checks if account successfully updated
-					if (rowsAffected > 0)
+                    if (rowsAffected > 0)
                     {
-						// Updates the User object's phone number
-						user.PhoneNumber = newPhoneNumber;
-					}
+                        // Updates the User object's phone number
+                        user.PhoneNumber = newPhoneNumber;
+                    }
                 }
             }
         }
@@ -214,36 +214,76 @@ namespace SalamanderBank
                     // Checks if account successfully updated
                     if (rowsAffected > 0)
                     {
-						// Updates the User object's email
-						user.Email = newEmail;
-					}
+                        // Updates the User object's email
+                        user.Email = newEmail;
+                    }
                 }
             }
         }
+        // Changes User object's locked column in database
+        public static void UpdateUserLock(User user, int locked)
+        {
+            string updateQuery = "UPDATE Users SET Locked = @NewLocked WHERE ID = @UserID;";
 
-		// Changes User object's locked column in database
-		public static void UpdateUserLock(User user, int locked)
-		{
-			string updateQuery = "UPDATE Users SET Locked = @NewLocked WHERE ID = @UserID;";
+            using (SQLiteConnection connection = new SQLiteConnection(DB._connectionString))
+            {
+                connection.Open();
 
-			using (SQLiteConnection connection = new SQLiteConnection(DB._connectionString))
-			{
-				connection.Open();
+                using (SQLiteCommand updateCommand = new SQLiteCommand(updateQuery, connection))
+                {
+                    updateCommand.Parameters.AddWithValue("@NewLocked", locked);
+                    updateCommand.Parameters.AddWithValue("@UserID", user.ID);
 
-				using (SQLiteCommand updateCommand = new SQLiteCommand(updateQuery, connection))
-				{
-					updateCommand.Parameters.AddWithValue("@NewLocked", locked);
-					updateCommand.Parameters.AddWithValue("@UserID", user.ID);
-
-					int rowsAffected = updateCommand.ExecuteNonQuery();
-					Console.WriteLine($"{rowsAffected} row(s) updated in Users table.");
+                    int rowsAffected = updateCommand.ExecuteNonQuery();
+                    Console.WriteLine($"{rowsAffected} row(s) updated in Users table.");
                     if (rowsAffected > 0)
                     {
-						// Updates the User object's locked column
-						user.Locked = locked;
-					}
-				}
-			}
-		}
-	}
+                        // Updates the User object's locked column
+                        user.Locked = locked;
+                    }
+                }
+            }
+        }
+        // Method to retrieve a user based on their ID
+        public static User GetUserByID(int userID)
+        {
+            // SQL query to fetch only the ID of the user based on the given user ID
+            string query = "SELECT * FROM Users WHERE ID = @UserID;";
+
+            using (var connection = new SQLiteConnection(DB._connectionString))
+            {
+                connection.Open(); // Open the database connection
+
+                using (var command = new SQLiteCommand(query, connection))
+                {
+                    // Bind the userID parameter to prevent SQL injection
+                    command.Parameters.AddWithValue("@UserID", userID);
+
+                    using (var reader = command.ExecuteReader())
+                    {
+                        // If a user is found, return a new User object with just the ID
+                        if (reader.Read())
+                        {
+                            return new User
+                            {
+                                ID = Convert.ToInt32(reader["ID"]),// Only set the ID as we don't need other data
+                            };
+                        }
+                        else
+                        {
+                            // If no user is found, log a message and return null
+                            Console.WriteLine("Användare ej funnen.");
+                            return null; // No user found, return null
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
+
+        
+    
+
+
+
