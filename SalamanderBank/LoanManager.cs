@@ -73,62 +73,37 @@ namespace SalamanderBank
         }
 
         //Method to add a loan to the database for the given user
-        public static bool AddLoan(User user, decimal loanAmount, decimal interestRate)
+        public static Loan? CreateLoan(User user, decimal loanAmount, decimal interestRate = 3)
         {
-            // Fetch the user object based on the provided userID
-            if (user == null)
-            {
-                Console.WriteLine("User not found.");
-                return false;
-            }
-
-            // Fetch the user's account information (Assuming the user has at least one account)
-            var account = user.Accounts.FirstOrDefault();
-            if (account == null)
-            {
-                Console.WriteLine("No account exists for user.");
-                return false;
-            }
 
             // Check if the loan is allowed based on the available balance and outstanding loans
             decimal amountAllowedToLoan = LoanAmountAllowed(user);
             if (amountAllowedToLoan <= 0)
             {
                 Console.WriteLine($"With your current balance you are only allowed to loan {amountAllowedToLoan}.");
-                return false;
+                return null;
             }
             //---------------------------------
 
             // SQL query to insert the loan into the Loans table 
             string insertLoanQuery = @"
                 INSERT INTO Loans (UserID, Amount, InterestRate)
-                VALUES (@UserID, @Amount, @InterestRate, @Status)";
+                VALUES (@UserID, @Amount, @InterestRate, @Status)
+                SELECT * FROM Users WHERE Id = last_insert_rowid();";
 
-            // using Dapper to execute the insert operation            
-            using (var connection = new SQLiteConnection(DB._connectionString))
+            using (SQLiteConnection connection = new SQLiteConnection(DB._connectionString))
             {
                 connection.Open();
-                // Excute the insert query with paramenters 
-                int affectedRows = connection.Execute(insertLoanQuery, new
+                // If email doesn't exist, proceed with insertion
+                var parameters = new
                 {
                     UserID = user.ID,
                     Amount = loanAmount,
-                    InterestRate = interestRate,
-                    Status = 0 
-                });
-
-                // Check if the loan was added successfully
-                if (affectedRows > 0)
-                {
-                    Console.WriteLine("Loan successfully added.");
-                    return true;
-                }
-                else
-                {
-                    Console.WriteLine("Failed to add loan.");
-                    return false;
-                }
-            }
+                    InterestRate = interestRate
+                };
+            Loan loan = connection.QuerySingle<Loan>(insertLoanQuery, parameters);
+            return loan;
+            } 
         }
     }
 }
