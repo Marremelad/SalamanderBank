@@ -17,10 +17,11 @@ namespace SalamanderBank
         public int Type;
         public float Interest;
         public List<Transfer> TransferList = [];
-        
-        public override string ToString()
+        public static Dictionary<int, float> AccountTypes = new Dictionary<int, float>
         {
-            return AccountName;
-        }
+            { 0, 0.00f },
+            { 1, 30.00f },
+            { 2, 20.0f }
+        };
     }
 }
