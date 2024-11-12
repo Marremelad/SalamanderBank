@@ -50,7 +50,9 @@ namespace SalamanderBank
                 account.TransferList = transferList;
             }
         }
-        public static void UpdateAccountBalance(Account account)
+
+		// Updates the account's balance in the database
+		public static void UpdateAccountBalance(Account account)
         {
             using (var connection = new SQLiteConnection(DB._connectionString))
             {
@@ -60,7 +62,8 @@ namespace SalamanderBank
             }
         }
 
-        public static void UpdateAccountCurrency(Account account)
+		// Updates the account's currency in the database
+		public static void UpdateAccountCurrency(Account account)
         {
             using (var connection = new SQLiteConnection(DB._connectionString))
             {
@@ -70,7 +73,18 @@ namespace SalamanderBank
             }
         }
 
-        public static Account? GetAccount(int id)
+		// Updates the account's name in the database
+		public static void UpdateAccountName(Account account)
+		{
+			using (var connection = new SQLiteConnection(DB._connectionString))
+			{
+				connection.Open();
+				var sql = "UPDATE Accounts SET Name = @name WHERE ID = @ID";
+				var affectedRows = connection.Execute(sql, new { name = account.AccountName, account.ID });
+			}
+		}
+
+		public static Account? GetAccount(int id)
         {
             using (var connection = new SQLiteConnection(DB._connectionString))
             {
