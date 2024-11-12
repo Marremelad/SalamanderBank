@@ -84,6 +84,18 @@ namespace SalamanderBank
                 }
             }
         }
+        public static bool PhoneNumberExists(string? phoneNumber)
+        {
+            string query = "SELECT COUNT(1) FROM Users WHERE PhoneNumber = @PhoneNumber;";
+            int count = 0;
+            using (SQLiteConnection connection = new SQLiteConnection(DB._connectionString))
+            {
+                connection.Open();
+                count = connection.ExecuteScalar<int>(query, new {PhoneNumber = phoneNumber});
+                
+            }
+            return count > 0;
+        }
 
         // Searches for a user and returns an array user ids that have similar first name, last name and email address
         public static List<User> SearchUser(string? searchTerm)
