@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using DotNetEnv;
 using System.Text.Json;
 using System.Data.SQLite;
+using Dapper;
 
 namespace SalamanderBank
 {
@@ -179,6 +180,17 @@ namespace SalamanderBank
             // Calculate the converted the amount based on the exchange rates
             decimal convertedAmount = (amount / fromRate) * toRate;
             return convertedAmount;
+        }
+        public static List<Currency>? GetAllCurrencies()
+        {
+            string query = @"SELECT * FROM Currencies";
+
+            using (var connection = new SQLiteConnection(DB._connectionString))
+            {
+                connection.Open();
+                List<Currency> codes = connection.Query<Currency>(query).ToList();
+                return codes;
+            }
         }
     }
 }
