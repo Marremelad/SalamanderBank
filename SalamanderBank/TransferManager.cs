@@ -70,7 +70,7 @@ namespace SalamanderBank
             }
         }
 
-        public static void ProcessTransfer(Transfer transfer)
+        private static void ProcessTransfer(Transfer transfer)
         {
             // Makes sure the receiver and the receiving account exists.
             if(transfer.ReceiverUser == null || transfer.ReceiverAccount == null)
@@ -97,14 +97,14 @@ namespace SalamanderBank
         }
     
         // Adds a tranfer to the database.
-        public static bool AddTransfer(Transfer transfer)
+        private static bool AddTransferToDB(Transfer transfer)
         {
             if (transfer.SenderAccount.Balance < transfer.Amount)
             {
                 return false;
             }
             // Deducts the money from the senders account and savess the transfer in the database.
-            // This ensures that the transfer continues to exist even if the application is closed.
+            // This ensures THAT The transfer continues to exist even if the application is closed.
             transfer.SenderAccount.Balance -= transfer.Amount;
             AccountManager.UpdateAccountBalance(transfer.SenderAccount);
             TransferQueue.Enqueue(transfer);
@@ -132,7 +132,7 @@ namespace SalamanderBank
         }
     
         // Creates a transfer object.
-        public static Transfer CreateTransferObject(Account senderAccount, Account receiverAccount, int amount)
+        public static Transfer? CreateTransfer(Account senderAccount, Account receiverAccount, int amount)
         {
             Transfer transfer = new()
             {
@@ -144,7 +144,11 @@ namespace SalamanderBank
                 TransferDate = DateTime.Now,
                 Processed = 0
             };
-            return transfer;
+            if (AddTransferToDB(transfer))
+            {
+                return transfer;
+            };
+            return null;
         }
 
         public static Transfer GetTransfer(int transferId)
