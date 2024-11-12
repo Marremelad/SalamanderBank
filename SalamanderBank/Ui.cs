@@ -149,8 +149,8 @@ public static class Ui
         UserManager.AddUser(0, _registeredPassword, _registeredEmail, _registeredFirstName, _registeredLastName, "0707070707");
         _user = Auth.Login(_registeredEmail, _registeredPassword);
         
-        AccountManager.CreateAccount(_user, "SEK", "Personal Account", 0, 0.5f);
-        AccountManager.CreateAccount(_user, "SEK", "Loan Account", 1, 2.5f);
+        AccountManager.CreateAccount(_user, "SEK", "Personal Account", 0);
+        AccountManager.CreateAccount(_user, "SEK", "Loan Account", 1);
         
         // Verify user account.
         VerifyAccount();
@@ -431,7 +431,7 @@ public static class Ui
             new SelectionPrompt<string>()
                 .PageSize(3)
                 .HighlightStyle(new Style(new Color(225, 69, 0)))
-                .AddChoices("Change Account Name", "Change Currency" , "Return")
+                .AddChoices("Change Account Name", "Change Account Currency" , "Return")
                 .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
 
         switch (choice)
@@ -440,8 +440,9 @@ public static class Ui
                 ChangeAccountName(account);
                 break;
             
-            case "Change Currency":
-                
+            case "Change Account Currency":
+                ChangeAccountCurrency(account);
+                break;
             
             case "Return":
                 BankAccounts();
@@ -467,9 +468,29 @@ public static class Ui
         AccountOptions(account);
     }
 
-    private static void ChangeAccountCurrency()
+    private static void ChangeAccountCurrency(Account account)
     {
-        
+        while (true)
+        {
+            string? currency;
+            do
+            {
+                Console.Clear();
+                Logo.DisplayFullLogo();
+            
+                Console.WriteLine();
+                var message = "New Account Name: ";
+                Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 2)));
+            
+            } while (string.IsNullOrEmpty(currency = Console.ReadLine()));
+
+            var exchangeRate = CurrencyManager.GetExchangeRate(currency);
+
+            if (exchangeRate == 0) continue;
+            account.CurrencyCode = currency.ToUpper();
+            break;
+        }
+        AccountOptions(account);
     }
     
     // Method to transfer funds with a loading animation.

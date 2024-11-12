@@ -95,7 +95,7 @@ namespace SalamanderBank
         }
 
         // A method that retreives all accounts where all any account's UserID column = user.ID
-        public static void GetAccountsFromUser(User user)
+        public static void GetAccountsFromUser(User? user)
         {
             using (var connection = new SQLiteConnection(DB._connectionString))
             {
@@ -145,7 +145,7 @@ namespace SalamanderBank
         }
 
         // Creates an account for the user used as an argument
-        public static void CreateAccount(User user, string currencyCode, string accountName, int type)
+        public static void CreateAccount(User? user, string currencyCode, string accountName, int type)
         {
             // Checks if the account name is already in use
             if (user.Accounts.Any(acc => acc.AccountName == accountName))
