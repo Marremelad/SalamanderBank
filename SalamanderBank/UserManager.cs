@@ -12,7 +12,7 @@ namespace SalamanderBank
     {
 
         // Adds a user
-        public static User? AddUser(int type, string password, string? email, string? firstName, string? lastName, string phoneNumber = null)
+        public static User? AddUser(int type, string password, string? email, string? firstName, string? lastName, string phoneNumber = null, int verified = 0)
         {
             // Check if the email already exists
             if (!EmailExists(email))
@@ -20,7 +20,7 @@ namespace SalamanderBank
                 // Query to insert a new user
                 string insertQuery = @"
                     INSERT INTO Users (Type, Password, Email, FirstName, LastName, PhoneNumber, Verified, Locked) 
-                    VALUES (@Type, @Password, @Email, @FirstName, @LastName, @PhoneNumber, 0, 0);
+                    VALUES (@Type, @Password, @Email, @FirstName, @LastName, @PhoneNumber, @Verified, 0);
                     SELECT * FROM Users WHERE Id = last_insert_rowid();";
 
                 using (SQLiteConnection connection = new SQLiteConnection(DB._connectionString))
@@ -35,7 +35,8 @@ namespace SalamanderBank
                         Email = DB.Escape(email),
                         FirstName = DB.Escape(firstName),
                         LastName = DB.Escape(lastName),
-                        PhoneNumber = phoneNumber == null ? null : DB.Escape(phoneNumber)
+                        PhoneNumber = phoneNumber == null ? null : DB.Escape(phoneNumber),
+                        Verified = verified
                     };
                     User user = connection.QuerySingle<User>(insertQuery, parameters);
                 }   
