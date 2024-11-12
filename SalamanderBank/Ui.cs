@@ -124,7 +124,7 @@ public static class Ui
                 TransferFrom();
                 break;
             case "Money Exchange":
-                //MoneyExchange();
+                Currencies();
                 throw new NotImplementedException();
                 break;
             case "Take Loan":
@@ -618,6 +618,76 @@ public static class Ui
         PlaySound(@"./Sounds/cashier-quotka-chingquot-sound-effect-129698.wav");
         
         Thread.Sleep(3000);
+    }
+
+    private static void Currencies()
+    {
+        //Writes out currencies that are available for exchange
+        var customStyle = new Style(new Color(225, 69, 0));
+
+        var prompt = new SelectionPrompt<string>()
+            .Title("[bold underline rgb(190,40,0)]Select an Exchange Rate[/]")
+            .PageSize(10)
+            .HighlightStyle(customStyle);
+        //Writes out every currency available in dictionary, needs to connect with GetExchangeRates
+        
+        foreach (var rate in CurrencyManager.GetAllCurrencies()!)
+            prompt.AddChoice(
+                $"[bold white]{rate.CurrencyCode,-5}[/] | {rate.ExchangeRate,-25} |");
+        var selectedRate = AnsiConsole.Prompt(prompt);
+        AnsiConsole.MarkupLine($"[bold yellow]You selected:[/] {selectedRate}. " +
+                               $"\nWe will now begin the process of exchanging your money.");
+        Thread.Sleep(1000);
+        ExchangingMoney();
+    }
+
+    private static void ExchangingMoney() //Maybe add the currency choosen
+    {
+        var customStyle = new Style(new Color(225, 69, 0));
+        Console.Clear();
+        Logo.DisplayFullLogo();
+        AnsiConsole.Progress()
+            .AutoRefresh(true)
+            .AutoClear(false)
+            .HideCompleted(false)
+            .Columns(
+                new TaskDescriptionColumn(),
+                new ProgressBarColumn(),
+                new RemainingTimeColumn { Style = customStyle },
+                new SpinnerColumn())
+            .StartAsync(async ctx =>
+            {
+                // Defines task1 and task2
+                var task1 = ctx.AddTask("[rgb(190,40,0)]Processing exchange request[/]");
+                var task2 = ctx.AddTask("[rgb(190,40,0)]Updating account balances[/]");
+
+                // Runs task1 to completion
+                await RunTaskAsync(task1, 2, "Processing exchange request");
+
+                // Once task1 is done, run task2
+                await RunTaskAsync(task2, 1.5, "Updating account balances");
+            }).GetAwaiter().GetResult();
+        Console.Clear();
+        Logo.DisplayFullLogo();
+        AnsiConsole.MarkupLine("[bold green]Your exchange has been successfully processed.[/]"); //Needs to be centered
+        //Maybe add the exchange details, currency, acronym, value etc. 
+        Console.ReadLine();
+        SignedIn();
+
+        return;
+
+        static async Task RunTaskAsync(ProgressTask task, double incrementValue, string contextDescription)
+        {
+            while (!task.IsFinished)
+            {
+                task.Increment(incrementValue); // Increment task progress
+
+                // Dynamically color-code the task description
+                var color = task.Value < 30 ? "rgb(190,40,0)" : task.Value < 100 ? "yellow" : "green";
+                task.Description = $"[bold {color}] {contextDescription} {task.Value:0}%[/]";
+                await Task.Delay(250); // Simulate work 
+            }
+        }
     }
     
     // Method to play a sound from the specified file path.
