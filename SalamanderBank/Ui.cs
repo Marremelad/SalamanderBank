@@ -38,8 +38,6 @@ public static class Ui
     
     // String representing valid email pattern.
     private static readonly string EmailPattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
-
-    private static decimal TotalBalance = 0;
     
     // Title screen.
     private static void TitleScreen()
@@ -383,13 +381,8 @@ public static class Ui
 
     private static decimal GetTotalBalance()
     {
-        if (_user?.Accounts == null) return TotalBalance;
-        foreach (var account in _user.Accounts)
-        {
-            TotalBalance += account.Balance;
-        }
-
-        return TotalBalance;
+        decimal totalBalance = 0;
+        return _user?.Accounts?.Sum(account => account.Balance) ?? totalBalance;
     }
 
     private static void BankAccounts()
@@ -441,17 +434,13 @@ public static class Ui
             new SelectionPrompt<string>()
                 .PageSize(3)
                 .HighlightStyle(new Style(new Color(225, 69, 0)))
-                .AddChoices("Change Account Name", "Change Account Currency" , "Return")
+                .AddChoices("Change Account Name", "Return")
                 .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
 
         switch (choice)
         {
             case "Change Account Name":
                 ChangeAccountName(account);
-                break;
-            
-            case "Change Account Currency":
-                ChangeAccountCurrency(account);
                 break;
             
             case "Return":
@@ -473,8 +462,10 @@ public static class Ui
             Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 2)));
             
         } while (string.IsNullOrEmpty(name = Console.ReadLine()));
-
+        
         account.AccountName = name;
+        AccountManager.UpdateAccountName(account);
+        
         AccountOptions(account);
     }
 
@@ -489,7 +480,7 @@ public static class Ui
                 Logo.DisplayFullLogo();
             
                 Console.WriteLine();
-                var message = "New Account Name: ";
+                var message = "New Currency Code: ";
                 Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 2)));
             
             } while (string.IsNullOrEmpty(currency = Console.ReadLine()));

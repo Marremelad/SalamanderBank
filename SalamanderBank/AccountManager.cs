@@ -79,7 +79,7 @@ namespace SalamanderBank
 			using (var connection = new SQLiteConnection(DB._connectionString))
 			{
 				connection.Open();
-				var sql = "UPDATE Accounts SET Name = @name WHERE ID = @ID";
+				var sql = "UPDATE Accounts SET AccountName = @name WHERE ID = @ID";
 				var affectedRows = connection.Execute(sql, new { name = account.AccountName, account.ID });
 			}
 		}
