@@ -106,5 +106,42 @@ namespace SalamanderBank
                 .Replace("%", "[%]")
                 .Replace("_", "[_]");
         }
+
+        //-----------------------------------------------------------
+
+        // This method creates the Loans table in the SQLite database.
+        public static void CreateLoanTable()
+        {
+            // SQL query to create the Loans table if it doesn't already exist
+            string createTableQuery = @"
+        CREATE TABLE IF NOT EXISTS Loans (
+            ID INTEGER PRIMARY KEY AUTOINCREMENT,    -- Unique ID for the loan record
+            UserID INTEGER NOT NULL,                 -- UserID referencing the user who took the loan
+            Amount DECIMAL(18, 2) NOT NULL,          -- Amount of the loan
+            InterestRate DECIMAL(5, 2) NOT NULL,    -- Interest rate for the loan
+            LoanDate DATETIME DEFAULT CURRENT_TIMESTAMP, -- The date the loan was issued
+            DueDate DATETIME,                        -- The due date for repayment of the loan
+            Status INTEGER NOT NULL,                -- Status of the loan (0 = Pending, 1 = Paid, 2 = Default)
+            FOREIGN KEY (UserID) REFERENCES Users(ID) -- Foreign key constraint linking to Users table
+        );";
+
+            // Establish connection to the SQLite database
+            using (var connection = new SQLiteConnection("Data Source=your-database-file-path;"))
+            {
+                // Open the database connection
+                connection.Open();
+
+                // Create a command to execute the SQL query
+                using (var command = new SQLiteCommand(createTableQuery, connection))
+                {
+                    // Execute the command to create the table
+                    command.ExecuteNonQuery();
+                }
+            }
+
+            // Notify that the Loans table has been created (if it didn't already exist)
+            Console.WriteLine("Loans table created (if not exists).");
+        }
+
     }
 }
