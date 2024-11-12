@@ -19,8 +19,8 @@ namespace SalamanderBank
             {
                 // Query to insert a new user
                 string insertQuery = @"
-                    INSERT INTO Users (Type, Password, Email, FirstName, LastName, PhoneNumber, Verified) 
-                    VALUES (@Type, @Password, @Email, @FirstName, @LastName, @PhoneNumber, 0);
+                    INSERT INTO Users (Type, Password, Email, FirstName, LastName, PhoneNumber, Verified, Locked) 
+                    VALUES (@Type, @Password, @Email, @FirstName, @LastName, @PhoneNumber, 0, 0);
                     SELECT * FROM Users WHERE Id = last_insert_rowid();";
 
                 using (SQLiteConnection connection = new SQLiteConnection(DB._connectionString))
@@ -222,5 +222,30 @@ namespace SalamanderBank
                 }
             }
         }
-    }
+
+		// Changes User object's locked column in database
+		public static void UpdateUserLock(User user, int locked)
+		{
+			string updateQuery = "UPDATE Users SET Locked = @NewLocked WHERE ID = @UserID;";
+
+			using (SQLiteConnection connection = new SQLiteConnection(DB._connectionString))
+			{
+				connection.Open();
+
+				using (SQLiteCommand updateCommand = new SQLiteCommand(updateQuery, connection))
+				{
+					updateCommand.Parameters.AddWithValue("@NewLocked", locked);
+					updateCommand.Parameters.AddWithValue("@UserID", user.ID);
+
+					int rowsAffected = updateCommand.ExecuteNonQuery();
+					Console.WriteLine($"{rowsAffected} row(s) updated in Users table.");
+                    if (rowsAffected > 0)
+                    {
+						// Updates the User object's locked column
+						user.Locked = locked;
+					}
+				}
+			}
+		}
+	}
 }
