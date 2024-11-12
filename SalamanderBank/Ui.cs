@@ -1,5 +1,6 @@
 using System.Media;
 using System.Text.RegularExpressions;
+using Org.BouncyCastle.Asn1.X509.Qualified;
 using Spectre.Console;
 
 namespace SalamanderBank;
@@ -124,7 +125,7 @@ public static class Ui
                 TransferFrom();
                 break;
             case "Money Exchange":
-                Currencies();
+                ExchangeMenu();
                 throw new NotImplementedException();
                 break;
             case "Take Loan":
@@ -620,7 +621,26 @@ public static class Ui
         Thread.Sleep(3000);
     }
 
-    private static void Currencies()
+    private static void ExchangeMenu()
+    {
+        if(_user?.Accounts == null) return;
+        var choice = AnsiConsole.Prompt(
+            new SelectionPrompt<object>()
+                .PageSize(5)
+                .HighlightStyle(new Style(new Color(225, 69, 0)))
+                .Title("    Choose Account To Exchange".PadLeft(5))
+                .AddChoices(_user.Accounts)
+                .AddChoiceGroup("", "Main Menu")
+                .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
+        switch (choice)
+        {
+            case "Main Menu":
+                SignedIn();
+                break;
+        }
+        Currencies((Account)choice);
+    }
+    private static void Currencies(Account account)
     {
         //Writes out currencies that are available for exchange
         var customStyle = new Style(new Color(225, 69, 0));
@@ -629,19 +649,25 @@ public static class Ui
             .Title("[bold underline rgb(190,40,0)]Select an Exchange Rate[/]")
             .PageSize(10)
             .HighlightStyle(customStyle);
-        //Writes out every currency available in dictionary, needs to connect with GetExchangeRates
         
         foreach (var rate in CurrencyManager.GetAllCurrencies()!)
             prompt.AddChoice(
-                $"[bold white]{rate.CurrencyCode,-5}[/] | {rate.ExchangeRate,-25} |");
+                $"[bold white]{rate.CurrencyCode,-5}[/] | {rate.ExchangeRate,-10} |");
         var selectedRate = AnsiConsole.Prompt(prompt);
         AnsiConsole.MarkupLine($"[bold yellow]You selected:[/] {selectedRate}. " +
                                $"\nWe will now begin the process of exchanging your money.");
+        
+        CurrencyConverter(selectedRate, account);
         Thread.Sleep(1000);
-        ExchangingMoney();
     }
-
-    private static void ExchangingMoney() //Maybe add the currency choosen
+    
+     private static void CurrencyConverter(string selectedRate, Account account)
+        {
+            CurrencyManager.ConvertCurrency(account.Balance, account.CurrencyCode, selectedRate);
+            AccountOptions(account);
+            ExchangingMoney(account);
+        }
+    private static void ExchangingMoney(Account account) //Maybe add the currency choosen
     {
         var customStyle = new Style(new Color(225, 69, 0));
         Console.Clear();
@@ -671,6 +697,8 @@ public static class Ui
         Logo.DisplayFullLogo();
         AnsiConsole.MarkupLine("[bold green]Your exchange has been successfully processed.[/]"); //Needs to be centered
         //Maybe add the exchange details, currency, acronym, value etc. 
+        
+        AccountDetails(account);
         Console.ReadLine();
         SignedIn();
 
@@ -689,6 +717,8 @@ public static class Ui
             }
         }
     }
+
+   
     
     // Method to play a sound from the specified file path.
     private static void PlaySound(string filePath)
