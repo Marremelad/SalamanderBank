@@ -1,5 +1,6 @@
 using System.Media;
 using System.Text.RegularExpressions;
+using DotNetEnv;
 using Spectre.Console;
 
 namespace SalamanderBank;
@@ -12,6 +13,7 @@ public static class Ui
     private static string? _registeredLastName;
     private static string? _registeredEmail;
     private static string? _registeredPassword;
+    private static string? _registeredPhoneNumber;
     
     // Field storing user object.
     private static User? _user;
@@ -36,9 +38,18 @@ public static class Ui
     private static string PasswordDisplay => $"Password: {_registeredPassword}".PadLeft(_registeredPassword != null ?
         "Password: ".Length + _registeredPassword.Length + (int)DisplayPadding : "Password: ".Length + (int)DisplayPadding);
     
-    // String representing valid email pattern.
-    private static readonly string EmailPattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
+    // Display formatted phone number with padding.
+    private static string PhoneNumberDisplay => $"Phone Number: {_registeredPhoneNumber}".PadLeft(
+        _registeredPhoneNumber != null
+            ? "Phone Number: ".Length + _registeredPhoneNumber.Length + (int)DisplayPadding : "Phone Number: ".Length + (int)DisplayPadding);
     
+    // String representing valid email pattern.
+    private const string EmailPattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
+    private const string PhoneNumberPattern = @"^\+46\d{9}$";
+    
+    //
+    
+
     // Title screen.
     private static void TitleScreen()
     {
@@ -59,10 +70,19 @@ public static class Ui
     public static async Task DisplayMainMenu()
     {
         DB.InitializeDatabase();
+        
+        // Env.Load();
+        // var adminEmail = Env.GetString("EMAIL");
+        
+        if (!UserManager.EmailExists("salamanderbank@gmail.com"))
+        {
+            UserManager.AddUser(1, $"admin", "salamanderbank@gmail.com", "Salamander", "Admin", null, 1);
+        }
+        
         TransferManager.PopulateQueueFromDB();
-
+        
         await CurrencyManager.UpdateCurrenciesAsync();
-
+        
         var thread = new Thread(TransferManager.ProcessQueue);
         thread.Start();
         
@@ -101,7 +121,7 @@ public static class Ui
     }
     
     //Second Menu after Signing in
-    static void SignedIn()
+    static void UserSignedIn()
     {
         Console.Clear();
         Logo.DisplayFullLogo();
@@ -148,17 +168,23 @@ public static class Ui
         _registeredLastName = GetLastName();
         _registeredEmail = GetEmail();
         _registeredPassword = GetPassword();
+        _registeredPhoneNumber = GetPhoneNumber();
 
         // Add new user to database and create a standard bank account.
-        UserManager.AddUser(0, _registeredPassword, _registeredEmail, _registeredFirstName, _registeredLastName, "0707070707");
+        UserManager.AddUser(0, _registeredPassword, _registeredEmail, _registeredFirstName, _registeredLastName, _registeredPhoneNumber);
         _user = Auth.Login(_registeredEmail, _registeredPassword);
-        
-        AccountManager.CreateAccount(_user, "SEK", "Personal Account", 0, 1000000);
-        AccountManager.CreateAccount(_user, "SEK", "Loan Account", 1);
-        AccountManager.CreateAccount(_user, "SEK", "Loan Account2", 1);
+
+        CreateDefaultBankAccounts(_user);
         
         // Verify user account.
         VerifyAccount();
+    }
+
+    private static void CreateDefaultBankAccounts(User? user)
+    {
+        AccountManager.CreateAccount(user, "SEK", "Personal Account", 0, 1000000);
+        AccountManager.CreateAccount(user, "SEK", "Loan Account", 1);
+        AccountManager.CreateAccount(user, "SEK", "Savings Account", 2);
     }
 
     // Method for signing in to account.
@@ -172,8 +198,16 @@ public static class Ui
         
         SetUserValues();
         IsVerified();
+
+        if (_user != null && _user.Type == 1)
+        {
+            AdminSignedIn();
+        }
+        else
+        {
+            UserSignedIn();
+        }
         
-        SignedIn();
     }
 
     // Method to get email input on sign in attempt.
@@ -245,6 +279,7 @@ public static class Ui
         if (_user == null) return;
         _registeredFirstName = _user.FirstName;
         _registeredLastName = _user.LastName;
+        _registeredPhoneNumber = _user.PhoneNumber;
     }
     
     // Method to get the first name from user input.
@@ -296,7 +331,6 @@ public static class Ui
                 {
                     return email;
                 }
-                
                 Console.WriteLine();
                 var message1 = "\u001b[38;2;255;69;0mThis email is already in use\u001b[0m";
                 Console.Write($"{message1}".PadLeft(message1.Length + (int)((Console.WindowWidth - message1.Length) / 1.7)));
@@ -335,6 +369,39 @@ public static class Ui
             Thread.Sleep(3000);
         }
     }
+
+    private static string GetPhoneNumber()
+    {
+        while (true)
+        {
+            Console.Clear();
+            Logo.DisplayFullLogo();
+            
+            Console.Write($"{FirstNameDisplay}\n{LastNameDisplay}\n{EmailDisplay}\n{PasswordDisplay}\n{PhoneNumberDisplay}");
+            
+            var phoneNumber = Console.ReadLine();
+            if (phoneNumber != null && Regex.IsMatch(phoneNumber, PhoneNumberPattern))
+            {
+                
+                if (!UserManager.PhoneNumberExists(phoneNumber))
+                {
+                    return phoneNumber;
+                }
+                Console.WriteLine();
+                var message1 = "\u001b[38;2;255;69;0mThis phone number is already in use\u001b[0m";
+                Console.Write($"{message1}".PadLeft(message1.Length + (int)((Console.WindowWidth - message1.Length) / 1.7)));
+            }
+            else
+            {
+                Console.WriteLine();
+                var message2 = "\u001b[38;2;255;69;0mPlease enter a valid phone number with '+46' at the beginning\u001b[0m";
+                Console.Write($"{message2}".PadLeft(message2.Length + (int)((Console.WindowWidth - message2.Length) / 1.7)));
+            }
+            
+
+            Thread.Sleep(2000);
+        }
+    }
     
     // Method to validate the account through a verification code.
     private static void VerifyAccount()
@@ -366,7 +433,7 @@ public static class Ui
 
         UserManager.VerifyUser(_registeredEmail);
         
-        SignedIn();
+        UserSignedIn();
     }
     
     // Method to display account details in a formatted table.
@@ -380,6 +447,7 @@ public static class Ui
         table.AddColumn("User Information");
         table.AddRow($"Name: {_registeredFirstName} {_registeredLastName}");
         table.AddRow($"Email: {_registeredEmail}");
+        table.AddRow($"Phone Number: {_registeredPhoneNumber}");
         table.AddRow($"Total Balance: {GetTotalBalance():F2}");
         table.Border = TableBorder.Rounded;
         table.BorderStyle = new Style(ConsoleColor.DarkRed);
@@ -418,7 +486,7 @@ public static class Ui
         switch (choice)
         {
             case "Main Menu":
-                SignedIn();
+                UserSignedIn();
                 break;
         }
 
@@ -528,7 +596,7 @@ public static class Ui
         switch (choice)
         {
             case "Main Menu":
-                SignedIn();
+                UserSignedIn();
                 break;
         }
 
@@ -561,7 +629,7 @@ public static class Ui
             switch (choice)
             {
                 case "Main Menu":
-                    SignedIn();
+                    UserSignedIn();
                     break;
             }
             
@@ -586,7 +654,7 @@ public static class Ui
         }
         
         TransferAnimation();
-        SignedIn();
+        UserSignedIn();
     }
     
     // Method to transfer funds with a loading animation.
@@ -625,5 +693,166 @@ public static class Ui
     {
         using SoundPlayer soundPlayer = new(filePath);
         soundPlayer.PlaySync();
+    }
+    
+    static void AdminSignedIn()
+    {
+        Console.Clear();
+        Logo.DisplayFullLogo();
+        
+        var selection = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .PageSize(5)
+                .HighlightStyle(new Style(new Color(225, 69, 0)))
+                .AddChoices("Create User Account", "Remove User Account", "Exit")
+                .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
+        
+        switch (selection)
+        {
+            case "Create User Account":
+                AdminCreateNewUser();
+                break;
+        }
+    }
+
+    private static void AdminCreateNewUser()
+    {
+        EraseAdminFields();
+
+        _registeredFirstName = GetFirstName();
+        _registeredLastName = GetLastName();
+        _registeredEmail = GetEmail();
+        _registeredPassword = GetPassword();
+        _registeredPhoneNumber = GetPhoneNumber();
+        // var promptPadding = 2.2f;
+        // var messagePadding = 1.7f;
+        //
+        // string? firstName;
+        // do
+        // {
+        //     Console.Clear();
+        //     Logo.DisplayFullLogo();
+        //     
+        //     Console.Write("First Name: ".PadLeft("First Name: ".Length + (int)((Console.WindowWidth - "First Name: ".Length) / promptPadding)));
+        //     
+        // } while (string.IsNullOrEmpty(firstName = Console.ReadLine()));
+        //
+        // string? lastName;
+        // do
+        // {
+        //     Console.Clear();
+        //     Logo.DisplayFullLogo();
+        //     
+        //     Console.Write("Last Name: ".PadLeft("Last Name: ".Length + (int)((Console.WindowWidth - "Last Name: ".Length) / promptPadding)));
+        //     
+        // } while (string.IsNullOrEmpty(lastName = Console.ReadLine()));
+        //
+        // string? email;
+        // while (true)
+        // {
+        //     Console.Clear();
+        //     Logo.DisplayFullLogo();
+        //     
+        //     Console.Write("Email: ".PadLeft("Email: ".Length + (int)((Console.WindowWidth - "Email: ".Length) / promptPadding)));
+        //     
+        //     email = Console.ReadLine();
+        //     if (email != null && Regex.IsMatch(email, EmailPattern))
+        //     {
+        //         if (!UserManager.EmailExists(email))
+        //         {
+        //             break;
+        //         }
+        //         Console.WriteLine();
+        //         var message1 = "\u001b[38;2;255;69;0mThis email is already in use\u001b[0m";
+        //         Console.Write($"{message1}".PadLeft(message1.Length + (int)((Console.WindowWidth - message1.Length) / messagePadding)));
+        //     }
+        //     else
+        //     {
+        //         Console.WriteLine();
+        //         var message2 = "\u001b[38;2;255;69;0mPlease enter a valid email address\u001b[0m";
+        //         Console.Write($"{message2}".PadLeft(message2.Length + (int)((Console.WindowWidth - message2.Length) / messagePadding)));
+        //     }
+        //
+        //     Thread.Sleep(2000);
+        // }
+        //
+        // string? password;
+        // while (true)
+        // {
+        //     Console.Clear();
+        //     Logo.DisplayFullLogo();
+        //         
+        //     Console.Write("Password: ".PadLeft("Password: ".Length + (int)((Console.WindowWidth - "Password: ".Length) / promptPadding)));
+        //
+        //     password = Console.ReadLine();
+        //     if (!string.IsNullOrEmpty(password) && password.Length >= 8)
+        //     {
+        //         break;
+        //     }
+        //     Console.WriteLine();
+        //     var message = "\u001b[38;2;255;69;0mPassword has to be at least 8 characters long\u001b[0m";
+        //     Console.WriteLine($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / messagePadding)));
+        //     
+        //     Thread.Sleep(3000);
+        // }
+        //
+        // string? phoneNumber;
+        // while (true)
+        // {
+        //     Console.Clear();
+        //     Logo.DisplayFullLogo();
+        //     
+        //     Console.Write("Phone Number: ".PadLeft("Phone Number: ".Length + (int)((Console.WindowWidth - "Phone Number: ".Length) / promptPadding)));
+        //     
+        //     phoneNumber = Console.ReadLine();
+        //     if (phoneNumber != null && Regex.IsMatch(phoneNumber, PhoneNumberPattern))
+        //     {
+        //         
+        //         if (!UserManager.PhoneNumberExists(phoneNumber))
+        //         {
+        //             break;
+        //         }
+        //         Console.WriteLine();
+        //         var message1 = "\u001b[38;2;255;69;0mThis phone number is already in use\u001b[0m";
+        //         Console.WriteLine($"{message1}".PadLeft(message1.Length + (int)((Console.WindowWidth - message1.Length) / messagePadding)));
+        //     }
+        //     else
+        //     {
+        //         Console.WriteLine();
+        //         var message2 = "\u001b[38;2;255;69;0mPlease enter a valid phone number with '+46' at the beginning\u001b[0m";
+        //         Console.WriteLine($"{message2}".PadLeft(message2.Length + (int)((Console.WindowWidth - message2.Length) / messagePadding)));
+        //     }
+        //     
+        //
+        //     Thread.Sleep(2000);
+        // }
+        
+        
+        UserManager.AddUser(0, _registeredPassword, _registeredEmail, _registeredFirstName, _registeredLastName, _registeredPhoneNumber);
+        
+        var user = Auth.Login(_registeredEmail, _registeredPassword);
+        CreateDefaultBankAccounts(user);
+        
+        ResetAdminFields();
+        
+        AnsiConsole.WriteLine("\nUser was created successfully!");
+        Thread.Sleep(2000);
+        AdminSignedIn();
+    }
+
+    private static void EraseAdminFields()
+    {
+        _registeredFirstName = "";
+        _registeredLastName = "";
+        _registeredEmail = "";
+        _registeredPassword = "";
+        _registeredPhoneNumber = "";
+    }
+
+    private static void ResetAdminFields()
+    {
+        _registeredFirstName = "Salamander";
+        _registeredLastName = "Bank";
+        _registeredEmail = "salamanderbank@gmail.com";
     }
 }
