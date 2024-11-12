@@ -389,7 +389,7 @@ public static class Ui
             new SelectionPrompt<object>()
                 .PageSize(4)
                 .HighlightStyle(new Style(new Color(225, 69, 0)))
-                .Title("Accounts".PadLeft(5))
+                .Title("  Accounts".PadLeft(5))
                 .AddChoices(_user.Accounts)
                 .AddChoiceGroup("", "Main Menu")
                 .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
@@ -431,7 +431,7 @@ public static class Ui
             new SelectionPrompt<string>()
                 .PageSize(3)
                 .HighlightStyle(new Style(new Color(225, 69, 0)))
-                .AddChoices("Change Account Name", "Return")
+                .AddChoices("Change Account Name", "Change Currency" , "Return")
                 .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
 
         switch (choice)
@@ -439,6 +439,9 @@ public static class Ui
             case "Change Account Name":
                 ChangeAccountName(account);
                 break;
+            
+            case "Change Currency":
+                
             
             case "Return":
                 BankAccounts();
@@ -462,6 +465,11 @@ public static class Ui
 
         account.AccountName = name;
         AccountOptions(account);
+    }
+
+    private static void ChangeAccountCurrency()
+    {
+        
     }
     
     // Method to transfer funds with a loading animation.
