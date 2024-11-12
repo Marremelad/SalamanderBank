@@ -86,34 +86,19 @@ namespace SalamanderBank
         }
 
         // Searches for a user and returns an array user ids that have similar first name, last name and email address
-        public static int[] SearchUser(string? searchTerm)
+        public static List<User> SearchUser(string? searchTerm)
         {
-            string searchQuery = "SELECT ID FROM Users WHERE Email LIKE %@search% OR FirstName LIKE %@search% OR LastName LIKE %@search%;";
-            List<int> ids = new List<int>();
+            string searchQuery = "SELECT * FROM Users WHERE Email LIKE @search OR FirstName LIKE @search OR LastName LIKE @search;";
+            var parameters = new { search = $"%{searchTerm}%" };
+
 
             using (SQLiteConnection connection = new SQLiteConnection(DB._connectionString))
             {
                 connection.Open();
 
-                using (SQLiteCommand command = new SQLiteCommand(searchQuery, connection))
-                {
-                    // Bind parameters to prevent SQL injection
-                    command.Parameters.AddWithValue("@search", DB.Escape(searchTerm));
-
-                    // Reads the search results
-                    using (SQLiteDataReader reader = command.ExecuteReader())
-                    {
-                        // Reads the next row in the current result
-                        while (reader.Read())
-                        {
-                            // Add each matching uid to the list
-                            ids.Add(Convert.ToInt32(reader["ID"]));
-                        }
-                    }
-                }
+                List<User> users = connection.Query<User>(searchQuery, parameters).ToList();
+                return users;
             }
-            // Return the list as an array
-            return ids.ToArray();
         }
 
 		// Updates user password
