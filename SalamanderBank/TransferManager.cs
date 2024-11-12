@@ -132,7 +132,7 @@ namespace SalamanderBank
         }
     
         // Creates a transfer object.
-        public static Transfer? CreateTransfer(Account senderAccount, Account receiverAccount, int amount)
+        public static Transfer? CreateTransfer(Account senderAccount, Account receiverAccount, decimal amount)
         {
             Transfer transfer = new()
             {

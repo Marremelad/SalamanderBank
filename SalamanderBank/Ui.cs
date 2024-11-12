@@ -114,7 +114,7 @@ public static class Ui
                 BankAccounts();
                 break;
             case "Transfer Funds":
-                TransferFunds();
+                TransferFrom();
                 break;
             case "Money Exchange":
                 //MoneyExchange();
@@ -148,6 +148,7 @@ public static class Ui
         
         AccountManager.CreateAccount(_user, "SEK", "Personal Account", 0, 1000000);
         AccountManager.CreateAccount(_user, "SEK", "Loan Account", 1);
+        AccountManager.CreateAccount(_user, "SEK", "Loan Account2", 1);
         
         // Verify user account.
         VerifyAccount();
@@ -493,9 +494,83 @@ public static class Ui
         }
         AccountOptions(account);
     }
+
+    
+    private static void TransferFrom() 
+    {
+        if (_user?.Accounts == null) return;
+        var choice = AnsiConsole.Prompt(
+            new SelectionPrompt<object>()
+                .PageSize(4)
+                .HighlightStyle(new Style(new Color(225, 69, 0)))
+                .Title("  Choose Account To Transfer From".PadLeft(5))
+                .AddChoices(_user.Accounts)
+                .AddChoiceGroup("", "Main Menu")
+                .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
+
+        switch (choice)
+        {
+            case "Main Menu":
+                SignedIn();
+                break;
+        }
+
+        TransferTo((Account)choice);
+    }
+
+    private static void TransferTo(Account account)
+    {
+        List<Account> accounts = new List<Account>();
+        if (accounts == null) throw new ArgumentNullException(nameof(accounts));
+        
+        if (_user?.Accounts != null)
+        {
+            foreach (var userAccount in _user.Accounts!)
+            {
+                if (userAccount == account) continue;
+                accounts.Add(userAccount);
+            }
+
+            if (_user?.Accounts == null) return;
+            var choice = AnsiConsole.Prompt(
+                new SelectionPrompt<object>()
+                    .PageSize(4)
+                    .HighlightStyle(new Style(new Color(225, 69, 0)))
+                    .Title("  Choose Account To Transfer To".PadLeft(5))
+                    .AddChoices(accounts)
+                    .AddChoiceGroup("", "Main Menu")
+                    .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
+
+            switch (choice)
+            {
+                case "Main Menu":
+                    SignedIn();
+                    break;
+            }
+            
+            TransferFunds(account, (Account)choice);
+        }
+    }
+
+    private static void TransferFunds(Account sender, Account receiver)
+    {
+        while (true)
+        {
+            if (decimal.TryParse(Console.ReadLine(), out var transfer))
+            {
+                if (transfer > 0 && transfer <= sender.Balance)
+                {
+                    TransferManager.CreateTransfer(sender, receiver, transfer);
+                    break;
+                }
+
+                Console.WriteLine("Invalid transfer amount");
+            }
+        }
+    }
     
     // Method to transfer funds with a loading animation.
-    private static void TransferFunds()
+    private static void TransferAnimation()
     {
         Console.Clear();
         Logo.DisplayFullLogo();
