@@ -7,7 +7,7 @@ namespace SalamanderBank;
 public class SmsService
 {
     // Method to send an SMS to the specified phone number.
-    public static async Task<string> SendSms(string phoneNumber, string message = "Hello from team Salamander!")
+    public static async Task SendSms(string phoneNumber, string message = "Hello from team Salamander!")
     {
         try
         {
@@ -33,8 +33,7 @@ public class SmsService
             using var content = new FormUrlEncodedContent(data);
             using var response = await httpClient.PostAsync("https://api.46elks.com/a1/sms", content);
             string responseContent = await response.Content.ReadAsStringAsync();
-
-            return responseContent;
+            
         }
         catch (Exception e)
         {

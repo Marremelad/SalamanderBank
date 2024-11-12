@@ -12,7 +12,7 @@ namespace SalamanderBank
     {
 
         // Adds a user
-        public static User? AddUser(int type, string password, string? email, string? firstName, string? lastName, string phoneNumber = null, int verified = 0)
+        public static User? AddUser(int type, string password, string? email, string? firstName, string? lastName, string? phoneNumber = null, int verified = 0)
         {
             // Check if the email already exists
             if (!EmailExists(email))

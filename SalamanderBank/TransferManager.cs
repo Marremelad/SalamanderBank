@@ -53,7 +53,7 @@ namespace SalamanderBank
         {
             while (true)
             {
-                int timeToSleep = 900000; // If the queue is empty the thread will sleep for 15 minutes.
+                int timeToSleep = 5000; // If the queue is empty the thread will sleep for 15 minutes.
 
                 if (TransferQueue.TryDequeue(out Transfer transfer))
                 {
@@ -70,7 +70,7 @@ namespace SalamanderBank
             }
         }
 
-        private static void ProcessTransfer(Transfer transfer)
+        private static async Task ProcessTransfer(Transfer transfer)
         {
             // Makes sure the receiver and the receiving account exists.
             if(transfer.ReceiverUser == null || transfer.ReceiverAccount == null)
@@ -93,6 +93,8 @@ namespace SalamanderBank
                 string query = "UPDATE Transfers SET Processed = @processed WHERE ID = @ID";
                 var affectedRows = connection.Execute(query, new { processed = 1,transfer.ID });
                 transfer.Processed = 1;
+
+                await SmsService.SendSms(transfer.ReceiverUser.PhoneNumber, $"Hello {transfer.ReceiverUser.FirstName}! {transfer.Amount} {transfer.ReceiverAccount.CurrencyCode} was sent to your '{transfer.ReceiverAccount.AccountName}' account.");
             }
         }
     
@@ -132,7 +134,7 @@ namespace SalamanderBank
         }
     
         // Creates a transfer object.
-        public static Transfer? CreateTransfer(Account senderAccount, Account receiverAccount, int amount)
+        public static Transfer? CreateTransfer(Account senderAccount, Account receiverAccount, decimal amount)
         {
             Transfer transfer = new()
             {
