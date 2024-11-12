@@ -1,11 +1,11 @@
 ## Salamander Bank 🦎
 
-### Roles
-* [Mauricio Corte](https://github.com/Marremelad) (CEO) --> Connection Services
-* [Anton Dahlström](https://github.com/Anton-Dahlstrom) (CTO) (V-CEO) --> Architecture
-* [Onni Bucht](https://github.com/onni82) (V-CTO) --> Database
-* [Rasmus Wenngren](https://github.com/RasmusWenngren92) --> UI Design and implementation
-* [Matheus Torico](https://github.com/ikariLain) --> UML Design
+### Contributors
+* [Mauricio Corte](https://github.com/Marremelad)
+* [Anton Dahlström](https://github.com/Anton-Dahlstrom)
+* [Onni Bucht](https://github.com/onni82)
+* [Rasmus Wenngren](https://github.com/RasmusWenngren92)
+* [Matheus Torico](https://github.com/ikariLain)
 
 ### Requirements
 To run the app successfully make sure that you are using the following.
