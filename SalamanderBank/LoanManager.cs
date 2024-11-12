@@ -79,7 +79,7 @@ namespace SalamanderBank
 
             // SQL query to insert the loan into the Loans table 
             string insertLoanQuery = @"
-        INSERT INTO Loans (UserID, Amount, InterestRate, DueDate, Status)
+        INSERT INTO Loans (UserID, Amount, InterestRate)
         VALUES (@UserID, @Amount, @InterestRate, @DueDate, @Status)";
 
             // using Dapper to execute the insert operation            

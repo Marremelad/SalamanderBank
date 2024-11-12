@@ -16,7 +16,7 @@ namespace SalamanderBank
         public string Status { get; set; }
 
         // Constructor for initializing Loan objects
-        public Loan(int userId, decimal amount, decimal interestRate, DateTime dueDate)
+        public Loan(int userId, decimal amount, decimal interestRate)
         {
             UserId = userId;
             Amount = amount;
