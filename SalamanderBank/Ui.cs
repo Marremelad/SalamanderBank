@@ -38,9 +38,8 @@ public static class Ui
     
     // String representing valid email pattern.
     private static readonly string EmailPattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
-    
-    // Starting account balance.
-    private const decimal AccountBalance = 1500.75m;
+
+    private static decimal TotalBalance = 0;
     
     // Title screen.
     private static void TitleScreen()
@@ -149,7 +148,7 @@ public static class Ui
         UserManager.AddUser(0, _registeredPassword, _registeredEmail, _registeredFirstName, _registeredLastName, "0707070707");
         _user = Auth.Login(_registeredEmail, _registeredPassword);
         
-        AccountManager.CreateAccount(_user, "SEK", "Personal Account", 0);
+        AccountManager.CreateAccount(_user, "SEK", "Personal Account", 0, 1000000);
         AccountManager.CreateAccount(_user, "SEK", "Loan Account", 1);
         
         // Verify user account.
@@ -375,11 +374,22 @@ public static class Ui
         table.AddColumn("User Information");
         table.AddRow($"Name: {_registeredFirstName} {_registeredLastName}");
         table.AddRow($"Email: {_registeredEmail}");
-        table.AddRow($"Total Balance: {AccountBalance:F2}");
+        table.AddRow($"Total Balance: {GetTotalBalance():F2}");
         table.Border = TableBorder.Rounded;
         table.BorderStyle = new Style(ConsoleColor.DarkRed);
         table.Alignment(Justify.Center);
         AnsiConsole.Write(table);
+    }
+
+    private static decimal GetTotalBalance()
+    {
+        if (_user?.Accounts == null) return TotalBalance;
+        foreach (var account in _user.Accounts)
+        {
+            TotalBalance += account.Balance;
+        }
+
+        return TotalBalance;
     }
 
     private static void BankAccounts()
