@@ -50,7 +50,9 @@ namespace SalamanderBank
                 account.TransferList = transferList;
             }
         }
-        public static void UpdateAccountBalance(Account account)
+
+		// Updates the account's balance in the database
+		public static void UpdateAccountBalance(Account account)
         {
             using (var connection = new SQLiteConnection(DB._connectionString))
             {
@@ -60,7 +62,8 @@ namespace SalamanderBank
             }
         }
 
-        public static void UpdateAccountCurrency(Account account)
+		// Updates the account's currency in the database
+		public static void UpdateAccountCurrency(Account account)
         {
             using (var connection = new SQLiteConnection(DB._connectionString))
             {
@@ -70,7 +73,18 @@ namespace SalamanderBank
             }
         }
 
-        public static Account? GetAccount(int id)
+		// Updates the account's name in the database
+		public static void UpdateAccountName(Account account)
+		{
+			using (var connection = new SQLiteConnection(DB._connectionString))
+			{
+				connection.Open();
+				var sql = "UPDATE Accounts SET Name = @name WHERE ID = @ID";
+				var affectedRows = connection.Execute(sql, new { name = account.AccountName, account.ID });
+			}
+		}
+
+		public static Account? GetAccount(int id)
         {
             using (var connection = new SQLiteConnection(DB._connectionString))
             {
@@ -95,7 +109,7 @@ namespace SalamanderBank
         }
 
         // A method that retreives all accounts where all any account's UserID column = user.ID
-        public static void GetAccountsFromUser(User? user)
+        public static void GetAccountsFromUser(User user)
         {
             using (var connection = new SQLiteConnection(DB._connectionString))
             {
@@ -145,7 +159,7 @@ namespace SalamanderBank
         }
 
         // Creates an account for the user used as an argument
-        public static void CreateAccount(User? user, string currencyCode, string accountName, int type)
+        public static void CreateAccount(User user, string currencyCode, string accountName, int type, decimal balance = 0)
         {
             // Checks if the account name is already in use
             if (user.Accounts.Any(acc => acc.AccountName == accountName))
@@ -164,7 +178,7 @@ namespace SalamanderBank
 
                     // Inserts the account into SQL
                     var sql = "INSERT INTO Accounts (UserID, CurrencyCode, AccountName, Balance, Status, Type, Interest) VALUES (@UserID, @CurrencyCode, @AccountName, @Balance, @Status, @Type, @Interest)";
-                    var affectedRows = connection.Execute(sql, new { UserID = user.ID, CurrencyCode = currencyCode, AccountName = accountName, Balance = 0, Status = 1, Type = type, Interest = interest });
+                    var affectedRows = connection.Execute(sql, new { UserID = user.ID, CurrencyCode = currencyCode, AccountName = accountName, Balance = balance, Status = 1, Type = type, Interest = interest });
                     Console.WriteLine($"{affectedRows} rows inserted into Accounts.");
 
                     GetAccountsFromUser(user);
