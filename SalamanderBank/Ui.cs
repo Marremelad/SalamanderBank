@@ -56,9 +56,16 @@ public static class Ui
     }
     
     // Main menu display and selection handling method.
-    public static void DisplayMainMenu()
+    public static async Task DisplayMainMenu()
     {
         DB.InitializeDatabase();
+        TransferManager.PopulateQueueFromDB();
+
+        await CurrencyManager.UpdateCurrenciesAsync();
+
+        var thread = new Thread(TransferManager.ProcessQueue);
+        thread.Start();
+        
         TitleScreen();
         
         Console.Clear();
@@ -383,11 +390,21 @@ public static class Ui
     private static decimal GetTotalBalance()
     {
         decimal totalBalance = 0;
-        return _user?.Accounts?.Sum(account => account.Balance) ?? totalBalance;
+        
+        foreach (var userAccount in _user?.Accounts!)
+        {
+            totalBalance += userAccount.Balance;
+        }
+
+        return totalBalance;
     }
 
     private static void BankAccounts()
     {
+        Console.Clear();
+        Logo.DisplayFullLogo();
+        UserDetails();
+        
         if (_user?.Accounts == null) return;
         var choice = AnsiConsole.Prompt(
             new SelectionPrompt<object>()
@@ -563,10 +580,13 @@ public static class Ui
                     TransferManager.CreateTransfer(sender, receiver, transfer);
                     break;
                 }
-
+        
                 Console.WriteLine("Invalid transfer amount");
             }
         }
+        
+        TransferAnimation();
+        SignedIn();
     }
     
     // Method to transfer funds with a loading animation.
@@ -593,7 +613,7 @@ public static class Ui
         Logo.DisplayFullLogo();
         
         AnsiConsole.MarkupLine(
-            "\n[green]Transaction Complete![/]\nYou will now be redirected to the main menu.");
+            "\n[green]Transfer complete![/]\nYou will now be redirected to the main menu.");
         
         PlaySound(@"./Sounds/cashier-quotka-chingquot-sound-effect-129698.wav");
         

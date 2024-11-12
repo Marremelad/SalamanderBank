@@ -53,7 +53,7 @@ namespace SalamanderBank
         {
             while (true)
             {
-                int timeToSleep = 900000; // If the queue is empty the thread will sleep for 15 minutes.
+                int timeToSleep = 1; // If the queue is empty the thread will sleep for 15 minutes.
 
                 if (TransferQueue.TryDequeue(out Transfer transfer))
                 {
