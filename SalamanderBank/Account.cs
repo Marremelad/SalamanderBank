@@ -17,5 +17,10 @@ namespace SalamanderBank
         public int Type;
         public float Interest;
         public List<Transfer> TransferList = [];
+        
+        public override string ToString()
+        {
+            return AccountName;
+        }
     }
 }

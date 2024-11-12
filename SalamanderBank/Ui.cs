@@ -101,11 +101,11 @@ public static class Ui
     {
         Console.Clear();
         Logo.DisplayFullLogo();
-        AccountDetails();
+        UserDetails();
         
         var selection = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
-                .PageSize(3)
+                .PageSize(5)
                 .HighlightStyle(new Style(new Color(225, 69, 0)))
                 .AddChoices("Accounts", "Transfer Funds", "Money Exchange", "Take Loan",
                     "View Transactions", "Exit")
@@ -145,11 +145,13 @@ public static class Ui
         _registeredEmail = GetEmail();
         _registeredPassword = GetPassword();
 
-        // Adding new user to the database.
-       
+        // Add new user to database and create a standard bank account.
         UserManager.AddUser(0, _registeredPassword, _registeredEmail, _registeredFirstName, _registeredLastName, "0707070707");
+        _user = Auth.Login(_registeredEmail, _registeredPassword);
         
-        // AccountManager.CreateAccount();
+        AccountManager.CreateAccount(_user, "SEK", "Personal Account", 0, 0.5f);
+        AccountManager.CreateAccount(_user, "SEK", "Loan Account", 1, 2.5f);
+        
         // Verify user account.
         VerifyAccount();
     }
@@ -363,7 +365,46 @@ public static class Ui
     }
     
     // Method to display account details in a formatted table.
-    private static void AccountDetails()
+    private static void UserDetails()
+    {
+        Console.Clear();
+        Logo.DisplayFullLogo();
+        
+        var table = new Table();
+        
+        table.AddColumn("User Information");
+        table.AddRow($"Name: {_registeredFirstName} {_registeredLastName}");
+        table.AddRow($"Email: {_registeredEmail}");
+        table.AddRow($"Total Balance: {AccountBalance:F2}");
+        table.Border = TableBorder.Rounded;
+        table.BorderStyle = new Style(ConsoleColor.DarkRed);
+        table.Alignment(Justify.Center);
+        AnsiConsole.Write(table);
+    }
+
+    private static void BankAccounts()
+    {
+        if (_user?.Accounts == null) return;
+        var choice = AnsiConsole.Prompt(
+            new SelectionPrompt<object>()
+                .PageSize(4)
+                .HighlightStyle(new Style(new Color(225, 69, 0)))
+                .Title("Accounts".PadLeft(5))
+                .AddChoices(_user.Accounts)
+                .AddChoiceGroup("", "Main Menu")
+                .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
+
+        switch (choice)
+        {
+            case "Main Menu":
+                SignedIn();
+                break;
+        }
+
+        AccountOptions((Account)choice);
+    }
+
+    private static void AccountDetails(Account account)
     {
         Console.Clear();
         Logo.DisplayFullLogo();
@@ -371,19 +412,56 @@ public static class Ui
         var table = new Table();
         
         table.AddColumn("Account Information");
-        table.AddRow($"Name: {_registeredFirstName} {_registeredLastName}");
-        table.AddRow($"Email: {_registeredEmail}");
-        table.AddRow($"Total Balance: {AccountBalance:F2}");
+        table.AddRow($"Name: {account.AccountName}");
+        table.AddRow($"Currency: {account.CurrencyCode}");
+        table.AddRow($"Balance: {account.Balance:F2}");
         table.Border = TableBorder.Rounded;
         table.BorderStyle = new Style(ConsoleColor.DarkRed);
-        table.AddRow($"Password: {_registeredPassword}");
         table.Alignment(Justify.Center);
         AnsiConsole.Write(table);
     }
 
-    private static void BankAccounts()
+    private static void AccountOptions(Account account)
     {
+        Console.Clear();
+        Logo.DisplayFullLogo();
+        AccountDetails(account);
         
+        var choice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .PageSize(3)
+                .HighlightStyle(new Style(new Color(225, 69, 0)))
+                .AddChoices("Change Account Name", "Return")
+                .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
+
+        switch (choice)
+        {
+            case "Change Account Name":
+                ChangeAccountName(account);
+                break;
+            
+            case "Return":
+                BankAccounts();
+                break;
+        }
+    }
+    
+    private static void ChangeAccountName(Account account)
+    {
+        string? name;
+        do
+        {
+            Console.Clear();
+            Logo.DisplayFullLogo();
+            
+            Console.WriteLine();
+            var message = "New Account Name: ";
+            Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 2)));
+            
+        } while (string.IsNullOrEmpty(name = Console.ReadLine()));
+
+        account.AccountName = name;
+        AccountOptions(account);
     }
     
     // Method to transfer funds with a loading animation.
