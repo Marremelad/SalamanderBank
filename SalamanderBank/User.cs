@@ -11,6 +11,7 @@ namespace SalamanderBank
         public string Password { get; set; }
         public string PhoneNumber { get; set; }
         public string Verified { get; set; }
-        public List<Account>? Accounts = new List<Account>();
+		public int Locked { get; set; }
+		public List<Account>? Accounts = new List<Account>();
     }
 }
