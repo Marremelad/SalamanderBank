@@ -23,5 +23,10 @@ namespace SalamanderBank
             { 1, 30.00f },
             { 2, 20.0f }
         };
+
+        public override string ToString()
+        {
+            return AccountName;
+        }
     }
 }

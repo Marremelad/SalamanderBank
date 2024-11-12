@@ -39,51 +39,98 @@ public static class Ui
     // String representing valid email pattern.
     private static readonly string EmailPattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
     
-    // Starting account balance.
-    private const decimal AccountBalance = 1500.75m;
+    // Title screen.
+    private static void TitleScreen()
+    {
+        Console.Clear();
+        Logo.DisplayFullLogo();
+        var customStyle = new Style(new Color(225, 69, 0));
+        var table = new Table();
+        table.Border = TableBorder.Rounded;
+        table.BorderStyle = customStyle;
+        table.AddColumn("[bold yellow blink on rgb(190,40,0)] Welcome to SalamanderBank![/]").Centered();
+
+        AnsiConsole.Write(table);
+        AnsiConsole.WriteLine();
+        Console.ReadLine();
+    }
     
     // Main menu display and selection handling method.
     public static void DisplayMainMenu()
     {
         DB.InitializeDatabase();
+        TitleScreen();
         
-        while (true)
+        Console.Clear();
+        Logo.DisplayFullLogo();
+            
+        // Menu options with padding for alignment.
+        string option1 = "Create Account".PadLeft("Create Account".Length + (int)((Console.WindowWidth - "Create Account".Length) / MenuPadding));
+        string option2 = "Sign In".PadLeft("Sign In".Length + (int)((Console.WindowWidth - "Sign In".Length) / MenuPadding));
+        string option3 = "Exit".PadLeft("Exit".Length + (int)((Console.WindowWidth - "Exit".Length) / 2.1 ));
+            
+        var login = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .PageSize(10)
+                .HighlightStyle(new Style(new Color(225, 69, 0)))
+                .AddChoices(option1, option2, option3));
+            
+        // Handling user selection from the main menu.
+        switch (login.Trim())
         {
-            Console.Clear();
-            Logo.DisplayFullLogo();
-            
-            // Menu options with padding for alignment.
-            string option1 = "Create Account".PadLeft("Create Account".Length + (int)((Console.WindowWidth - "Create Account".Length) / MenuPadding));
-            string option2 = "Sign In".PadLeft("Sign In".Length + (int)((Console.WindowWidth - "Sign In".Length) / MenuPadding));
-            string option3 = "Exit".PadLeft("Exit".Length + (int)((Console.WindowWidth - "Exit".Length) / 2.1 ));
-            
-            var login = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .PageSize(10)
-                    .HighlightStyle(new Style(new Color(225, 69, 0)))
-                    .AddChoices(option1, option2, option3));
-            
-            // Handling user selection from the main menu.
-            switch (login.Trim())
-            {
-                case "Create Account":
-                    CreateAccount();
-                    break;
+            case "Create Account":
+                CreateAccount();
+                break;
                                 
-                case "Sign In":
-                    SignIn();
-                    break;
+            case "Sign In":
+                SignIn();
+                break;
                 
-                case "Exit":
-                    Console.WriteLine("Thank you for using SalamanderBank!");
-                    Thread.Sleep(2000);
-                    return;
-            }
-
-            break;
+            case "Exit":
+                Console.WriteLine("Thank you for using SalamanderBank!");
+                Thread.Sleep(2000);
+                return;
         }
+    }
+    
+    //Second Menu after Signing in
+    static void SignedIn()
+    {
+        Console.Clear();
+        Logo.DisplayFullLogo();
+        UserDetails();
         
-        AccountDetails();
+        var selection = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .PageSize(5)
+                .HighlightStyle(new Style(new Color(225, 69, 0)))
+                .AddChoices("Accounts", "Transfer Funds", "Money Exchange", "Take Loan",
+                    "View Transactions", "Exit")
+                .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
+        
+        switch (selection)
+        {
+            case "Accounts":
+                BankAccounts();
+                break;
+            case "Transfer Funds":
+                TransferFunds();
+                break;
+            case "Money Exchange":
+                //MoneyExchange();
+                throw new NotImplementedException();
+                break;
+            case "Take Loan":
+                //TakeLoan();
+                throw new NotImplementedException();
+                break;
+            case "View Transactions": 
+                //ViewTransaction();
+                throw new NotImplementedException();
+                break;
+            case "Exit":
+                return;
+        }
     }
 
     // Method to create a new account.
@@ -95,8 +142,12 @@ public static class Ui
         _registeredEmail = GetEmail();
         _registeredPassword = GetPassword();
 
-        // Adding new user to the database.
+        // Add new user to database and create a standard bank account.
         UserManager.AddUser(0, _registeredPassword, _registeredEmail, _registeredFirstName, _registeredLastName, "0707070707");
+        _user = Auth.Login(_registeredEmail, _registeredPassword);
+        
+        AccountManager.CreateAccount(_user, "SEK", "Personal Account", 0, 1000000);
+        AccountManager.CreateAccount(_user, "SEK", "Loan Account", 1);
         
         // Verify user account.
         VerifyAccount();
@@ -114,7 +165,7 @@ public static class Ui
         SetUserValues();
         IsVerified();
         
-        AccountDetails();
+        SignedIn();
     }
 
     // Method to get email input on sign in attempt.
@@ -171,7 +222,7 @@ public static class Ui
             Thread.Sleep(2000);
         }
     }
-
+    
     // Method to check if account is verified.
     private static void IsVerified()
     {
@@ -307,21 +358,140 @@ public static class Ui
 
         UserManager.VerifyUser(_registeredEmail);
         
-        AccountDetails();
+        SignedIn();
     }
     
     // Method to display account details in a formatted table.
-    private static void AccountDetails()
+    private static void UserDetails()
     {
+        Console.Clear();
+        Logo.DisplayFullLogo();
+        
+        var table = new Table();
+        
+        table.AddColumn("User Information");
+        table.AddRow($"Name: {_registeredFirstName} {_registeredLastName}");
+        table.AddRow($"Email: {_registeredEmail}");
+        table.AddRow($"Total Balance: {GetTotalBalance():F2}");
+        table.Border = TableBorder.Rounded;
+        table.BorderStyle = new Style(ConsoleColor.DarkRed);
+        table.Alignment(Justify.Center);
+        AnsiConsole.Write(table);
+    }
+
+    private static decimal GetTotalBalance()
+    {
+        decimal totalBalance = 0;
+        return _user?.Accounts?.Sum(account => account.Balance) ?? totalBalance;
+    }
+
+    private static void BankAccounts()
+    {
+        if (_user?.Accounts == null) return;
+        var choice = AnsiConsole.Prompt(
+            new SelectionPrompt<object>()
+                .PageSize(4)
+                .HighlightStyle(new Style(new Color(225, 69, 0)))
+                .Title("  Accounts".PadLeft(5))
+                .AddChoices(_user.Accounts)
+                .AddChoiceGroup("", "Main Menu")
+                .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
+
+        switch (choice)
+        {
+            case "Main Menu":
+                SignedIn();
+                break;
+        }
+
+        AccountOptions((Account)choice);
+    }
+
+    private static void AccountDetails(Account account)
+    {
+        Console.Clear();
+        Logo.DisplayFullLogo();
+        
         var table = new Table();
         
         table.AddColumn("Account Information");
-        table.AddRow($"Name: {_registeredFirstName} {_registeredLastName}");
-        table.AddRow($"Email: {_registeredEmail}");
-        table.AddRow($"Balance: {AccountBalance:F2}");
-            
-        Console.Clear();
+        table.AddRow($"Name: {account.AccountName}");
+        table.AddRow($"Currency: {account.CurrencyCode}");
+        table.AddRow($"Balance: {account.Balance:F2}");
+        table.Border = TableBorder.Rounded;
+        table.BorderStyle = new Style(ConsoleColor.DarkRed);
+        table.Alignment(Justify.Center);
         AnsiConsole.Write(table);
+    }
+
+    private static void AccountOptions(Account account)
+    {
+        Console.Clear();
+        Logo.DisplayFullLogo();
+        AccountDetails(account);
+        
+        var choice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .PageSize(3)
+                .HighlightStyle(new Style(new Color(225, 69, 0)))
+                .AddChoices("Change Account Name", "Return")
+                .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
+
+        switch (choice)
+        {
+            case "Change Account Name":
+                ChangeAccountName(account);
+                break;
+            
+            case "Return":
+                BankAccounts();
+                break;
+        }
+    }
+    
+    private static void ChangeAccountName(Account account)
+    {
+        string? name;
+        do
+        {
+            Console.Clear();
+            Logo.DisplayFullLogo();
+            
+            Console.WriteLine();
+            var message = "New Account Name: ";
+            Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 2)));
+            
+        } while (string.IsNullOrEmpty(name = Console.ReadLine()));
+        
+        account.AccountName = name;
+        AccountManager.UpdateAccountName(account);
+        
+        AccountOptions(account);
+    }
+
+    private static void ChangeAccountCurrency(Account account)
+    {
+        while (true)
+        {
+            string? currency;
+            do
+            {
+                Console.Clear();
+                Logo.DisplayFullLogo();
+            
+                Console.WriteLine();
+                var message = "New Currency Code: ";
+                Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 2)));
+            
+            } while (string.IsNullOrEmpty(currency = Console.ReadLine()));
+
+            var exchangeRate = CurrencyManager.GetExchangeRate(currency);
+
+            if (exchangeRate == 0) continue;
+            account.CurrencyCode = currency.ToUpper();
+            break;
+        }
+        AccountOptions(account);
     }
     
     // Method to transfer funds with a loading animation.
