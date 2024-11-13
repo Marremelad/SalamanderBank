@@ -477,11 +477,11 @@ public static class Ui
         if (_user?.Accounts == null) return;
         var choice = AnsiConsole.Prompt(
             new SelectionPrompt<object>()
-                .PageSize(4)
+                .PageSize(5)
                 .HighlightStyle(new Style(new Color(225, 69, 0)))
                 .Title("  Accounts".PadLeft(5))
                 .AddChoices(_user.Accounts)
-                .AddChoiceGroup("", "Main Menu")
+                .AddChoices("Main Menu")
                 .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
 
         switch (choice)
@@ -587,11 +587,11 @@ public static class Ui
         if (_user?.Accounts == null) return;
         var choice = AnsiConsole.Prompt(
             new SelectionPrompt<object>()
-                .PageSize(4)
+                .PageSize(5)
                 .HighlightStyle(new Style(new Color(225, 69, 0)))
                 .Title("  Choose Account To Transfer From".PadLeft(5))
                 .AddChoices(_user.Accounts)
-                .AddChoiceGroup("", "Main Menu")
+                .AddChoices("Main Menu")
                 .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
 
         switch (choice)
@@ -620,11 +620,11 @@ public static class Ui
             if (_user?.Accounts == null) return;
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<object>()
-                    .PageSize(4)
+                    .PageSize(5)
                     .HighlightStyle(new Style(new Color(225, 69, 0)))
-                    .Title("  Choose Account To Transfer To".PadLeft(5))
+                    .Title("Choose Account To Transfer To".PadLeft(5))
                     .AddChoices(accounts)
-                    .AddChoiceGroup("", "Main Menu")
+                    .AddChoices("Main Menu")
                     .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
 
             switch (choice)
@@ -698,7 +698,7 @@ public static class Ui
                 .HighlightStyle(new Style(new Color(225, 69, 0)))
                 .Title("    Choose Account To Exchange".PadLeft(5))
                 .AddChoices(_user.Accounts)
-                .AddChoiceGroup("", "Main Menu")
+                .AddChoices("Main Menu")
                 .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
         switch (choice)
         {
@@ -728,6 +728,7 @@ public static class Ui
 
         var currencyMap = new Dictionary<string, string>();
         var currencies = CurrencyManager.GetAllCurrencies();
+        prompt.AddChoice("Main Menu");
         foreach (var rate in currencies.Where(c => c.CurrencyCode != account.CurrencyCode))
         {
             var choiceText = $"{rate.CurrencyCode} | {rate.ExchangeRate}"; // Unformatted for dictionary key
@@ -737,10 +738,15 @@ public static class Ui
             prompt.AddChoice(displayText);
             currencyMap[displayText] = rate.CurrencyCode; // Use unformatted text for mapping
         }
-
+       
         var selectedSource = AnsiConsole.Prompt(prompt);
+        
+        if (selectedSource == "Main Menu")
+        {
+            AnsiConsole.MarkupLine("Returning to previous menu...[/]");
+            return;
+        }
         var sourceCurrency = currencyMap[selectedSource];
-
         CurrencyConverter("SEK", sourceCurrency, account);
         Thread.Sleep(1000);
     }
@@ -790,11 +796,11 @@ public static class Ui
             }).GetAwaiter().GetResult();
         Console.Clear();
         Logo.DisplayFullLogo();
-
+        
         var message =
-            $"\u001b[38;2;34;139;34mYour exchange from\u001b[0m {fromCurrency} to \u001b[38;2;34;139;34m{toCurrency}\u001b[0m has been successfully processed.";
+            $"\u001b[38;2;220;200;0mYou have exchanged from\u001b[0m \u001b[38;2;255;69;0m{fromCurrency}\u001b[0m \u001b[38;2;220;200;0m to \u001b[0m \u001b[38;2;255;69;0m{toCurrency}\u001b[0m. ";
         Console.WriteLine($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
-        var message2 = $"\u001b[38;2;34;139;34mFinal Amount in {toCurrency}:\u001b[0m {amount}";
+        var message2 = $"\u001b[38;2;210;200;0mFinal Amount in {toCurrency}:\u001b[0m \u001b[38;2;255;69;0m{amount}\u001b[0m";
         Console.WriteLine(
             $"{message2}".PadLeft(message2.Length + (int)((Console.WindowWidth - message2.Length) / 1.9)));
         var message3 = "\u001b[38;2;34;139;34mYour exchange has been successfully processed.\u001b[0m";
@@ -803,7 +809,7 @@ public static class Ui
 
 
         Console.ReadLine();
-        UserDetails();
+        AccountDetails(account);
         Console.ReadLine();
         UserSignedIn();
 
