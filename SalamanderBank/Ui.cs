@@ -625,6 +625,10 @@ public static class Ui
 
     private static async Task TransferFunds(Account sender, Account receiver)
     {
+        AccountDetails(receiver);
+        
+        Console.Write("Amount to Transfer: ");
+        
         while (true)
         {
             if (decimal.TryParse(Console.ReadLine(), out var transfer))
@@ -640,6 +644,7 @@ public static class Ui
         }
         
         TransferAnimation();
+        
         await UserSignedIn();
     }
     
@@ -648,6 +653,8 @@ public static class Ui
     {
         Console.Clear();
         Logo.DisplayFullLogo();
+        
+        UserDetails();
         
         AnsiConsole.Status()
             .AutoRefresh(true)
@@ -665,6 +672,8 @@ public static class Ui
         
         Console.Clear();
         Logo.DisplayFullLogo();
+        
+        UserDetails();
         
         AnsiConsole.MarkupLine(
             "\n[green]Transfer complete![/]\nYou will now be redirected to the main menu.");
@@ -763,6 +772,9 @@ public static class Ui
         var customStyle = new Style(new Color(225, 69, 0));
         Console.Clear();
         Logo.DisplayFullLogo();
+        
+        UserDetails();
+        
         AnsiConsole.Progress()
             .AutoRefresh(true)
             .AutoClear(false)
