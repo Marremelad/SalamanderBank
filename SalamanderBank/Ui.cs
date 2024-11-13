@@ -148,8 +148,7 @@ public static class Ui
                 throw new NotImplementedException();
                 break;
             case "Take Loan":
-                //TakeLoan();
-                throw new NotImplementedException();
+                TakeLoan();
                 break;
             case "View Transactions": 
                 //ViewTransaction();
@@ -751,5 +750,41 @@ public static class Ui
         _registeredFirstName = "Salamander";
         _registeredLastName = "Bank";
         _registeredEmail = "salamanderbank@gmail.com";
+    }
+    private static void TakeLoan()
+    {
+        if (_user?.Accounts == null) return;
+        var choice = AnsiConsole.Prompt(
+                    new SelectionPrompt<object>()
+                       .PageSize(4)
+                       .HighlightStyle(new Style(new Color(225, 69, 0)))
+                       .Title("  Choose Account To Take Loan From".PadLeft(5))
+                       .AddChoices(_user.Accounts)
+                       .AddChoiceGroup("", "Main Menu")
+                       .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
+        switch (choice)
+        {
+            case "Main Menu":
+                UserSignedIn();
+                break;
+        }
+        LoanOptions((Account)choice);
+    }
+
+    private static void LoanOptions(Account account)
+    {
+        while (true)
+        {
+            if (decimal.TryParse(Console.ReadLine(), out var amount))
+            {
+            if (amount > 0 && LoanManager.CreateLoan(_user, account, amount) != null)
+                {
+                    break;
+                } 
+                Console.WriteLine("Invalid transfer amount");
+            }
+        }    
+        TransferAnimation();
+        UserSignedIn();
     }
 }
