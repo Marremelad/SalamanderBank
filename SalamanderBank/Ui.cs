@@ -1,7 +1,6 @@
 using System.Media;
 using System.Text.RegularExpressions;
-using Org.BouncyCastle.Asn1.X509.Qualified;
-using DotNetEnv;
+
 using Spectre.Console;
 
 namespace SalamanderBank;
@@ -66,14 +65,10 @@ public static class Ui
         AnsiConsole.WriteLine();
         Console.ReadLine();
     }
-    
-    // Main menu display and selection handling method.
-    public static async Task DisplayMainMenu()
+
+    public static async Task RunProgram()
     {
         DB.InitializeDatabase();
-        
-        // Env.Load();
-        // var adminEmail = Env.GetString("EMAIL");
         
         if (!UserManager.EmailExists("salamanderbank@gmail.com"))
         {
@@ -88,6 +83,14 @@ public static class Ui
         thread.Start();
         
         TitleScreen();
+
+        await DisplayMainMenu();
+    }
+    
+    // Main menu display and selection handling method.
+    private static async Task DisplayMainMenu()
+    {
+        EraseFields();
         
         Console.Clear();
         Logo.DisplayFullLogo();
@@ -100,18 +103,18 @@ public static class Ui
         var login = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
                 .PageSize(10)
-                .HighlightStyle(new Style(new Color(225, 69, 0)))
+                .HighlightStyle(new Style(Color.Yellow))
                 .AddChoices(option1, option2, option3));
             
         // Handling user selection from the main menu.
         switch (login.Trim())
         {
             case "Create Account":
-                CreateAccount();
+                await CreateAccount();
                 break;
                                 
             case "Sign In":
-                SignIn();
+                await SignIn();
                 break;
                 
             case "Exit":
@@ -122,7 +125,7 @@ public static class Ui
     }
     
     //Second Menu after Signing in
-    static void UserSignedIn()
+    private static async Task UserSignedIn()
     {
         Console.Clear();
         Logo.DisplayFullLogo();
@@ -130,39 +133,44 @@ public static class Ui
         
         var selection = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
-                .PageSize(5)
-                .HighlightStyle(new Style(new Color(225, 69, 0)))
-                .AddChoices("Accounts", "Transfer Funds", "Money Exchange", "Take Loan",
-                    "View Transactions", "Exit")
+                .PageSize(10)
+                .HighlightStyle(new Style(Color.Black, Color.Yellow))
+                .Title("[bold underline rgb(190,40,0)]    Main Menu[/]")
+                .AddChoices("  Accounts", "  Transfer Funds", "  Money Exchange", "  Take Loan",
+                    "  View Transactions")
+                .AddChoiceGroup("","[yellow]Sign Out[/]")
                 .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
         
-        switch (selection)
+        switch (selection.Trim())
         {
             case "Accounts":
-                BankAccounts();
+                await BankAccounts();
                 break;
+            
             case "Transfer Funds":
-                TransferFrom();
+                await TransferFrom();
                 break;
+            
             case "Money Exchange":
-                ExchangeMenu();
-                throw new NotImplementedException();
+                await ExchangeMenu();
                 break;
+            
             case "Take Loan":
                 //TakeLoan();
                 throw new NotImplementedException();
-                break;
+            
             case "View Transactions": 
                 //ViewTransaction();
                 throw new NotImplementedException();
+            
+            case "[yellow]Sign Out[/]":
+                await DisplayMainMenu();
                 break;
-            case "Exit":
-                return;
         }
     }
 
     // Method to create a new account.
-    private static void CreateAccount()
+    private static async Task CreateAccount()
     { 
         // Set values for user information.
         _registeredFirstName = GetFirstName();
@@ -178,7 +186,7 @@ public static class Ui
         CreateDefaultBankAccounts(_user);
         
         // Verify user account.
-        VerifyAccount();
+        await VerifyAccount();
     }
 
     private static void CreateDefaultBankAccounts(User? user)
@@ -189,7 +197,7 @@ public static class Ui
     }
 
     // Method for signing in to account.
-    private static void SignIn()
+    private static async Task SignIn()
     {
         Console.Clear();
         Logo.DisplayFullLogo();
@@ -198,15 +206,15 @@ public static class Ui
         GetPasswordOnSignIn();
         
         SetUserValues();
-        IsVerified();
+        await IsVerified();
 
-        if (_user != null && _user.Type == 1)
+        if (_user is { Type: 1 })
         {
-            AdminSignedIn();
+            await AdminSignedIn();
         }
         else
         {
-            UserSignedIn();
+            await UserSignedIn();
         }
         
     }
@@ -267,10 +275,10 @@ public static class Ui
     }
     
     // Method to check if account is verified.
-    private static void IsVerified()
+    private static async Task IsVerified()
     {
         if (_user?.Verified == "1") return;
-        VerifyAccount();
+        await VerifyAccount();
     }
    
     
@@ -405,7 +413,7 @@ public static class Ui
     }
     
     // Method to validate the account through a verification code.
-    private static void VerifyAccount()
+    private static async Task VerifyAccount()
     {
         // Sending verification email to the registered email.
         EmailService.SendVerificationEmail(_registeredFirstName, _registeredEmail);
@@ -434,7 +442,7 @@ public static class Ui
 
         UserManager.VerifyUser(_registeredEmail);
         
-        UserSignedIn();
+        await UserSignedIn();
     }
     
     // Method to display account details in a formatted table.
@@ -449,49 +457,43 @@ public static class Ui
         table.AddRow($"Name: {_registeredFirstName} {_registeredLastName}");
         table.AddRow($"Email: {_registeredEmail}");
         table.AddRow($"Phone Number: {_registeredPhoneNumber}");
-        table.AddRow($"Total Balance: {GetTotalBalance():F2}");
         table.Border = TableBorder.Rounded;
         table.BorderStyle = new Style(ConsoleColor.DarkRed);
         table.Alignment(Justify.Center);
         AnsiConsole.Write(table);
     }
-
-    private static decimal GetTotalBalance()
-    {
-        decimal totalBalance = 0;
-        
-        foreach (var userAccount in _user?.Accounts!)
-        {
-            totalBalance += userAccount.Balance;
-        }
-
-        return totalBalance;
-    }
-
-    private static void BankAccounts()
+    
+    private static async Task BankAccounts()
     {
         Console.Clear();
         Logo.DisplayFullLogo();
         UserDetails();
         
         if (_user?.Accounts == null) return;
-        var choice = AnsiConsole.Prompt(
-            new SelectionPrompt<object>()
-                .PageSize(5)
-                .HighlightStyle(new Style(new Color(225, 69, 0)))
-                .Title("  Accounts".PadLeft(5))
-                .AddChoices(_user.Accounts)
-                .AddChoices("Main Menu")
-                .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
 
+        // Create a dictionary to map indented account display names to their Account objects.
+        var indentedAccounts = _user.Accounts
+            .ToDictionary(account => $"  {account.AccountName}", account => account);
+
+        var choice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .PageSize(10)
+                .HighlightStyle(new Style(Color.Black, Color.Yellow))
+                .Title("[bold underline rgb(190,40,0)]    Account Options[/]") // Keep title indentation consistent.
+                .AddChoices(indentedAccounts.Keys) // Display indented account names.
+                .AddChoiceGroup("", "[yellow]Main Menu[/]")
+                .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
+        
         switch (choice)
-        {
-            case "Main Menu":
-                UserSignedIn();
+        { 
+            case "[yellow]Main Menu[/]":
+                await UserSignedIn();
+                break;
+            
+            default:
+                await AccountOptions(indentedAccounts[choice]);
                 break;
         }
-
-        AccountOptions((Account)choice);
     }
 
     private static void AccountDetails(Account account)
@@ -511,7 +513,7 @@ public static class Ui
         AnsiConsole.Write(table);
     }
 
-    private static void AccountOptions(Account account)
+    private static async Task AccountOptions(Account account)
     {
         Console.Clear();
         Logo.DisplayFullLogo();
@@ -520,23 +522,25 @@ public static class Ui
         var choice = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
                 .PageSize(3)
-                .HighlightStyle(new Style(new Color(225, 69, 0)))
-                .AddChoices("Change Account Name", "Return")
+                .HighlightStyle(new Style(Color.Black, Color.Yellow))
+                .Title("[bold underline rgb(190,40,0)]    Account Options[/]")
+                .AddChoices("  Change Account Name")
+                .AddChoiceGroup("","[yellow]Return[/]")
                 .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
 
-        switch (choice)
+        switch (choice.Trim())
         {
             case "Change Account Name":
-                ChangeAccountName(account);
+                await ChangeAccountName(account);
                 break;
             
-            case "Return":
-                BankAccounts();
+            case "[yellow]Return[/]":
+                await BankAccounts();
                 break;
         }
     }
     
-    private static void ChangeAccountName(Account account)
+    private static async Task ChangeAccountName(Account account)
     {
         string? name;
         do
@@ -546,99 +550,80 @@ public static class Ui
             
             Console.WriteLine();
             var message = "New Account Name: ";
-            Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 2)));
+            Console.Write($"{message}".PadLeft(message.Length + ((Console.WindowWidth - message.Length) / 2)));
             
         } while (string.IsNullOrEmpty(name = Console.ReadLine()));
         
         account.AccountName = name;
         AccountManager.UpdateAccountName(account);
         
-        AccountOptions(account);
+        await AccountOptions(account);
     }
-
-    private static void ChangeAccountCurrency(Account account)
-    {
-        while (true)
-        {
-            string? currency;
-            do
-            {
-                Console.Clear();
-                Logo.DisplayFullLogo();
-            
-                Console.WriteLine();
-                var message = "New Currency Code: ";
-                Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 2)));
-            
-            } while (string.IsNullOrEmpty(currency = Console.ReadLine()));
-
-            var exchangeRate = CurrencyManager.GetExchangeRate(currency);
-
-            if (exchangeRate == 0) continue;
-            account.CurrencyCode = currency.ToUpper();
-            break;
-        }
-        AccountOptions(account);
-    }
-
     
-    private static void TransferFrom() 
+    private static async Task TransferFrom() 
     {
         if (_user?.Accounts == null) return;
+        
+        var indentedAccounts = _user.Accounts
+            .ToDictionary(account => $"  {account.AccountName}", account => account);
+        
         var choice = AnsiConsole.Prompt(
-            new SelectionPrompt<object>()
+            new SelectionPrompt<string>()
                 .PageSize(5)
-                .HighlightStyle(new Style(new Color(225, 69, 0)))
-                .Title("  Choose Account To Transfer From".PadLeft(5))
-                .AddChoices(_user.Accounts)
-                .AddChoices("Main Menu")
+                .HighlightStyle(new Style(Color.Black, Color.Yellow))
+                .Title("[bold underline rgb(190,40,0)]    Chose an Account to Transfer from[/]".PadLeft(5))
+                .AddChoices(indentedAccounts.Keys)
+                .AddChoiceGroup("", "[yellow]Main Menu[/]")
                 .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
 
         switch (choice)
         {
-            case "Main Menu":
-                UserSignedIn();
+            case "[yellow]Main Menu[/]":
+                await UserSignedIn();
+                break;
+            
+            default:
+                await TransferTo(indentedAccounts[choice]);
                 break;
         }
-
-        TransferTo((Account)choice);
+        
     }
 
-    private static void TransferTo(Account account)
+    private static async Task TransferTo(Account senderAccount)
     {
-        List<Account> accounts = new List<Account>();
+        var accounts = new List<Account>();
         if (accounts == null) throw new ArgumentNullException(nameof(accounts));
         
         if (_user?.Accounts != null)
         {
-            foreach (var userAccount in _user.Accounts!)
-            {
-                if (userAccount == account) continue;
-                accounts.Add(userAccount);
-            }
-
-            if (_user?.Accounts == null) return;
+            accounts.AddRange(_user.Accounts!.Where(account => account != senderAccount));
+            
+            var indentedAccounts = accounts
+                .ToDictionary(account => $"  {account.AccountName}", account => account);
+                
             var choice = AnsiConsole.Prompt(
-                new SelectionPrompt<object>()
-                    .PageSize(5)
-                    .HighlightStyle(new Style(new Color(225, 69, 0)))
-                    .Title("Choose Account To Transfer To".PadLeft(5))
-                    .AddChoices(accounts)
-                    .AddChoices("Main Menu")
+                new SelectionPrompt<string>()
+                    .PageSize(10)
+                    .HighlightStyle(new Style(Color.Black, Color.Yellow))
+                    .Title("[bold underline rgb(190,40,0)]    Chose an Account to Transfer to[/]".PadLeft(5))
+                    .AddChoices(indentedAccounts.Keys)
+                    .AddChoiceGroup("", "[yellow]Main Menu[/]")
                     .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
 
             switch (choice)
             {
-                case "Main Menu":
-                    UserSignedIn();
+                case "[yellow]Main Menu[/]":
+                    await UserSignedIn();
+                    break;
+                
+                default:
+                    await TransferFunds(senderAccount, indentedAccounts[choice]);
                     break;
             }
-            
-            TransferFunds(account, (Account)choice);
         }
     }
 
-    private static void TransferFunds(Account sender, Account receiver)
+    private static async Task TransferFunds(Account sender, Account receiver)
     {
         while (true)
         {
@@ -655,7 +640,7 @@ public static class Ui
         }
         
         TransferAnimation();
-        UserSignedIn();
+        await UserSignedIn();
     }
     
     // Method to transfer funds with a loading animation.
@@ -689,91 +674,91 @@ public static class Ui
         Thread.Sleep(3000);
     }
 
-    private static void ExchangeMenu()
+    private static async Task ExchangeMenu()
     {
         if (_user?.Accounts == null) return;
+        
+        var indentedAccounts = _user.Accounts
+            .ToDictionary(account => $"  {account.AccountName}", account => account);
+        
         var choice = AnsiConsole.Prompt(
-            new SelectionPrompt<object>()
-                .PageSize(5)
-                .HighlightStyle(new Style(new Color(225, 69, 0)))
-                .Title("Choose Account To Exchange".PadLeft(5))
-                .AddChoices(_user.Accounts)
-                .AddChoices("Main Menu")
+            new SelectionPrompt<string>()
+                .PageSize(10)
+                .HighlightStyle(new Style(Color.Black, Color.Yellow ))
+                .Title("[bold underline rgb(190,40,0)]    Chose an Account to Exchange[/]".PadLeft(5))
+                .AddChoices(indentedAccounts.Keys)
+                .AddChoiceGroup("", "[yellow]Main Menu[/]")
                 .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
+        
         switch (choice)
         {
-            case "Main Menu":
-                UserSignedIn();
+            case "[yellow]Main Menu[/]":
+                await UserSignedIn();
+                break;
+            
+            default:
+                await Currencies(indentedAccounts[choice]);
                 break;
         }
-
-        Currencies((Account)choice);
     }
 
-    private static void Currencies(Account account)
+    private static async Task Currencies(Account account)
     {
-        //Checks balance on account
-        if (account.Balance < decimal.Zero)
+        var currencyMap  = CurrencyManager.GetAllCurrencies();
+
+        if (currencyMap != null)
         {
-            AnsiConsole.MarkupLine("[red]Not enough balance![/]");
-            return;
-        }
-
-
-        var customStyle = new Style(new Color(225, 69, 0));
-        var prompt = new SelectionPrompt<string>()
-            .Title("[bold underline rgb(190,40,0)]Select an Exchange Rate[/]")
-            .PageSize(20)
-            .HighlightStyle(customStyle);
-
-        var currencyMap = new Dictionary<string, string>();
-        
-        prompt.AddChoice("[yellow]Main Menu[/]");
-        var currencies = CurrencyManager.GetAllCurrencies();
-        
-        
-        foreach (var rate in currencies.Where(c => c.CurrencyCode != account.CurrencyCode))
-        {
+            var indentedCurrencies =
+                currencyMap.ToDictionary(currency => $"  {currency.CurrencyCode, -5} | {currency.ExchangeRate, -10}",
+                    currency => currency.CurrencyCode);
             
-            var choiceText = $"{rate.CurrencyCode} | {rate.ExchangeRate}"; // Unformatted for dictionary key
-            var displayText =
-                $"[bold white]{rate.CurrencyCode,-5}[/] | {rate.ExchangeRate,-10}"; // Formatted for display
+            if (account.Balance < decimal.Zero)
+            {
+                AnsiConsole.MarkupLine("[red]Not enough balance![/]");
+                return;
+            }
             
-            prompt.AddChoice(displayText);
-            currencyMap[displayText] = rate.CurrencyCode; // Use unformatted text for mapping
+            var choice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .PageSize(20)
+                    .HighlightStyle(new Style(Color.Black, Color.Yellow))
+                    .Title("[bold underline rgb(190,40,0)]    Select an Exchange Rate[/]".PadLeft(5))
+                    .AddChoices("[yellow]  Main Menu         [/]")
+                    .AddChoices(indentedCurrencies.Keys)
+                    .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
+
+            switch (choice.Trim())
+            {
+                case "[yellow]  Main Menu         [/]":
+                    await UserSignedIn();
+                    break;
+                
+                default:
+                    await CurrencyConverter("SEK", choice, account);
+                    Thread.Sleep(1000);
+                    break;
+            }
         }
-       
-        var selectedSource = AnsiConsole.Prompt(prompt);
-        
-        if (selectedSource == "[yellow]Main Menu[/]")
-        {
-            AnsiConsole.MarkupLine("Returning to previous menu...");
-            UserSignedIn();
-            return;
-        }
-        var sourceCurrency = currencyMap[selectedSource];
-        CurrencyConverter("SEK", sourceCurrency, account);
-        Thread.Sleep(1000);
     }
 
-    private static void CurrencyConverter(string convertFrom, string convertTo, Account account)
+    private static async Task CurrencyConverter(string convertFrom, string convertTo, Account account)
     {
         try
         {
             var convertedAmount = CurrencyManager.ConvertCurrency(account.Balance, convertFrom, convertTo);
             account.Balance = convertedAmount;
             account.CurrencyCode = convertTo;
-            ExchangingMoney(account, convertFrom, convertTo, convertedAmount);
+            await ExchangingMoney(account, convertFrom, convertTo, convertedAmount);
         }
         catch (Exception ex)
         {
             AnsiConsole.MarkupLine($"[bold red]Error:[/] {ex.Message}");
         }
 
-        AccountOptions(account);
+        await AccountOptions(account);
     }
 
-    private static void ExchangingMoney(Account account, string fromCurrency, string toCurrency, decimal amount)
+    private static async Task ExchangingMoney(Account account, string fromCurrency, string toCurrency, decimal amount)
     {
         var customStyle = new Style(new Color(225, 69, 0));
         Console.Clear();
@@ -804,19 +789,19 @@ public static class Ui
         
         var message =
             $"\u001b[38;2;225;204;0mYou have exchanged from\u001b[0m \u001b[38;2;255;69;0m{fromCurrency}\u001b[0m \u001b[38;2;225;204;0m to \u001b[0m \u001b[38;2;255;69;0m{toCurrency}\u001b[0m. ";
-        Console.WriteLine($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 2)));
+        Console.WriteLine($"{message}".PadLeft(message.Length + ((Console.WindowWidth - message.Length) / 2)));
         var message2 = $"\u001b[38;2;225;204;0mFinal Amount in {toCurrency}:\u001b[0m \u001b[38;2;255;69;0m{amount}\u001b[0m";
         Console.WriteLine(
-            $"{message2}".PadLeft(message2.Length + (int)((Console.WindowWidth - message2.Length) / 2)));
+            $"{message2}".PadLeft(message2.Length + ((Console.WindowWidth - message2.Length) / 2)));
         var message3 = "\u001b[38;2;34;139;34mYour exchange has been successfully processed.\u001b[0m";
         Console.WriteLine(
-            $"{message3}".PadLeft(message3.Length + (int)((Console.WindowWidth - message3.Length) / 2)));
+            $"{message3}".PadLeft(message3.Length + ((Console.WindowWidth - message3.Length) / 2)));
         
 
         Console.ReadLine();
         AccountDetails(account);
         Console.ReadLine();
-        UserSignedIn();
+        await UserSignedIn();
 
         return;
 
@@ -841,7 +826,7 @@ public static class Ui
         soundPlayer.PlaySync();
     }
 
-    private static void AdminSignedIn()
+    private static async Task AdminSignedIn()
     {
         Console.Clear();
         Logo.DisplayFullLogo();
@@ -849,21 +834,30 @@ public static class Ui
         var selection = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
                 .PageSize(5)
-                .HighlightStyle(new Style(new Color(225, 69, 0)))
-                .AddChoices("Create User Account", "Remove User Account", "Exit")
+                .HighlightStyle(new Style(Color.Black, Color. Yellow))
+                .Title("[bold underline rgb(190,40,0)]    Admin Menu[/]")
+                .AddChoices("  Create User Account", "  Remove User Account")
+                .AddChoiceGroup("", "[yellow]Sign Out[/]")
                 .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
         
-        switch (selection)
+        switch (selection.Trim())
         {
             case "Create User Account":
-                AdminCreateNewUser();
+                await AdminCreateNewUser();
+                break;
+            
+            case "Remove User Account":
+                throw new NotImplementedException();
+            
+            case "[yellow]Sign Out[/]":
+                await DisplayMainMenu();
                 break;
         }
     }
 
-    private static void AdminCreateNewUser()
+    private static async Task AdminCreateNewUser()
     {
-        EraseAdminFields();
+        EraseFields();
 
         _registeredFirstName = GetFirstName();
         _registeredLastName = GetLastName();
@@ -880,10 +874,10 @@ public static class Ui
         
         AnsiConsole.WriteLine("\nUser was created successfully!");
         Thread.Sleep(2000);
-        AdminSignedIn();
+        await AdminSignedIn();
     }
 
-    private static void EraseAdminFields()
+    private static void EraseFields()
     {
         _registeredFirstName = "";
         _registeredLastName = "";
