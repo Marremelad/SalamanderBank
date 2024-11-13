@@ -12,15 +12,15 @@ namespace SalamanderBank
     {
 
         // Adds a user
-        public static User? AddUser(int type, string password, string? email, string? firstName, string? lastName, string phoneNumber = null)
+        public static User? AddUser(int type, string password, string? email, string? firstName, string? lastName, string? phoneNumber = null, int verified = 0)
         {
             // Check if the email already exists
             if (!EmailExists(email))
             {
                 // Query to insert a new user
                 string insertQuery = @"
-                    INSERT INTO Users (Type, Password, Email, FirstName, LastName, PhoneNumber, Verified) 
-                    VALUES (@Type, @Password, @Email, @FirstName, @LastName, @PhoneNumber, 0);
+                    INSERT INTO Users (Type, Password, Email, FirstName, LastName, PhoneNumber, Verified, Locked) 
+                    VALUES (@Type, @Password, @Email, @FirstName, @LastName, @PhoneNumber, @Verified, 0);
                     SELECT * FROM Users WHERE Id = last_insert_rowid();";
 
                 using (SQLiteConnection connection = new SQLiteConnection(DB._connectionString))
@@ -35,7 +35,8 @@ namespace SalamanderBank
                         Email = DB.Escape(email),
                         FirstName = DB.Escape(firstName),
                         LastName = DB.Escape(lastName),
-                        PhoneNumber = phoneNumber == null ? null : DB.Escape(phoneNumber)
+                        PhoneNumber = phoneNumber == null ? null : DB.Escape(phoneNumber),
+                        Verified = verified
                     };
                     User user = connection.QuerySingle<User>(insertQuery, parameters);
                 }   
@@ -84,36 +85,33 @@ namespace SalamanderBank
                 }
             }
         }
+        public static bool PhoneNumberExists(string? phoneNumber)
+        {
+            string query = "SELECT COUNT(1) FROM Users WHERE PhoneNumber = @PhoneNumber;";
+            int count = 0;
+            using (SQLiteConnection connection = new SQLiteConnection(DB._connectionString))
+            {
+                connection.Open();
+                count = connection.ExecuteScalar<int>(query, new {PhoneNumber = phoneNumber});
+                
+            }
+            return count > 0;
+        }
 
         // Searches for a user and returns an array user ids that have similar first name, last name and email address
-        public static int[] SearchUser(string? searchTerm)
+        public static List<User> SearchUser(string? searchTerm)
         {
-            string searchQuery = "SELECT ID FROM Users WHERE Email LIKE %@search% OR FirstName LIKE %@search% OR LastName LIKE %@search%;";
-            List<int> ids = new List<int>();
+            string searchQuery = "SELECT * FROM Users WHERE Email LIKE @search OR FirstName LIKE @search OR LastName LIKE @search;";
+            var parameters = new { search = $"%{searchTerm}%" };
+
 
             using (SQLiteConnection connection = new SQLiteConnection(DB._connectionString))
             {
                 connection.Open();
 
-                using (SQLiteCommand command = new SQLiteCommand(searchQuery, connection))
-                {
-                    // Bind parameters to prevent SQL injection
-                    command.Parameters.AddWithValue("@search", DB.Escape(searchTerm));
-
-                    // Reads the search results
-                    using (SQLiteDataReader reader = command.ExecuteReader())
-                    {
-                        // Reads the next row in the current result
-                        while (reader.Read())
-                        {
-                            // Add each matching uid to the list
-                            ids.Add(Convert.ToInt32(reader["ID"]));
-                        }
-                    }
-                }
+                List<User> users = connection.Query<User>(searchQuery, parameters).ToList();
+                return users;
             }
-            // Return the list as an array
-            return ids.ToArray();
         }
 
 		// Updates user password
@@ -222,5 +220,30 @@ namespace SalamanderBank
                 }
             }
         }
-    }
+
+		// Changes User object's locked column in database
+		public static void UpdateUserLock(User user, int locked)
+		{
+			string updateQuery = "UPDATE Users SET Locked = @NewLocked WHERE ID = @UserID;";
+
+			using (SQLiteConnection connection = new SQLiteConnection(DB._connectionString))
+			{
+				connection.Open();
+
+				using (SQLiteCommand updateCommand = new SQLiteCommand(updateQuery, connection))
+				{
+					updateCommand.Parameters.AddWithValue("@NewLocked", locked);
+					updateCommand.Parameters.AddWithValue("@UserID", user.ID);
+
+					int rowsAffected = updateCommand.ExecuteNonQuery();
+					Console.WriteLine($"{rowsAffected} row(s) updated in Users table.");
+                    if (rowsAffected > 0)
+                    {
+						// Updates the User object's locked column
+						user.Locked = locked;
+					}
+				}
+			}
+		}
+	}
 }
