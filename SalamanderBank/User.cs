@@ -13,5 +13,6 @@ namespace SalamanderBank
         public string Verified { get; set; }
 		public int Locked { get; set; }
 		public List<Account>? Accounts = new List<Account>();
+        public List<Loan>? Loans = new List<Loan>();
     }
 }

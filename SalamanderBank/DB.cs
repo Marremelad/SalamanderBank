@@ -94,6 +94,13 @@ namespace SalamanderBank
                 int rowsAffected = command.ExecuteNonQuery();
                 Console.WriteLine($"Transfers table created.");
             }
+
+            string createLoanTableQuery = "CREATE TABLE IF NOT EXISTS Loans (ID INTEGER PRIMARY KEY, UserID INTEGER, Amount REAL, CurrencyCode TEXT, InterestRate REAL, Status INTEGER, LoanDate TEXT);";
+            using (SQLiteCommand command = new SQLiteCommand(createLoanTableQuery, connection))
+            {
+                int rowsAffected = command.ExecuteNonQuery();
+                Console.WriteLine($"Loans table created.");
+            }
         }
 
         // Escapes strings for SQL LIKE queries
