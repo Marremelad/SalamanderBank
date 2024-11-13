@@ -1,5 +1,6 @@
 using System.Media;
 using System.Text.RegularExpressions;
+using Org.BouncyCastle.Asn1.X509.Qualified;
 using DotNetEnv;
 using Spectre.Console;
 
@@ -144,7 +145,7 @@ public static class Ui
                 TransferFrom();
                 break;
             case "Money Exchange":
-                //MoneyExchange();
+                ExchangeMenu();
                 throw new NotImplementedException();
                 break;
             case "Take Loan":
@@ -687,6 +688,140 @@ public static class Ui
         
         Thread.Sleep(3000);
     }
+
+    private static void ExchangeMenu()
+    {
+        if (_user?.Accounts == null) return;
+        var choice = AnsiConsole.Prompt(
+            new SelectionPrompt<object>()
+                .PageSize(5)
+                .HighlightStyle(new Style(new Color(225, 69, 0)))
+                .Title("    Choose Account To Exchange".PadLeft(5))
+                .AddChoices(_user.Accounts)
+                .AddChoiceGroup("", "Main Menu")
+                .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
+        switch (choice)
+        {
+            case "Main Menu":
+                UserSignedIn();
+                break;
+        }
+
+        Currencies((Account)choice);
+    }
+
+    private static void Currencies(Account account)
+    {
+        //Checks balance on account
+        if (account.Balance < decimal.Zero)
+        {
+            AnsiConsole.MarkupLine("[red]Not enough balance![/]");
+            return;
+        }
+
+
+        var customStyle = new Style(new Color(225, 69, 0));
+        var prompt = new SelectionPrompt<string>()
+            .Title("[bold underline rgb(190,40,0)]Select an Exchange Rate[/]")
+            .PageSize(20)
+            .HighlightStyle(customStyle);
+
+        var currencyMap = new Dictionary<string, string>();
+        var currencies = CurrencyManager.GetAllCurrencies();
+        foreach (var rate in currencies.Where(c => c.CurrencyCode != account.CurrencyCode))
+        {
+            var choiceText = $"{rate.CurrencyCode} | {rate.ExchangeRate}"; // Unformatted for dictionary key
+            var displayText =
+                $"[bold white]{rate.CurrencyCode,-5}[/] | {rate.ExchangeRate,-10}"; // Formatted for display
+
+            prompt.AddChoice(displayText);
+            currencyMap[displayText] = rate.CurrencyCode; // Use unformatted text for mapping
+        }
+
+        var selectedSource = AnsiConsole.Prompt(prompt);
+        var sourceCurrency = currencyMap[selectedSource];
+
+        CurrencyConverter("SEK", sourceCurrency, account);
+        Thread.Sleep(1000);
+    }
+
+    private static void CurrencyConverter(string convertFrom, string convertTo, Account account)
+    {
+        try
+        {
+            var convertedAmount = CurrencyManager.ConvertCurrency(account.Balance, convertFrom, convertTo);
+            account.Balance = convertedAmount;
+            account.CurrencyCode = convertTo;
+            ExchangingMoney(account, convertFrom, convertTo, convertedAmount);
+        }
+        catch (Exception ex)
+        {
+            AnsiConsole.MarkupLine($"[bold red]Error:[/] {ex.Message}");
+        }
+
+        AccountOptions(account);
+    }
+
+    private static void ExchangingMoney(Account account, string fromCurrency, string toCurrency, decimal amount)
+    {
+        var customStyle = new Style(new Color(225, 69, 0));
+        Console.Clear();
+        Logo.DisplayFullLogo();
+        AnsiConsole.Progress()
+            .AutoRefresh(true)
+            .AutoClear(false)
+            .HideCompleted(false)
+            .Columns(
+                new TaskDescriptionColumn(),
+                new ProgressBarColumn(),
+                new RemainingTimeColumn { Style = customStyle },
+                new SpinnerColumn())
+            .StartAsync(async ctx =>
+            {
+                // Defines task1 and task2
+                var task1 = ctx.AddTask("[rgb(190,40,0)]Processing exchange request[/]");
+                var task2 = ctx.AddTask("[rgb(190,40,0)]Updating account balances[/]");
+
+                // Runs task1 to completion
+                await RunTaskAsync(task1, 2, "Processing exchange request");
+
+                // Once task1 is done, run task2
+                await RunTaskAsync(task2, 1.5, "Updating account balances");
+            }).GetAwaiter().GetResult();
+        Console.Clear();
+        Logo.DisplayFullLogo();
+
+        var message =
+            $"Your exchange from \u001b[38;2;34;139;34m{fromCurrency}\u001b[0m to \u001b[38;2;34;139;34m{toCurrency}\u001b[0m has been successfully processed.";
+        Console.WriteLine($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
+        var message2 = $"\u001b[38;2;34;139;34mFinal Amount in {toCurrency}:\u001b[0m {amount}";
+        Console.WriteLine(
+            $"{message2}".PadLeft(message2.Length + (int)((Console.WindowWidth - message2.Length) / 1.9)));
+        var message3 = "\u001b[38;2;34;139;34mYour exchange has been successfully processed.\u001b[0m";
+        Console.WriteLine(
+            $"{message3}".PadLeft(message3.Length + (int)((Console.WindowWidth - message3.Length) / 1.9)));
+
+
+        Console.ReadLine();
+        UserDetails();
+        Console.ReadLine();
+        UserSignedIn();
+
+        return;
+
+        static async Task RunTaskAsync(ProgressTask task, double incrementValue, string contextDescription)
+        {
+            while (!task.IsFinished)
+            {
+                task.Increment(incrementValue); // Increment task progress
+
+                // Dynamically color-code the task description
+                var color = task.Value < 30 ? "rgb(190,40,0)" : task.Value < 100 ? "yellow" : "green";
+                task.Description = $"[bold {color}] {contextDescription} {task.Value:0}%[/]";
+                await Task.Delay(250); // Simulate work 
+            }
+        }
+    }
     
     // Method to play a sound from the specified file path.
     private static void PlaySound(string filePath)
@@ -694,12 +829,12 @@ public static class Ui
         using SoundPlayer soundPlayer = new(filePath);
         soundPlayer.PlaySync();
     }
-    
-    static void AdminSignedIn()
+
+    private static void AdminSignedIn()
     {
         Console.Clear();
         Logo.DisplayFullLogo();
-        
+
         var selection = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
                 .PageSize(5)
