@@ -792,7 +792,7 @@ public static class Ui
         Logo.DisplayFullLogo();
 
         var message =
-            $"Your exchange from \u001b[38;2;34;139;34m{fromCurrency}\u001b[0m to \u001b[38;2;34;139;34m{toCurrency}\u001b[0m has been successfully processed.";
+            $"\u001b[38;2;34;139;34mYour exchange from\u001b[0m {fromCurrency} to \u001b[38;2;34;139;34m{toCurrency}\u001b[0m has been successfully processed.";
         Console.WriteLine($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
         var message2 = $"\u001b[38;2;34;139;34mFinal Amount in {toCurrency}:\u001b[0m {amount}";
         Console.WriteLine(
