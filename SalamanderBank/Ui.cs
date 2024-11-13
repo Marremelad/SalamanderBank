@@ -691,7 +691,7 @@ public static class Ui
 
     private static void ExchangeMenu()
     {
-        if(_user?.Accounts == null) return;
+        if (_user?.Accounts == null) return;
         var choice = AnsiConsole.Prompt(
             new SelectionPrompt<object>()
                 .PageSize(5)
@@ -706,36 +706,63 @@ public static class Ui
                 UserSignedIn();
                 break;
         }
+
         Currencies((Account)choice);
     }
+
     private static void Currencies(Account account)
     {
-        //Writes out currencies that are available for exchange
-        var customStyle = new Style(new Color(225, 69, 0));
+        //Checks balance on account
+        if (account.Balance < decimal.Zero)
+        {
+            AnsiConsole.MarkupLine("[red]Not enough balance![/]");
+            return;
+        }
 
+
+        var customStyle = new Style(new Color(225, 69, 0));
         var prompt = new SelectionPrompt<string>()
             .Title("[bold underline rgb(190,40,0)]Select an Exchange Rate[/]")
-            .PageSize(10)
+            .PageSize(20)
             .HighlightStyle(customStyle);
-        
-        foreach (var rate in CurrencyManager.GetAllCurrencies()!)
-            prompt.AddChoice(
-                $"[bold white]{rate.CurrencyCode,-5}[/] | {rate.ExchangeRate,-10} |");
-        var selectedRate = AnsiConsole.Prompt(prompt);
-        AnsiConsole.MarkupLine($"[bold yellow]You selected:[/] {selectedRate}. " +
-                               $"\nWe will now begin the process of exchanging your money.");
-        
-        CurrencyConverter(selectedRate, account);
+
+        var currencyMap = new Dictionary<string, string>();
+        var currencies = CurrencyManager.GetAllCurrencies();
+        foreach (var rate in currencies.Where(c => c.CurrencyCode != account.CurrencyCode))
+        {
+            var choiceText = $"{rate.CurrencyCode} | {rate.ExchangeRate}"; // Unformatted for dictionary key
+            var displayText =
+                $"[bold white]{rate.CurrencyCode,-5}[/] | {rate.ExchangeRate,-10}"; // Formatted for display
+
+            prompt.AddChoice(displayText);
+            currencyMap[displayText] = rate.CurrencyCode; // Use unformatted text for mapping
+        }
+
+        var selectedSource = AnsiConsole.Prompt(prompt);
+        var sourceCurrency = currencyMap[selectedSource];
+
+        CurrencyConverter("SEK", sourceCurrency, account);
         Thread.Sleep(1000);
     }
-    
-     private static void CurrencyConverter(string selectedRate, Account account)
+
+    private static void CurrencyConverter(string convertFrom, string convertTo, Account account)
+    {
+        try
         {
-            CurrencyManager.ConvertCurrency(account.Balance, account.CurrencyCode, selectedRate);
-            AccountOptions(account);
-            ExchangingMoney(account);
+            var convertedAmount = CurrencyManager.ConvertCurrency(account.Balance, convertFrom, convertTo);
+            account.Balance = convertedAmount;
+            account.CurrencyCode = convertTo;
+            ExchangingMoney(account, convertFrom, convertTo, convertedAmount);
         }
-    private static void ExchangingMoney(Account account) //Maybe add the currency choosen
+        catch (Exception ex)
+        {
+            AnsiConsole.MarkupLine($"[bold red]Error:[/] {ex.Message}");
+        }
+
+        AccountOptions(account);
+    }
+
+    private static void ExchangingMoney(Account account, string fromCurrency, string toCurrency, decimal amount)
     {
         var customStyle = new Style(new Color(225, 69, 0));
         Console.Clear();
@@ -763,10 +790,20 @@ public static class Ui
             }).GetAwaiter().GetResult();
         Console.Clear();
         Logo.DisplayFullLogo();
-        AnsiConsole.MarkupLine("[bold green]Your exchange has been successfully processed.[/]"); //Needs to be centered
-        //Maybe add the exchange details, currency, acronym, value etc. 
-        
-        AccountDetails(account);
+
+        var message =
+            $"Your exchange from \u001b[38;2;34;139;34m{fromCurrency}\u001b[0m to \u001b[38;2;34;139;34m{toCurrency}\u001b[0m has been successfully processed.";
+        Console.WriteLine($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
+        var message2 = $"\u001b[38;2;34;139;34mFinal Amount in {toCurrency}:\u001b[0m {amount}";
+        Console.WriteLine(
+            $"{message2}".PadLeft(message2.Length + (int)((Console.WindowWidth - message2.Length) / 1.9)));
+        var message3 = "\u001b[38;2;34;139;34mYour exchange has been successfully processed.\u001b[0m";
+        Console.WriteLine(
+            $"{message3}".PadLeft(message3.Length + (int)((Console.WindowWidth - message3.Length) / 1.9)));
+
+
+        Console.ReadLine();
+        UserDetails();
         Console.ReadLine();
         UserSignedIn();
 
@@ -785,8 +822,6 @@ public static class Ui
             }
         }
     }
-
-   
     
     // Method to play a sound from the specified file path.
     private static void PlaySound(string filePath)
@@ -794,12 +829,12 @@ public static class Ui
         using SoundPlayer soundPlayer = new(filePath);
         soundPlayer.PlaySync();
     }
-    
-    static void AdminSignedIn()
+
+    private static void AdminSignedIn()
     {
         Console.Clear();
         Logo.DisplayFullLogo();
-        
+
         var selection = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
                 .PageSize(5)
