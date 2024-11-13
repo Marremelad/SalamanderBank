@@ -61,7 +61,7 @@ namespace SalamanderBank
             decimal amountAllowedToLoan = LoanAmountAllowed(user, account);
             if (amountAllowedToLoan <= 0)
             {
-                Console.WriteLine($"With your current balance you are only allowed to loan {amountAllowedToLoan}.");
+                Console.WriteLine($"With your current balance you are only allowed to loan {amountAllowedToLoan}{account.CurrencyCode}.");
                 return null;
             }
             //---------------------------------
@@ -85,8 +85,9 @@ namespace SalamanderBank
                     Status = 0,
                     LoanDate = DateTime.Now
                 };
-            Loan loan = connection.QuerySingle<Loan>(insertLoanQuery, parameters);
-            return loan;
+                Loan loan = connection.QuerySingle<Loan>(insertLoanQuery, parameters);
+                GetLoansFromUser(user);
+                return loan;
             } 
         }
         public static void GetLoansFromUser(User? user)
