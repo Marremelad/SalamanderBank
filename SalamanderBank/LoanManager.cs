@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using Microsoft.AspNetCore.Identity;
+using Spectre.Console;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -13,71 +14,51 @@ namespace SalamanderBank
     public class LoanManager
     {
         // Method to check if a loan is allowed based on the current balance and outstanding loans
-        public static decimal LoanAmountAllowed(User user)
+        public static decimal LoanAmountAllowed(User user, Account account)
         {
-            // Fetch the user object based on the provided userID
-            if (user == null)
-            {
-                Console.WriteLine("User not found.");
-                return 0;
-            }
-
             // Calculate the total balance of all the accounts for the user
-            decimal totalBalance = GetTotalBalance(user);
+            decimal totalBalance = GetTotalBalance(user, account.CurrencyCode);
 
             // Retrieve the total sum of all outstanding loans for the user
-            decimal totalLoans = GetTotalLoans(user);
+            decimal totalLoans = GetTotalLoans(user, account.CurrencyCode);
 
             // Calculate the available amount for new loans based on the total balance
             decimal availableToLoan = (totalBalance * 5) - totalLoans;
 
             // Return true if the current loans do not exceed the available loan limit
-            return Math.Max(availableToLoan, 0);
+            return Math.Max(Math.Round(availableToLoan,4), 0);
         }
 
         //Metod to fetch the total sum of loans for the given user
-        public static decimal GetTotalLoans(User user)
+        public static decimal GetTotalLoans(User user, string currencyCode)
         {
             decimal totalLoans = 0;
-
-            // Query to fetch the sum of all loans for the user (assuming loans are stored in a separate table)
-            string query = "SELECT SUM(Amount) FROM Loans WHERE UserID = @UserID";
-
-            //Using Dapper and SQLite to execute the query
-            using (var connection = new SQLiteConnection(DB._connectionString))
+            foreach(Loan loan in user.Loans)
             {
-                connection.Open();
-                //Execute query and get the sum of loans 
-                totalLoans = connection.ExecuteScalar<decimal>(query, new { UserID = user.ID });
+                totalLoans += CurrencyManager.ConvertCurrency(loan.Amount, loan.CurrencyCode, currencyCode);
             }
-
-            return totalLoans;
+            return Math.Round(totalLoans,2);
         }
 
         // Method to get the total balance across all accounts for the user
-        public static decimal GetTotalBalance(User user)
+        public static decimal GetTotalBalance(User user, string currencyCode)
         {
             decimal totalBalance = 0;
-
-            // Query to sum up all account balances for the user
-            string query = "SELECT SUM(Balance) FROM Accounts WHERE UserID = @UserID";
-
-            using (var connection = new SQLiteConnection(DB._connectionString))
+            
+            foreach(var account in user.Accounts)
             {
-                connection.Open();
-                //Execute query and get the total balance
-                totalBalance = connection.ExecuteScalar<decimal>(query, new { UserID = user.ID });
+                totalBalance += CurrencyManager.ConvertCurrency(account.Balance, account.CurrencyCode, currencyCode);
             }
 
-            return totalBalance;
+            return Math.Round(totalBalance,2);
         }
 
         //Method to add a loan to the database for the given user
-        public static Loan? CreateLoan(User user, decimal loanAmount, decimal interestRate = 3)
+        public static Loan? CreateLoan(User user, Account account, decimal loanAmount, decimal interestRate = 3, int status = 0 )
         {
 
             // Check if the loan is allowed based on the available balance and outstanding loans
-            decimal amountAllowedToLoan = LoanAmountAllowed(user);
+            decimal amountAllowedToLoan = LoanAmountAllowed(user, account);
             if (amountAllowedToLoan <= 0)
             {
                 Console.WriteLine($"With your current balance you are only allowed to loan {amountAllowedToLoan}.");
@@ -87,9 +68,9 @@ namespace SalamanderBank
 
             // SQL query to insert the loan into the Loans table 
             string insertLoanQuery = @"
-                INSERT INTO Loans (UserID, Amount, InterestRate)
-                VALUES (@UserID, @Amount, @InterestRate, @Status)
-                SELECT * FROM Users WHERE Id = last_insert_rowid();";
+                INSERT INTO Loans (UserID, Amount, CurrencyCode, InterestRate, Status, LoanDate)
+                VALUES (@UserID, @Amount, @CurrencyCode, @InterestRate, @Status, @LoanDate );
+                SELECT * FROM Loans WHERE ID = last_insert_rowid();";
 
             using (SQLiteConnection connection = new SQLiteConnection(DB._connectionString))
             {
@@ -99,11 +80,36 @@ namespace SalamanderBank
                 {
                     UserID = user.ID,
                     Amount = loanAmount,
-                    InterestRate = interestRate
+                    CurrencyCode = account.CurrencyCode,
+                    InterestRate = interestRate,
+                    Status = 0,
+                    LoanDate = DateTime.Now
                 };
             Loan loan = connection.QuerySingle<Loan>(insertLoanQuery, parameters);
             return loan;
             } 
+        }
+        public static void GetLoansFromUser(User? user)
+        {
+            using (var connection = new SQLiteConnection(DB._connectionString))
+            {
+                connection.Open();
+                var sql = @"SELECT a.*, u.*
+                        FROM Accounts a
+                        INNER JOIN Users u on u.ID = a.UserID
+                        WHERE a.UserID = @UserID";
+                var loans = connection.Query<Loan, User, Loan>(
+                    sql,
+                    (loan, user) =>
+                    {
+                        loan.User = user;  // Assuming Account has a property User to hold User info
+                        return loan;
+                    },
+                    new { UserID = user.ID },
+                    splitOn: "ID"  // Use the `ID` column to indicate where the User object starts
+                    ).ToList();
+                user.Loans = loans;
+            }
         }
     }
 }
