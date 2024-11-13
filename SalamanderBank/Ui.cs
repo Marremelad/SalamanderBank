@@ -1,7 +1,6 @@
 using System.Media;
 using System.Text.RegularExpressions;
-using Org.BouncyCastle.Asn1.X509.Qualified;
-using DotNetEnv;
+
 using Spectre.Console;
 
 namespace SalamanderBank;
@@ -66,14 +65,10 @@ public static class Ui
         AnsiConsole.WriteLine();
         Console.ReadLine();
     }
-    
-    // Main menu display and selection handling method.
-    public static async Task DisplayMainMenu()
+
+    public static async Task RunProgram()
     {
         DB.InitializeDatabase();
-        
-        // Env.Load();
-        // var adminEmail = Env.GetString("EMAIL");
         
         if (!UserManager.EmailExists("salamanderbank@gmail.com"))
         {
@@ -88,6 +83,14 @@ public static class Ui
         thread.Start();
         
         TitleScreen();
+
+        await DisplayMainMenu();
+    }
+    
+    // Main menu display and selection handling method.
+    private static async Task DisplayMainMenu()
+    {
+        EraseFields();
         
         Console.Clear();
         Logo.DisplayFullLogo();
@@ -107,11 +110,11 @@ public static class Ui
         switch (login.Trim())
         {
             case "Create Account":
-                CreateAccount();
+                await CreateAccount();
                 break;
                                 
             case "Sign In":
-                SignIn();
+                await SignIn();
                 break;
                 
             case "Exit":
@@ -122,7 +125,7 @@ public static class Ui
     }
     
     //Second Menu after Signing in
-    static void UserSignedIn()
+    private static async Task UserSignedIn()
     {
         Console.Clear();
         Logo.DisplayFullLogo();
@@ -133,36 +136,39 @@ public static class Ui
                 .PageSize(5)
                 .HighlightStyle(new Style(new Color(225, 69, 0)))
                 .AddChoices("Accounts", "Transfer Funds", "Money Exchange", "Take Loan",
-                    "View Transactions", "Exit")
+                    "View Transactions", "Log Out")
                 .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
         
         switch (selection)
         {
             case "Accounts":
-                BankAccounts();
+                await BankAccounts();
                 break;
+            
             case "Transfer Funds":
-                TransferFrom();
+                await TransferFrom();
                 break;
+            
             case "Money Exchange":
-                ExchangeMenu();
-                throw new NotImplementedException();
+                await ExchangeMenu();
                 break;
+            
             case "Take Loan":
                 //TakeLoan();
                 throw new NotImplementedException();
-                break;
+            
             case "View Transactions": 
                 //ViewTransaction();
                 throw new NotImplementedException();
+            
+            case "Log Out":
+                await DisplayMainMenu();
                 break;
-            case "Exit":
-                return;
         }
     }
 
     // Method to create a new account.
-    private static void CreateAccount()
+    private static async Task CreateAccount()
     { 
         // Set values for user information.
         _registeredFirstName = GetFirstName();
@@ -178,7 +184,7 @@ public static class Ui
         CreateDefaultBankAccounts(_user);
         
         // Verify user account.
-        VerifyAccount();
+        await VerifyAccount();
     }
 
     private static void CreateDefaultBankAccounts(User? user)
@@ -189,7 +195,7 @@ public static class Ui
     }
 
     // Method for signing in to account.
-    private static void SignIn()
+    private static async Task SignIn()
     {
         Console.Clear();
         Logo.DisplayFullLogo();
@@ -198,15 +204,15 @@ public static class Ui
         GetPasswordOnSignIn();
         
         SetUserValues();
-        IsVerified();
+        await IsVerified();
 
         if (_user != null && _user.Type == 1)
         {
-            AdminSignedIn();
+            await AdminSignedIn();
         }
         else
         {
-            UserSignedIn();
+            await UserSignedIn();
         }
         
     }
@@ -267,10 +273,10 @@ public static class Ui
     }
     
     // Method to check if account is verified.
-    private static void IsVerified()
+    private static async Task IsVerified()
     {
         if (_user?.Verified == "1") return;
-        VerifyAccount();
+        await VerifyAccount();
     }
    
     
@@ -405,7 +411,7 @@ public static class Ui
     }
     
     // Method to validate the account through a verification code.
-    private static void VerifyAccount()
+    private static async Task VerifyAccount()
     {
         // Sending verification email to the registered email.
         EmailService.SendVerificationEmail(_registeredFirstName, _registeredEmail);
@@ -434,7 +440,7 @@ public static class Ui
 
         UserManager.VerifyUser(_registeredEmail);
         
-        UserSignedIn();
+        await UserSignedIn();
     }
     
     // Method to display account details in a formatted table.
@@ -449,26 +455,13 @@ public static class Ui
         table.AddRow($"Name: {_registeredFirstName} {_registeredLastName}");
         table.AddRow($"Email: {_registeredEmail}");
         table.AddRow($"Phone Number: {_registeredPhoneNumber}");
-        table.AddRow($"Total Balance: {GetTotalBalance():F2}");
         table.Border = TableBorder.Rounded;
         table.BorderStyle = new Style(ConsoleColor.DarkRed);
         table.Alignment(Justify.Center);
         AnsiConsole.Write(table);
     }
-
-    private static decimal GetTotalBalance()
-    {
-        decimal totalBalance = 0;
-        
-        foreach (var userAccount in _user?.Accounts!)
-        {
-            totalBalance += userAccount.Balance;
-        }
-
-        return totalBalance;
-    }
-
-    private static void BankAccounts()
+    
+    private static async Task BankAccounts()
     {
         Console.Clear();
         Logo.DisplayFullLogo();
@@ -487,11 +480,11 @@ public static class Ui
         switch (choice)
         {
             case "Main Menu":
-                UserSignedIn();
+                await UserSignedIn();
                 break;
         }
 
-        AccountOptions((Account)choice);
+        await AccountOptions((Account)choice);
     }
 
     private static void AccountDetails(Account account)
@@ -511,7 +504,7 @@ public static class Ui
         AnsiConsole.Write(table);
     }
 
-    private static void AccountOptions(Account account)
+    private static async Task AccountOptions(Account account)
     {
         Console.Clear();
         Logo.DisplayFullLogo();
@@ -527,16 +520,16 @@ public static class Ui
         switch (choice)
         {
             case "Change Account Name":
-                ChangeAccountName(account);
+                await ChangeAccountName(account);
                 break;
             
             case "Return":
-                BankAccounts();
+                await BankAccounts();
                 break;
         }
     }
     
-    private static void ChangeAccountName(Account account)
+    private static async Task ChangeAccountName(Account account)
     {
         string? name;
         do
@@ -546,43 +539,17 @@ public static class Ui
             
             Console.WriteLine();
             var message = "New Account Name: ";
-            Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 2)));
+            Console.Write($"{message}".PadLeft(message.Length + ((Console.WindowWidth - message.Length) / 2)));
             
         } while (string.IsNullOrEmpty(name = Console.ReadLine()));
         
         account.AccountName = name;
         AccountManager.UpdateAccountName(account);
         
-        AccountOptions(account);
+        await AccountOptions(account);
     }
-
-    private static void ChangeAccountCurrency(Account account)
-    {
-        while (true)
-        {
-            string? currency;
-            do
-            {
-                Console.Clear();
-                Logo.DisplayFullLogo();
-            
-                Console.WriteLine();
-                var message = "New Currency Code: ";
-                Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 2)));
-            
-            } while (string.IsNullOrEmpty(currency = Console.ReadLine()));
-
-            var exchangeRate = CurrencyManager.GetExchangeRate(currency);
-
-            if (exchangeRate == 0) continue;
-            account.CurrencyCode = currency.ToUpper();
-            break;
-        }
-        AccountOptions(account);
-    }
-
     
-    private static void TransferFrom() 
+    private static async Task TransferFrom() 
     {
         if (_user?.Accounts == null) return;
         var choice = AnsiConsole.Prompt(
@@ -597,14 +564,14 @@ public static class Ui
         switch (choice)
         {
             case "Main Menu":
-                UserSignedIn();
+                await UserSignedIn();
                 break;
         }
 
-        TransferTo((Account)choice);
+        await TransferTo((Account)choice);
     }
 
-    private static void TransferTo(Account account)
+    private static async Task TransferTo(Account account)
     {
         List<Account> accounts = new List<Account>();
         if (accounts == null) throw new ArgumentNullException(nameof(accounts));
@@ -617,7 +584,7 @@ public static class Ui
                 accounts.Add(userAccount);
             }
 
-            if (_user?.Accounts == null) return;
+            if (_user.Accounts == null) return;
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<object>()
                     .PageSize(4)
@@ -630,15 +597,15 @@ public static class Ui
             switch (choice)
             {
                 case "Main Menu":
-                    UserSignedIn();
+                    await UserSignedIn();
                     break;
             }
             
-            TransferFunds(account, (Account)choice);
+            await TransferFunds(account, (Account)choice);
         }
     }
 
-    private static void TransferFunds(Account sender, Account receiver)
+    private static async Task TransferFunds(Account sender, Account receiver)
     {
         while (true)
         {
@@ -655,7 +622,7 @@ public static class Ui
         }
         
         TransferAnimation();
-        UserSignedIn();
+        await UserSignedIn();
     }
     
     // Method to transfer funds with a loading animation.
@@ -689,7 +656,7 @@ public static class Ui
         Thread.Sleep(3000);
     }
 
-    private static void ExchangeMenu()
+    private static async Task ExchangeMenu()
     {
         if (_user?.Accounts == null) return;
         var choice = AnsiConsole.Prompt(
@@ -703,14 +670,14 @@ public static class Ui
         switch (choice)
         {
             case "Main Menu":
-                UserSignedIn();
+                await UserSignedIn();
                 break;
         }
 
-        Currencies((Account)choice);
+        await Currencies((Account)choice);
     }
 
-    private static void Currencies(Account account)
+    private static async Task Currencies(Account account)
     {
         //Checks balance on account
         if (account.Balance < decimal.Zero)
@@ -718,8 +685,7 @@ public static class Ui
             AnsiConsole.MarkupLine("[red]Not enough balance![/]");
             return;
         }
-
-
+        
         var customStyle = new Style(new Color(225, 69, 0));
         var prompt = new SelectionPrompt<string>()
             .Title("[bold underline rgb(190,40,0)]Select an Exchange Rate[/]")
@@ -728,41 +694,44 @@ public static class Ui
 
         var currencyMap = new Dictionary<string, string>();
         var currencies = CurrencyManager.GetAllCurrencies();
-        foreach (var rate in currencies.Where(c => c.CurrencyCode != account.CurrencyCode))
-        {
-            var choiceText = $"{rate.CurrencyCode} | {rate.ExchangeRate}"; // Unformatted for dictionary key
-            var displayText =
-                $"[bold white]{rate.CurrencyCode,-5}[/] | {rate.ExchangeRate,-10}"; // Formatted for display
+        
+        if (currencies != null)
+            foreach (var rate in currencies.Where(c => c.CurrencyCode != account.CurrencyCode))
+            {
+                // var choiceText = $"{rate.CurrencyCode} | {rate.ExchangeRate}"; // Unformatted for dictionary key
+                
+                var displayText =
+                    $"[bold white]{rate.CurrencyCode,-5}[/] | {rate.ExchangeRate,-10}"; // Formatted for display
 
-            prompt.AddChoice(displayText);
-            currencyMap[displayText] = rate.CurrencyCode; // Use unformatted text for mapping
-        }
+                prompt.AddChoice(displayText);
+                currencyMap[displayText] = rate.CurrencyCode; // Use unformatted text for mapping
+            }
 
         var selectedSource = AnsiConsole.Prompt(prompt);
         var sourceCurrency = currencyMap[selectedSource];
 
-        CurrencyConverter("SEK", sourceCurrency, account);
+        await CurrencyConverter("SEK", sourceCurrency, account);
         Thread.Sleep(1000);
     }
 
-    private static void CurrencyConverter(string convertFrom, string convertTo, Account account)
+    private static async Task CurrencyConverter(string convertFrom, string convertTo, Account account)
     {
         try
         {
             var convertedAmount = CurrencyManager.ConvertCurrency(account.Balance, convertFrom, convertTo);
             account.Balance = convertedAmount;
             account.CurrencyCode = convertTo;
-            ExchangingMoney(account, convertFrom, convertTo, convertedAmount);
+            await ExchangingMoney(account, convertFrom, convertTo, convertedAmount);
         }
         catch (Exception ex)
         {
             AnsiConsole.MarkupLine($"[bold red]Error:[/] {ex.Message}");
         }
 
-        AccountOptions(account);
+        await AccountOptions(account);
     }
 
-    private static void ExchangingMoney(Account account, string fromCurrency, string toCurrency, decimal amount)
+    private static async Task ExchangingMoney(Account account, string fromCurrency, string toCurrency, decimal amount)
     {
         var customStyle = new Style(new Color(225, 69, 0));
         Console.Clear();
@@ -803,9 +772,9 @@ public static class Ui
 
 
         Console.ReadLine();
-        UserDetails();
+        AccountDetails(account);
         Console.ReadLine();
-        UserSignedIn();
+        await UserSignedIn();
 
         return;
 
@@ -830,7 +799,7 @@ public static class Ui
         soundPlayer.PlaySync();
     }
 
-    private static void AdminSignedIn()
+    private static async Task AdminSignedIn()
     {
         Console.Clear();
         Logo.DisplayFullLogo();
@@ -839,20 +808,27 @@ public static class Ui
             new SelectionPrompt<string>()
                 .PageSize(5)
                 .HighlightStyle(new Style(new Color(225, 69, 0)))
-                .AddChoices("Create User Account", "Remove User Account", "Exit")
+                .AddChoices("Create User Account", "Remove User Account", "Log Out")
                 .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
         
         switch (selection)
         {
             case "Create User Account":
-                AdminCreateNewUser();
+                await AdminCreateNewUser();
+                break;
+            
+            case "Remove User Account":
+                throw new NotImplementedException();
+            
+            case "Log Out":
+                await DisplayMainMenu();
                 break;
         }
     }
 
-    private static void AdminCreateNewUser()
+    private static async Task AdminCreateNewUser()
     {
-        EraseAdminFields();
+        EraseFields();
 
         _registeredFirstName = GetFirstName();
         _registeredLastName = GetLastName();
@@ -869,10 +845,10 @@ public static class Ui
         
         AnsiConsole.WriteLine("\nUser was created successfully!");
         Thread.Sleep(2000);
-        AdminSignedIn();
+        await AdminSignedIn();
     }
 
-    private static void EraseAdminFields()
+    private static void EraseFields()
     {
         _registeredFirstName = "";
         _registeredLastName = "";
