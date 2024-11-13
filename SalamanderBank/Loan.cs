@@ -12,9 +12,9 @@ namespace SalamanderBank
         public int ID;
         public User User;
         public decimal Amount;
+        public string CurrencyCode;
         public decimal InterestRate;
         public int Status;
-        public string CurrencyCode;
 
         public DateTime LoanDate = DateTime.Now;
     }
