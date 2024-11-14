@@ -234,35 +234,7 @@ public static class Ui
         }
         
     }
-
-    private static async Task DepositLoanIn()
-    {
-        if (_user?.Accounts == null) return;
-        
-        var indentedAccounts = _user.Accounts
-            .ToDictionary(account => $"  {account.AccountName}", account => account);
-        
-        var choice = AnsiConsole.Prompt(
-            new SelectionPrompt<string>()
-                .PageSize(5)
-                .HighlightStyle(new Style(Color.Black, Color.Yellow))
-                .Title("[bold underline rgb(190,40,0)]    Chose an Account to deposit your Loan in[/]".PadLeft(5))
-                .AddChoices(indentedAccounts.Keys)
-                .AddChoiceGroup("", "[yellow]Main Menu[/]")
-                .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
-
-        switch (choice)
-        {
-            case "[yellow]Main Menu[/]":
-                await UserSignedIn();
-                break;
-            
-            default:
-                await TransferTo(indentedAccounts[choice]);
-                break;
-        }
-    }
-
+    
     // Method to get email input on sign in attempt.
     private static void GetEmailOnSignIn()
     {
@@ -890,13 +862,70 @@ public static class Ui
         }
     }
     
-    // Method to play a sound from the specified file path.
-    private static void PlaySound(string filePath)
+    private static async Task DepositLoanIn()
     {
-        using SoundPlayer soundPlayer = new(filePath);
-        soundPlayer.PlaySync();
+        if (_user?.Accounts == null) return;
+        
+        var indentedAccounts = _user.Accounts
+            .ToDictionary(account => $"  {account.AccountName}", account => account);
+        
+        var choice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .PageSize(5)
+                .HighlightStyle(new Style(Color.Black, Color.Yellow))
+                .Title("[bold underline rgb(190,40,0)]    Chose an Account to deposit your Loan in[/]".PadLeft(5))
+                .AddChoices(indentedAccounts.Keys)
+                .AddChoiceGroup("", "[yellow]Main Menu[/]")
+                .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
+
+        switch (choice)
+        {
+            case "[yellow]Main Menu[/]":
+                await UserSignedIn();
+                break;
+            
+            default:
+                await AmountToLoan(indentedAccounts[choice]);
+                break;
+        }
     }
 
+    private static async Task AmountToLoan(Account account)
+    {
+        while (true)
+        {
+            Console.Clear();
+            Logo.DisplayFullLogo();
+            AccountDetails(account);
+            
+            decimal amount;
+            while (true)
+            {
+                Console.Write("Amount to Loan: ");
+                if (decimal.TryParse(Console.ReadLine(), out amount)) break;
+            }
+
+            var loan = LoanManager.CreateLoan(_user, account, amount);
+            
+            if (loan != null)
+            {
+                Console.WriteLine("\u001b[38;2;34;139;34mYour Loan was successfully processed\u001b[0m");
+                Console.WriteLine(loan);
+                break;
+            }
+
+            Console.WriteLine();
+            Console.WriteLine($"\u001b[38;2;255;69;0mYour only allowed to Loan {LoanManager.LoanAmountAllowed(_user, account)}  {account.CurrencyCode}\u001b[0m");
+            Thread.Sleep(3000);
+        }
+        
+        
+        Console.WriteLine("\nPress any Key to Continue");
+        Console.ReadLine();
+       
+        await UserSignedIn();
+    }
+     
     private static async Task AdminSignedIn()
     {
         Console.Clear();
@@ -962,5 +991,12 @@ public static class Ui
         _registeredFirstName = "Salamander";
         _registeredLastName = "Bank";
         _registeredEmail = "salamanderbank@gmail.com";
+    }
+    
+    // Method to play a sound from the specified file path.
+    private static void PlaySound(string filePath)
+    {
+        using SoundPlayer soundPlayer = new(filePath);
+        soundPlayer.PlaySync();
     }
 }
