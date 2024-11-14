@@ -17,5 +17,10 @@ namespace SalamanderBank
         public int Status;
 
         public DateTime LoanDate = DateTime.Now;
+
+        public override string ToString()
+        {
+            return $"Loan Amount: {Amount} {CurrencyCode} | Interest Rate: {InterestRate}";
+        }
     }
 }

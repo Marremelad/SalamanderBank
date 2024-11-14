@@ -47,9 +47,6 @@ public static class Ui
     private const string EmailPattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
     private const string PhoneNumberPattern = @"^\+46\d{9}$";
     
-    //
-    
-
     // Title screen.
     private static void TitleScreen()
     {
@@ -116,11 +113,10 @@ public static class Ui
             case "Sign In":
                 await SignIn();
                 break;
-                
+            
             case "Exit":
-                Console.WriteLine("Thank you for using SalamanderBank!");
-                Thread.Sleep(2000);
-                return;
+                Environment.Exit(0);
+                break;
         }
     }
     
@@ -156,8 +152,8 @@ public static class Ui
                 break;
             
             case "Take Loan":
-                //TakeLoan();
-                throw new NotImplementedException();
+                await DepositLoanIn();
+                break;
             
             case "View Transactions": 
                 //ViewTransaction();
@@ -203,22 +199,42 @@ public static class Ui
         Logo.DisplayFullLogo();
         
         GetEmailOnSignIn();
-        GetPasswordOnSignIn();
-        
-        SetUserValues();
-        await IsVerified();
 
-        if (_user is { Type: 1 })
+        if (GetPasswordOnSignIn())
         {
-            await AdminSignedIn();
+            SetUserValues();
+            
+            if (IsLocked() && _user?.Type == 0)
+            {
+                Console.WriteLine();
+                var message = "\u001b[38;2;255;69;0mThis Account is Locked\u001b[0m";
+                Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
+                Thread.Sleep(2000);
+                Environment.Exit(0);
+            }
+            
+            await IsVerified();
+            
+            if (_user is { Type: 1 })
+            {
+                await AdminSignedIn();
+            }
+            else
+            {
+                await UserSignedIn();
+            }
         }
         else
         {
-            await UserSignedIn();
+            Console.WriteLine();
+            var message = "\u001b[38;2;255;69;0mThis Account has been Locked due to too many sign in attempts\u001b[0m";
+            Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
+            Thread.Sleep(2000);
+            Environment.Exit(0);
         }
         
     }
-
+    
     // Method to get email input on sign in attempt.
     private static void GetEmailOnSignIn()
     {
@@ -254,10 +270,17 @@ public static class Ui
     }
 
     // Method to get password on sign in attempt.
-    private static void GetPasswordOnSignIn()
+    private static bool GetPasswordOnSignIn()
     {
+        int signInAttempt = 0;
         while (true)
         {
+            if (signInAttempt == 3)
+            {
+               UserManager.UpdateUserLock(_registeredEmail, 1);
+               return false;
+            }
+            
             Console.Clear();
             Logo.DisplayFullLogo();
             Console.Write($"{EmailDisplay}\n{PasswordDisplay}");
@@ -265,6 +288,8 @@ public static class Ui
             var password = Console.ReadLine();
             _user = Auth.Login(_registeredEmail, password);
 
+            signInAttempt += 1;
+            
             if (_user != null) break;
             
             Console.WriteLine();
@@ -272,6 +297,8 @@ public static class Ui
             Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
             Thread.Sleep(2000);
         }
+
+        return true;
     }
     
     // Method to check if account is verified.
@@ -279,6 +306,11 @@ public static class Ui
     {
         if (_user?.Verified == "1") return;
         await VerifyAccount();
+    }
+
+    private static bool IsLocked()
+    {
+        return _user?.Locked == 1;
     }
    
     
@@ -625,6 +657,10 @@ public static class Ui
 
     private static async Task TransferFunds(Account sender, Account receiver)
     {
+        AccountDetails(receiver);
+        
+        Console.Write("Amount to Transfer: ");
+        
         while (true)
         {
             if (decimal.TryParse(Console.ReadLine(), out var transfer))
@@ -640,6 +676,7 @@ public static class Ui
         }
         
         TransferAnimation();
+        
         await UserSignedIn();
     }
     
@@ -648,6 +685,8 @@ public static class Ui
     {
         Console.Clear();
         Logo.DisplayFullLogo();
+        
+        UserDetails();
         
         AnsiConsole.Status()
             .AutoRefresh(true)
@@ -665,6 +704,8 @@ public static class Ui
         
         Console.Clear();
         Logo.DisplayFullLogo();
+        
+        UserDetails();
         
         AnsiConsole.MarkupLine(
             "\n[green]Transfer complete![/]\nYou will now be redirected to the main menu.");
@@ -732,12 +773,10 @@ public static class Ui
                 case "[yellow]  Main Menu         [/]":
                     await UserSignedIn();
                     break;
-                
-                default:
-                    await CurrencyConverter("SEK", choice, account);
-                    Thread.Sleep(1000);
-                    break;
             }
+            
+            await CurrencyConverter(account.CurrencyCode, indentedCurrencies[choice], account);
+            Thread.Sleep(1000);
         }
     }
 
@@ -746,9 +785,11 @@ public static class Ui
         try
         {
             var convertedAmount = CurrencyManager.ConvertCurrency(account.Balance, convertFrom, convertTo);
+
             account.Balance = convertedAmount;
             account.CurrencyCode = convertTo;
-            await ExchangingMoney(account, convertFrom, convertTo, convertedAmount);
+            
+            await ExchangeAnimation(account, convertFrom, convertTo, convertedAmount);
         }
         catch (Exception ex)
         {
@@ -758,11 +799,14 @@ public static class Ui
         await AccountOptions(account);
     }
 
-    private static async Task ExchangingMoney(Account account, string fromCurrency, string toCurrency, decimal amount)
+    private static async Task ExchangeAnimation(Account account, string fromCurrency, string toCurrency, decimal amount)
     {
         var customStyle = new Style(new Color(225, 69, 0));
         Console.Clear();
         Logo.DisplayFullLogo();
+        
+        UserDetails();
+        
         AnsiConsole.Progress()
             .AutoRefresh(true)
             .AutoClear(false)
@@ -779,53 +823,109 @@ public static class Ui
                 var task2 = ctx.AddTask("[rgb(190,40,0)]Updating account balances[/]");
 
                 // Runs task1 to completion
-                await RunTaskAsync(task1, 2, "Processing exchange request");
+                await RunTaskAsync(task1, 10, "Processing exchange request");
 
                 // Once task1 is done, run task2
-                await RunTaskAsync(task2, 1.5, "Updating account balances");
+                await RunTaskAsync(task2, 5, "Updating account balances");
             }).GetAwaiter().GetResult();
         Console.Clear();
         Logo.DisplayFullLogo();
         
-        var message =
-            $"\u001b[38;2;225;204;0mYou have exchanged from\u001b[0m \u001b[38;2;255;69;0m{fromCurrency}\u001b[0m \u001b[38;2;225;204;0m to \u001b[0m \u001b[38;2;255;69;0m{toCurrency}\u001b[0m. ";
-        Console.WriteLine($"{message}".PadLeft(message.Length + ((Console.WindowWidth - message.Length) / 2)));
-        var message2 = $"\u001b[38;2;225;204;0mFinal Amount in {toCurrency}:\u001b[0m \u001b[38;2;255;69;0m{amount}\u001b[0m";
-        Console.WriteLine(
-            $"{message2}".PadLeft(message2.Length + ((Console.WindowWidth - message2.Length) / 2)));
-        var message3 = "\u001b[38;2;34;139;34mYour exchange has been successfully processed.\u001b[0m";
-        Console.WriteLine(
-            $"{message3}".PadLeft(message3.Length + ((Console.WindowWidth - message3.Length) / 2)));
-        
-
-        Console.ReadLine();
         AccountDetails(account);
+        
+        var message1 = "\u001b[38;2;34;139;34mYour exchange has been successfully processed.\u001b[0m";
+        Console.WriteLine($"{message1}");
+        
+        var message2 = $"\u001b[38;2;225;255;0mYou have exchanged from\u001b[0m \u001b[38;2;255;69;0m{fromCurrency}\u001b[0m \u001b[38;2;225;255;0m to \u001b[0m \u001b[38;2;255;69;0m{toCurrency}\u001b[0m. ";
+        Console.WriteLine($"{message2}");
+        
+        var message3 = $"\u001b[38;2;225;255;0mFinal Amount in {toCurrency}:\u001b[0m \u001b[38;2;255;69;0m{amount:f2}\u001b[0m";
+        Console.WriteLine($"{message3}");
+
+        Console.WriteLine("\nPress any Key to Continue");
+        
         Console.ReadLine();
+       
         await UserSignedIn();
+    }
 
-        return;
-
-        static async Task RunTaskAsync(ProgressTask task, double incrementValue, string contextDescription)
+    private static async Task RunTaskAsync(ProgressTask task, double incrementValue, string contextDescription)
+    {
+        while (!task.IsFinished)
         {
-            while (!task.IsFinished)
-            {
-                task.Increment(incrementValue); // Increment task progress
+            task.Increment(incrementValue); // Increment task progress
 
-                // Dynamically color-code the task description
-                var color = task.Value < 30 ? "rgb(190,40,0)" : task.Value < 100 ? "yellow" : "green";
-                task.Description = $"[bold {color}] {contextDescription} {task.Value:0}%[/]";
-                await Task.Delay(250); // Simulate work 
-            }
+            // Dynamically color-code the task description
+            var color = task.Value < 30 ? "rgb(190,40,0)" : task.Value < 100 ? "yellow" : "green";
+            task.Description = $"[bold {color}] {contextDescription} {task.Value:0}%[/]";
+            await Task.Delay(250); // Simulate work 
         }
     }
     
-    // Method to play a sound from the specified file path.
-    private static void PlaySound(string filePath)
+    private static async Task DepositLoanIn()
     {
-        using SoundPlayer soundPlayer = new(filePath);
-        soundPlayer.PlaySync();
+        if (_user?.Accounts == null) return;
+        
+        var indentedAccounts = _user.Accounts
+            .ToDictionary(account => $"  {account.AccountName}", account => account);
+        
+        var choice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .PageSize(5)
+                .HighlightStyle(new Style(Color.Black, Color.Yellow))
+                .Title("[bold underline rgb(190,40,0)]    Chose an Account to deposit your Loan in[/]".PadLeft(5))
+                .AddChoices(indentedAccounts.Keys)
+                .AddChoiceGroup("", "[yellow]Main Menu[/]")
+                .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
+
+        switch (choice)
+        {
+            case "[yellow]Main Menu[/]":
+                await UserSignedIn();
+                break;
+            
+            default:
+                await AmountToLoan(indentedAccounts[choice]);
+                break;
+        }
     }
 
+    private static async Task AmountToLoan(Account account)
+    {
+        while (true)
+        {
+            Console.Clear();
+            Logo.DisplayFullLogo();
+            AccountDetails(account);
+            
+            decimal amount;
+            while (true)
+            {
+                Console.Write("Amount to Loan: ");
+                if (decimal.TryParse(Console.ReadLine(), out amount)) break;
+            }
+
+            var loan = LoanManager.CreateLoan(_user, account, amount);
+            
+            if (loan != null)
+            {
+                Console.WriteLine("\u001b[38;2;34;139;34mYour Loan was successfully processed\u001b[0m");
+                Console.WriteLine(loan);
+                break;
+            }
+
+            Console.WriteLine();
+            Console.WriteLine($"\u001b[38;2;255;69;0mYour only allowed to Loan {LoanManager.LoanAmountAllowed(_user, account)}  {account.CurrencyCode}\u001b[0m");
+            Thread.Sleep(3000);
+        }
+        
+        
+        Console.WriteLine("\nPress any Key to Continue");
+        Console.ReadLine();
+       
+        await UserSignedIn();
+    }
+     
     private static async Task AdminSignedIn()
     {
         Console.Clear();
@@ -891,5 +991,12 @@ public static class Ui
         _registeredFirstName = "Salamander";
         _registeredLastName = "Bank";
         _registeredEmail = "salamanderbank@gmail.com";
+    }
+    
+    // Method to play a sound from the specified file path.
+    private static void PlaySound(string filePath)
+    {
+        using SoundPlayer soundPlayer = new(filePath);
+        soundPlayer.PlaySync();
     }
 }

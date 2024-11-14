@@ -14,7 +14,7 @@ namespace SalamanderBank
     public class LoanManager
     {
         // Method to check if a loan is allowed based on the current balance and outstanding loans
-        public static decimal LoanAmountAllowed(User user, Account account)
+        public static decimal LoanAmountAllowed(User? user, Account account)
         {
             // Calculate the total balance of all the accounts for the user
             decimal totalBalance = GetTotalBalance(user, account.CurrencyCode);
@@ -30,7 +30,7 @@ namespace SalamanderBank
         }
 
         //Metod to fetch the total sum of loans for the given user
-        public static decimal GetTotalLoans(User user, string currencyCode)
+        public static decimal GetTotalLoans(User? user, string currencyCode)
         {
             decimal totalLoans = 0;
             foreach (Loan loan in user.Loans)
@@ -41,7 +41,7 @@ namespace SalamanderBank
         }
 
         // Method to get the total balance across all accounts for the user
-        public static decimal GetTotalBalance(User user, string currencyCode)
+        public static decimal GetTotalBalance(User? user, string currencyCode)
         {
             decimal totalBalance = 0;
 
@@ -54,18 +54,16 @@ namespace SalamanderBank
         }
 
         //Method to add a loan to the database for the given user
-        public static Loan? CreateLoan(User user, Account account, decimal loanAmount, decimal interestRate = 3, int status = 0)
+        public static Loan? CreateLoan(User? user, Account account, decimal loanAmount, decimal interestRate = 3, int status = 0)
         {
 
             // Check if the loan is allowed based on the available balance and outstanding loans
             decimal amountAllowedToLoan = LoanAmountAllowed(user, account);
-            if (amountAllowedToLoan <= 0)
+            if (amountAllowedToLoan <= 0 || loanAmount > amountAllowedToLoan)
             {
-                Console.WriteLine($"With your current balance you are only allowed to loan {amountAllowedToLoan}{account.CurrencyCode}.");
                 return null;
             }
-            //---------------------------------
-
+            
             // SQL query to insert the loan into the Loans table 
             string insertLoanQuery = @"
                 INSERT INTO Loans (UserID, Amount, CurrencyCode, InterestRate, Status, LoanDate)
@@ -86,8 +84,10 @@ namespace SalamanderBank
                     LoanDate = DateTime.Now
                 };
                 Loan loan = connection.QuerySingle<Loan>(insertLoanQuery, parameters);
+                
                 GetLoansFromUser(user);
                 account.Balance += loanAmount;
+                
                 AccountManager.UpdateAccountBalance(account);
                 return loan;
             }
