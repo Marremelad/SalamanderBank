@@ -39,6 +39,7 @@ namespace SalamanderBank
                         Verified = verified
                     };
                     User user = connection.QuerySingle<User>(insertQuery, parameters);
+                    return user;
                 }   
             }
             return null;
