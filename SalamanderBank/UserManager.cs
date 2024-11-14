@@ -222,9 +222,9 @@ namespace SalamanderBank
         }
 
 		// Changes User object's locked column in database
-		public static void UpdateUserLock(User user, int locked)
+		public static void UpdateUserLock(string email, int locked)
 		{
-			string updateQuery = "UPDATE Users SET Locked = @NewLocked WHERE ID = @UserID;";
+			string updateQuery = "UPDATE Users SET Locked = @NewLocked WHERE Email = @Email;";
 
 			using (SQLiteConnection connection = new SQLiteConnection(DB._connectionString))
 			{
@@ -233,15 +233,10 @@ namespace SalamanderBank
 				using (SQLiteCommand updateCommand = new SQLiteCommand(updateQuery, connection))
 				{
 					updateCommand.Parameters.AddWithValue("@NewLocked", locked);
-					updateCommand.Parameters.AddWithValue("@UserID", user.ID);
+					updateCommand.Parameters.AddWithValue("@Email", email);
 
 					int rowsAffected = updateCommand.ExecuteNonQuery();
 					Console.WriteLine($"{rowsAffected} row(s) updated in Users table.");
-                    if (rowsAffected > 0)
-                    {
-						// Updates the User object's locked column
-						user.Locked = locked;
-					}
 				}
 			}
 		}
