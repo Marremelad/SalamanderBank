@@ -1,0 +1,268 @@
+@startuml SalamanderUML
+!theme reddress-lightred
+
+ class Account <<class>> {
+        + int ID
+        + User User
+        + Currency Currency
+        + string Account_name
+        + double Balance
+        + int Status 
+        + int Type
+        + float Interest
+        + List <Transfer> TransferList
+        + static Dicktionary <int, Float> AccountTypes 
+}
+
+
+    class AccountManager {
+        + static GetAccountTransferHistory()
+        + static UpdateAccountBalance()
+        + static UpdateAccountCurrency()
+        + static void GetAccountsFromUser()
+        + static Account ConvertAccountCurrency()
+        + static void CreateAccount()
+}
+
+    class Auth <<class>> {
+        + static User? Login()
+        + static string HashPassword()
+        + static string VerifyPassword()
+}
+
+
+class Currency <<class>> {
+        + string Currency_code
+        + float Exchange_rate
+}
+
+class CurrencyManager <<static class>> {
+        + static async UpdateCurrenciesAsync()
+        + static decimal GetExchangeRate()
+        + static decimal ConvertCurrency()
+        + static List<Currency> GetAllCurrencies()
+}
+
+
+class DB <<static class>> {
+    + static void InitializeDatabase()
+    + static void CreateTables()
+    + static bool EmailExists()
+    + static int[] SearchUser()
+    + static string Escape()   
+}
+
+class EmailService <<static class>> {
+    + static string _dbFile
+    + static string _connectionString
+    + static void SendVerificationEmail()
+    + static void SendTransactionEmail()
+    + static void SendTransferEmail()
+    
+}
+
+class Loan <<class>>{
+    + int ID 
+    + User USer
+    + decimal Amount
+    + string currencycode
+    +decimal InterestRate
+    + int Ststus
+    + Datetime LoanDate
+}
+
+class LoanManager <<class>> {
+    + static decimal LoanAmountAllowed()
+    + static decimal GetTotalLoans()
+    + static decimal GetToalLoans() 
+    + static decimal GetTotalBalance()
+    + static Loan? CreateLoan()
+    + static void GetLoansFromUser()
+}
+
+
+class Logo <<static class>> {
+    + const string FireLogo
+    + const string textLogo
+    + static void DisplayFullLogo()
+    + static void DisplayFireLogo()
+    + static void DisplayTextLogo()
+} 
+
+class Program <<class>> {
+        + static void Main()
+}
+
+class SmsService <<static class>> {
+            + SendSms()
+}
+
+class Transfer <<class>> {
+        + int ID
+        + User SenderUser
+        + Account SenderAccount
+        + User ReceiverUser
+        + Account ReceiverAccount
+        + decimal amount
+        + DateTime TransferDate
+        + int Processed
+}
+
+class TransferManager <<class>> {
+    + static Queue<Transfer> transferQueue
+    + static Transfer GetTransfer()
+    + static void ProcessQueue()
+    - static async processTransfer()
+    - static bool AddTransferToDB()
+    + static Transfer? CreateTransfer()
+    + static Transfer GetTransfer()
+
+}
+
+class Ui <<static class>> {
+        - static string? _registeredFirstName
+        - static string? _registeredLastName
+        - static string? _registeredEmail
+        - static string? _registeredPassword
+        - static string? _registeredPhoneNumber
+        - const double  User? _user
+        - static readonly double DisplayPadding
+        - const double MenuPadding
+        - static string FirstNameDisplay
+        - static string LastNameDisplay
+        - static string EmailDisplay
+        - static string PasswordDisplay
+        - static string PhoneNumberDisplay
+        - const string EmailPattern
+        - const string PhoneNumberPattern
+        - static void TitleScreen()
+        + static void DisplayMainMenu()
+        - static void UserSignedIn()
+        - static void CreateAccount() 
+        - static void CreateDefaultBankAccounts()
+        - static void SignIn()
+        - static void GetEmailOnSignIn()
+        - static void GetPasswordOnSignIn()
+        - static void IsVerified()
+        - static void SetUserValues()
+        - static string GetFirstName() 
+        - static string GetLastName()
+        - static string GetEmail()
+        - static void GetPassword()
+        - static string GetPhoneNumber()
+        - static void VerifyAccount()
+        - static void UserDetails()
+        - static decimal GetTotalBalance()
+        - static void BankAccounts()
+        - static void AccountDetails() 
+        - static void AcoountOptions()
+        - static void ChangeAccountName()
+        - static void ChangeAccountCurrency()
+        - static void TransferTo()
+        + static void TransferFunds() 
+        - static void TransferAnimation()
+        - static void ExchangeMenu()
+        - static void Currencies()
+        - static void CurrencyConverter()
+        - static void ExchangeMoney()
+        + var message
+        + var message2
+        + var message3
+        + static async Task RunTaskAsync()
+        + static void PlaySound() 
+        - static void async Task AdminSignedIn()
+        + static void AdminCreateNewUser()
+        + static void EraseFields()
+        - static void ResetAdminFields()
+}
+
+
+ class User <<class>> {
+        + int ID
+        + int type
+        + string First_name
+        + string Last_name
+        + string Email
+        + string Password
+        + string PhoneNumber
+        + string Verified
+        + int Locked
+        + List <Account> Account
+        + List <Loan> Loans
+}
+
+Class UserManager <<class>> {
+    + static User? AddUser() 
+    + static void VerifyUser()
+    + static bool EmailExists()
+    + static bool PhoneNumberExists()
+    + static List<User> SearchUser()
+    + static void ChangePassword()
+    + static void UpdateUserPassword()
+    + static void UpdateUserPhoneNumber()
+    + static void UpdateUserEmail()
+    + static void UpdateUserLock()
+}
+
+
+' Relationships between classes
+'-------------------------------
+AccountManager o-- Account 
+AccountManager o-- User 
+AccountManager o-- Transfer 
+AccountManager ..> CurrencyManager : Uses
+AccountManager ..> DB 
+'-------
+Auth ..> User : "Uses for login and verification"
+Auth ..> DB : "Uses to query users from database"
+'-------
+CurrencyManager ..> DB 
+CurrencyManager ..> AccountManager 
+CurrencyManager --> Currency 
+CurrencyManager --> HttpClient
+'-------
+User --|> Account : Has
+Account --|> Currency : Uses
+Transfer --|> User : Sender and Receiver
+Transfer --|> Account : From and to Acoount
+'-------
+EmailService ..> TransferManager 
+'-------
+SmsService --|> HttpClient : Uses
+'-------
+ Transfer o-- User : SenderUser
+ Transfer o-- User : ReceiverUser
+ Transfer o-- Account : SenderAccount
+ Transfer o-- Account : ReceiverAccount
+'-------
+TransferManager o-- Transfer : Manages
+TransferManager o-- Account : handles accounts 
+TransferManager o-- User : manages users 
+TransferManager o-- CurrencyManager : uses 
+TransferManager o-- AccountManager : updates balances 
+TransferManager o-- TransferManager : Depends on 
+'-------
+Ui --> DB : Uses for user account management
+Ui --> Logo : Displays logo
+Ui --> User : Stores current user details
+Ui --> EmailService : Sends verification emails
+Ui --> TransferManager 
+'-------
+DB --> Account 
+DB --> Currencies
+DB --> User : Stores and manages user data
+'-------
+User o-- Account : has 
+User o-- Loan : has
+'-------
+UserManager --> User : Manages users
+UserManager ..> DB : depends on
+UserManager ..> Auth : depends on
+'-------
+Program --> Ui : Called method to display menu
+'-------
+LoanManager o-- Loan : Manages loans
+'-------
+Ui ..> LoanManager : Uses for loan management
+
+@enduml
