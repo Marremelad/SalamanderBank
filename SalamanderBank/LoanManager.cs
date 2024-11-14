@@ -23,10 +23,10 @@ namespace SalamanderBank
             decimal totalLoans = GetTotalLoans(user, account.CurrencyCode);
 
             // Calculate the available amount for new loans based on the total balance
-            decimal availableToLoan = (totalBalance * 5) - totalLoans;
+            decimal availableToLoan = ((totalBalance - totalLoans)*5) - totalLoans;
 
             // Return true if the current loans do not exceed the available loan limit
-            return Math.Max(Math.Round(availableToLoan, 4), 0);
+            return Math.Round(Math.Max(availableToLoan, 0), 4);
         }
 
         //Metod to fetch the total sum of loans for the given user
