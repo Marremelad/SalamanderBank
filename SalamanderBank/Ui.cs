@@ -47,9 +47,6 @@ public static class Ui
     private const string EmailPattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
     private const string PhoneNumberPattern = @"^\+46\d{9}$";
     
-    //
-    
-
     // Title screen.
     private static void TitleScreen()
     {
@@ -116,11 +113,10 @@ public static class Ui
             case "Sign In":
                 await SignIn();
                 break;
-                
+            
             case "Exit":
-                Console.WriteLine("Thank you for using SalamanderBank!");
-                Thread.Sleep(2000);
-                return;
+                Environment.Exit(0);
+                break;
         }
     }
     
@@ -203,18 +199,32 @@ public static class Ui
         Logo.DisplayFullLogo();
         
         GetEmailOnSignIn();
-        GetPasswordOnSignIn();
-        
-        SetUserValues();
-        await IsVerified();
 
-        if (_user is { Type: 1 })
+        if (GetPasswordOnSignIn())
         {
-            await AdminSignedIn();
+            SetUserValues();
+            
+            if (IsLocked())
+            {
+                Console.WriteLine("This account is locked");
+                Environment.Exit(0);
+            }
+            
+            await IsVerified();
+            
+            if (_user is { Type: 1 })
+            {
+                await AdminSignedIn();
+            }
+            else
+            {
+                await UserSignedIn();
+            }
         }
         else
         {
-            await UserSignedIn();
+            Console.WriteLine("This account has been locked due to too many sign in attempts");
+            Environment.Exit(0);
         }
         
     }
@@ -254,10 +264,17 @@ public static class Ui
     }
 
     // Method to get password on sign in attempt.
-    private static void GetPasswordOnSignIn()
+    private static bool GetPasswordOnSignIn()
     {
+        int signInAttempt = 0;
         while (true)
         {
+            if (signInAttempt == 3)
+            {
+               UserManager.UpdateUserLock(_registeredEmail, 1);
+               return false;
+            }
+            
             Console.Clear();
             Logo.DisplayFullLogo();
             Console.Write($"{EmailDisplay}\n{PasswordDisplay}");
@@ -265,6 +282,8 @@ public static class Ui
             var password = Console.ReadLine();
             _user = Auth.Login(_registeredEmail, password);
 
+            signInAttempt += 1;
+            
             if (_user != null) break;
             
             Console.WriteLine();
@@ -272,6 +291,8 @@ public static class Ui
             Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
             Thread.Sleep(2000);
         }
+
+        return true;
     }
     
     // Method to check if account is verified.
@@ -279,6 +300,11 @@ public static class Ui
     {
         if (_user?.Verified == "1") return;
         await VerifyAccount();
+    }
+
+    private static bool IsLocked()
+    {
+        return _user?.Locked == 1;
     }
    
     
@@ -741,12 +767,10 @@ public static class Ui
                 case "[yellow]  Main Menu         [/]":
                     await UserSignedIn();
                     break;
-                
-                default:
-                    await CurrencyConverter("SEK", choice, account);
-                    Thread.Sleep(1000);
-                    break;
             }
+            
+            await CurrencyConverter(account.CurrencyCode, indentedCurrencies[choice], account);
+            Thread.Sleep(1000);
         }
     }
 
@@ -755,9 +779,11 @@ public static class Ui
         try
         {
             var convertedAmount = CurrencyManager.ConvertCurrency(account.Balance, convertFrom, convertTo);
+
             account.Balance = convertedAmount;
             account.CurrencyCode = convertTo;
-            await ExchangingMoney(account, convertFrom, convertTo, convertedAmount);
+            
+            await ExchangeAnimation(account, convertFrom, convertTo, convertedAmount);
         }
         catch (Exception ex)
         {
@@ -767,7 +793,7 @@ public static class Ui
         await AccountOptions(account);
     }
 
-    private static async Task ExchangingMoney(Account account, string fromCurrency, string toCurrency, decimal amount)
+    private static async Task ExchangeAnimation(Account account, string fromCurrency, string toCurrency, decimal amount)
     {
         var customStyle = new Style(new Color(225, 69, 0));
         Console.Clear();
@@ -791,43 +817,42 @@ public static class Ui
                 var task2 = ctx.AddTask("[rgb(190,40,0)]Updating account balances[/]");
 
                 // Runs task1 to completion
-                await RunTaskAsync(task1, 2, "Processing exchange request");
+                await RunTaskAsync(task1, 10, "Processing exchange request");
 
                 // Once task1 is done, run task2
-                await RunTaskAsync(task2, 1.5, "Updating account balances");
+                await RunTaskAsync(task2, 5, "Updating account balances");
             }).GetAwaiter().GetResult();
         Console.Clear();
         Logo.DisplayFullLogo();
         
-        var message =
-            $"\u001b[38;2;225;204;0mYou have exchanged from\u001b[0m \u001b[38;2;255;69;0m{fromCurrency}\u001b[0m \u001b[38;2;225;204;0m to \u001b[0m \u001b[38;2;255;69;0m{toCurrency}\u001b[0m. ";
-        Console.WriteLine($"{message}".PadLeft(message.Length + ((Console.WindowWidth - message.Length) / 2)));
-        var message2 = $"\u001b[38;2;225;204;0mFinal Amount in {toCurrency}:\u001b[0m \u001b[38;2;255;69;0m{amount}\u001b[0m";
-        Console.WriteLine(
-            $"{message2}".PadLeft(message2.Length + ((Console.WindowWidth - message2.Length) / 2)));
-        var message3 = "\u001b[38;2;34;139;34mYour exchange has been successfully processed.\u001b[0m";
-        Console.WriteLine(
-            $"{message3}".PadLeft(message3.Length + ((Console.WindowWidth - message3.Length) / 2)));
-        
-
-        Console.ReadLine();
         AccountDetails(account);
+        
+        var message1 = "\u001b[38;2;34;139;34mYour exchange has been successfully processed.\u001b[0m";
+        Console.WriteLine($"{message1}");
+        
+        var message2 = $"\u001b[38;2;225;255;0mYou have exchanged from\u001b[0m \u001b[38;2;255;69;0m{fromCurrency}\u001b[0m \u001b[38;2;225;255;0m to \u001b[0m \u001b[38;2;255;69;0m{toCurrency}\u001b[0m. ";
+        Console.WriteLine($"{message2}");
+        
+        var message3 = $"\u001b[38;2;225;255;0mFinal Amount in {toCurrency}:\u001b[0m \u001b[38;2;255;69;0m{amount:f2}\u001b[0m";
+        Console.WriteLine($"{message3}");
+
+        Console.WriteLine("\nPress any Key to Continue");
+        
         Console.ReadLine();
+       
         await UserSignedIn();
+    }
 
-        return;
-
-        static async Task RunTaskAsync(ProgressTask task, double incrementValue, string contextDescription)
+    private static async Task RunTaskAsync(ProgressTask task, double incrementValue, string contextDescription)
+    {
+        while (!task.IsFinished)
         {
-            while (!task.IsFinished)
-            {
-                task.Increment(incrementValue); // Increment task progress
+            task.Increment(incrementValue); // Increment task progress
 
-                // Dynamically color-code the task description
-                var color = task.Value < 30 ? "rgb(190,40,0)" : task.Value < 100 ? "yellow" : "green";
-                task.Description = $"[bold {color}] {contextDescription} {task.Value:0}%[/]";
-                await Task.Delay(250); // Simulate work 
-            }
+            // Dynamically color-code the task description
+            var color = task.Value < 30 ? "rgb(190,40,0)" : task.Value < 100 ? "yellow" : "green";
+            task.Description = $"[bold {color}] {contextDescription} {task.Value:0}%[/]";
+            await Task.Delay(250); // Simulate work 
         }
     }
     

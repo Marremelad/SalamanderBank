@@ -222,7 +222,7 @@ namespace SalamanderBank
         }
 
 		// Changes User object's locked column in database
-		public static void UpdateUserLock(string email, int locked)
+		public static void UpdateUserLock(string? email, int locked)
 		{
 			string updateQuery = "UPDATE Users SET Locked = @NewLocked WHERE Email = @Email;";
 
