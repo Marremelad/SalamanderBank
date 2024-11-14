@@ -25,6 +25,7 @@ namespace SalamanderBank
                 {
                     Console.WriteLine("Login successful.");
                     AccountManager.GetAccountsFromUser(user);
+                    LoanManager.GetLoansFromUser(user);
                     return user;
                 }
                 else
