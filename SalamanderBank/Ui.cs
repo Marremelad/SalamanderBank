@@ -204,9 +204,12 @@ public static class Ui
         {
             SetUserValues();
             
-            if (IsLocked())
+            if (IsLocked() && _user?.Type == 0)
             {
-                Console.WriteLine("This account is locked");
+                Console.WriteLine();
+                var message = "\u001b[38;2;255;69;0mThis Account is Locked\u001b[0m";
+                Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
+                Thread.Sleep(2000);
                 Environment.Exit(0);
             }
             
@@ -223,7 +226,10 @@ public static class Ui
         }
         else
         {
-            Console.WriteLine("This account has been locked due to too many sign in attempts");
+            Console.WriteLine();
+            var message = "\u001b[38;2;255;69;0mThis Account has been Locked due to too many sign in attempts\u001b[0m";
+            Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
+            Thread.Sleep(2000);
             Environment.Exit(0);
         }
         
