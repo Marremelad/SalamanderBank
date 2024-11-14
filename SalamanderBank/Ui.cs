@@ -152,8 +152,8 @@ public static class Ui
                 break;
             
             case "Take Loan":
-                //TakeLoan();
-                throw new NotImplementedException();
+                await DepositLoanIn();
+                break;
             
             case "View Transactions": 
                 //ViewTransaction();
@@ -233,6 +233,34 @@ public static class Ui
             Environment.Exit(0);
         }
         
+    }
+
+    private static async Task DepositLoanIn()
+    {
+        if (_user?.Accounts == null) return;
+        
+        var indentedAccounts = _user.Accounts
+            .ToDictionary(account => $"  {account.AccountName}", account => account);
+        
+        var choice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .PageSize(5)
+                .HighlightStyle(new Style(Color.Black, Color.Yellow))
+                .Title("[bold underline rgb(190,40,0)]    Chose an Account to deposit your Loan in[/]".PadLeft(5))
+                .AddChoices(indentedAccounts.Keys)
+                .AddChoiceGroup("", "[yellow]Main Menu[/]")
+                .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
+
+        switch (choice)
+        {
+            case "[yellow]Main Menu[/]":
+                await UserSignedIn();
+                break;
+            
+            default:
+                await TransferTo(indentedAccounts[choice]);
+                break;
+        }
     }
 
     // Method to get email input on sign in attempt.
