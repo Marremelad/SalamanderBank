@@ -87,6 +87,8 @@ namespace SalamanderBank
                 };
                 Loan loan = connection.QuerySingle<Loan>(insertLoanQuery, parameters);
                 GetLoansFromUser(user);
+                account.Balance += loanAmount;
+                AccountManager.UpdateAccountBalance(account);
                 return loan;
             }
         }
@@ -95,10 +97,10 @@ namespace SalamanderBank
             using (var connection = new SQLiteConnection(DB._connectionString))
             {
                 connection.Open();
-                var sql = @"SELECT a.*, u.*
-                        FROM Accounts a
-                        INNER JOIN Users u on u.ID = a.UserID
-                        WHERE a.UserID = @UserID";
+                var sql = @"SELECT l.*, u.*
+                        FROM Loans l
+                        INNER JOIN Users u on u.ID = l.UserID
+                        WHERE l.UserID = @UserID";
                 var loans = connection.Query<Loan, User, Loan>(
                     sql,
                     (loan, user) =>
