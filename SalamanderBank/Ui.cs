@@ -1,3 +1,4 @@
+using System.Data.Entity.Infrastructure.Interception;
 using System.Media;
 using System.Text.RegularExpressions;
 
@@ -513,11 +514,16 @@ public static class Ui
                 .HighlightStyle(new Style(Color.Black, Color.Yellow))
                 .Title("[bold underline rgb(190,40,0)]    Account Options[/]") // Keep title indentation consistent.
                 .AddChoices(indentedAccounts.Keys) // Display indented account names.
+                .AddChoiceGroup("", "[green]Create new Account[/]")
                 .AddChoiceGroup("", "[yellow]Main Menu[/]")
                 .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
         
         switch (choice)
         { 
+            case "[green]Create new Account[/]":
+                await UserChooseNewAccountType();
+                break;
+            
             case "[yellow]Main Menu[/]":
                 await UserSignedIn();
                 break;
@@ -526,6 +532,94 @@ public static class Ui
                 await AccountOptions(indentedAccounts[choice]);
                 break;
         }
+    }
+
+    private static async Task UserChooseNewAccountType()
+    {
+        Console.Clear();
+        Logo.DisplayFullLogo();
+        UserDetails();
+        
+        var choice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .PageSize(10)
+                .HighlightStyle(new Style(Color.Black, Color.Yellow))
+                .Title("[bold underline rgb(190,40,0)]    Choose what Type of Account you want to create[/]")
+                .AddChoices("  Personal Account", "  Savings Account")
+                .AddChoiceGroup("","[yellow]Main Menu[/]")
+                .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
+        
+        switch (choice.Trim())
+        {
+            case "Personal Account":
+                await UserCreateNewAccount(0);
+                break;
+            
+            case "Savings Account":
+                await UserCreateNewAccount(1);
+                break;
+            
+            case "[yellow]Main Menu[/]":
+                await UserSignedIn();
+                break;
+        }
+    }
+
+    private static async Task UserCreateNewAccount(int type)
+    {
+        while (true)
+        {
+            Console.Clear();
+            Logo.DisplayFullLogo();
+            UserDetails();
+            
+            string message = "";
+            switch (type)
+            {
+                case 0:
+                    message = "You have chosen to create a personal account. The interest rate of this type of account is 0%";
+                    break;
+                
+                case 1:
+                    message = "You have chosen to create a savings account. The interest rate of this type of account is 30%";
+                    break;
+            }
+            
+            var choice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .PageSize(10)
+                    .HighlightStyle(new Style(Color.Black, Color.Yellow))
+                    .Title($"[bold underline rgb(190,40,0)]    {message}[/]")
+                    .AddChoices("  Account Name")
+                    .AddChoiceGroup("","[yellow]Return[/]")
+                    .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
+
+            if (choice.Trim() == "Account Name")
+            {
+                Console.Write("Choose an account name: ");
+                var accountName = Console.ReadLine();
+            
+                if (!string.IsNullOrEmpty(accountName))
+                {
+                    if (AccountManager.CreateAccount(_user, "SEK", accountName, type)) break;
+
+                    Console.WriteLine("\u001b[38;2;255;69;0mAn account with this name already exists\u001b[0m");
+                    Thread.Sleep(3000);
+                
+                }
+                else
+                {
+                    Console.WriteLine("\u001b[38;2;255;69;0mAccount name can not be empty\u001b[0m");
+                    Thread.Sleep(3000);
+                }
+            }
+            else
+            {
+                await UserChooseNewAccountType();
+            }
+        }
+
+        await UserSignedIn();
     }
 
     private static void AccountDetails(Account account)
@@ -538,6 +632,7 @@ public static class Ui
         table.AddColumn("Account Information");
         table.AddRow($"Name: {account.AccountName}");
         table.AddRow($"Currency: {account.CurrencyCode}");
+        table.AddRow($"Interest: {account.Interest}%");
         table.AddRow($"Balance: {account.Balance:F2}");
         table.Border = TableBorder.Rounded;
         table.BorderStyle = new Style(ConsoleColor.DarkRed);
@@ -828,6 +923,7 @@ public static class Ui
                 // Once task1 is done, run task2
                 await RunTaskAsync(task2, 5, "Updating account balances");
             }).GetAwaiter().GetResult();
+
         Console.Clear();
         Logo.DisplayFullLogo();
         
