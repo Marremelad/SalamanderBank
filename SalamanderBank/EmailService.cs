@@ -60,38 +60,4 @@ public static class EmailService
 
         SendEmail(name, email, "Verification", htmlBody);
     }
-
-    // Sends a transaction confirmation email to the user.
-    public static void SendTransactionEmail(string? name, string? email)
-    {
-        string htmlBody = $@"
-        <html>
-            <body style='margin: 0; padding: 0;'>
-                <p style='margin: 0;'>Hello {name}. Your transaction was successful.</p>
-                <p style='color:green; margin: 0;'><strong>Amount: --- </strong></p>
-                <pre style='margin: 0; margin-top: 24px;'>{Logo.FireLogo}</pre>
-                <p style='margin: 0; margin-top: 48px;'>// Team Salamander</p>
-                <p style='margin: 0;'>{DateTime.Now}</p>
-            </body>
-        </html>";
-
-        SendEmail(name, email, "Transaction", htmlBody);
-    }
-
-    // Sends a transfer confirmation email to the user.
-    public static void SendTransferEmail(string? name, string target, string? email)
-    {
-        string htmlBody = $@"
-        <html>
-            <body style='margin: 0; padding: 0;'>
-                <p style='margin: 0;'>Hello {name}. Your transfer to {target} was successful.</p>
-                <p style='color:green; margin: 0;'><strong>Amount: --- </strong></p>
-                <pre style='margin: 0; margin-top: 24px;'>{Logo.FireLogo}</pre>
-                <p style='margin: 0; margin-top: 48px;'>// Team Salamander</p>
-                <p style='margin: 0;'>{DateTime.Now}</p>
-            </body>
-        </html>";
-
-        SendEmail(name, email, "Transfer", htmlBody);
-    }
 }
