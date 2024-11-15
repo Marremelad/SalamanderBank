@@ -632,6 +632,7 @@ public static class Ui
         table.AddColumn("Account Information");
         table.AddRow($"Name: {account.AccountName}");
         table.AddRow($"Currency: {account.CurrencyCode}");
+        table.AddRow($"Interest: {account.Interest}%");
         table.AddRow($"Balance: {account.Balance:F2}");
         table.Border = TableBorder.Rounded;
         table.BorderStyle = new Style(ConsoleColor.DarkRed);
