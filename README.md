@@ -1,6 +1,6 @@
 ## Salamander Bank
 
-<img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderBanner.png" height="500" width="900" alt="Salamander Banner">
+<img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderBannerText.png" height="500" width="900" alt="Salamander Banner">
 
 ### Contributors
 * [Mauricio Corte](https://github.com/Marremelad)
@@ -8,6 +8,22 @@
 * [Onni Bucht](https://github.com/onni82)
 * [Rasmus Wenngren](https://github.com/RasmusWenngren92)
 * [Matheus Torico](https://github.com/ikariLain)
+
+### Features
+
+#### As user
+* Create Account.
+* Receive verification email.
+* Sign in with existing account.
+* View existing bank accounts.
+* Create new bank accounts.
+* Transfer funds to different accounts.
+* Receive SMS message after funds have been received.
+* Exchange currency.
+* View transaction history.
+
+#### As admin 
+* Create new users.
 
 ### Requirements
 To run the app successfully make sure that you are using the following.
