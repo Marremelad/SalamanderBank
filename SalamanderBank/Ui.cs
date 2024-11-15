@@ -1137,7 +1137,7 @@ public static class Ui
                 Markup.Escape($"{account.User.FirstName} {account.User.LastName}"),
                 Markup.Escape($"{transaction.TransferDate:yyyy-MM-dd HH:mm:ss}"),
                 Markup.Escape($"{transaction.Amount}"),
-                Markup.Escape($"{account.CurrencyCode}")
+                Markup.Escape($"{transaction.CurrencyCode}")
                 
             );
         }
