@@ -150,6 +150,8 @@ namespace SalamanderBank
             };
             if (AddTransferToDB(transfer))
             {
+                AccountManager.GetAccountTransferHistory(senderAccount);
+                AccountManager.GetAccountTransferHistory(receiverAccount);
                 return transfer;
             };
             return null;
