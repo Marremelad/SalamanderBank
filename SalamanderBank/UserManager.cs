@@ -102,7 +102,8 @@ namespace SalamanderBank
         // Searches for a user and returns an array user ids that have similar first name, last name and email address
         public static List<User> SearchUser(string? searchTerm)
         {
-            string searchQuery = "SELECT * FROM Users WHERE Email LIKE @search OR FirstName LIKE @search OR LastName LIKE @search;";
+            string searchQuery = @"SELECT * FROM Users
+                WHERE Email LIKE @search OR FirstName LIKE @search OR LastName LIKE @search;";
             var parameters = new { search = $"%{searchTerm}%" };
 
 
@@ -111,6 +112,10 @@ namespace SalamanderBank
                 connection.Open();
 
                 List<User> users = connection.Query<User>(searchQuery, parameters).ToList();
+                foreach(User user in users)
+                {
+                    AccountManager.GetAccountsFromUser(user);
+                }
                 return users;
             }
         }

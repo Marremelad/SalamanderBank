@@ -15,22 +15,22 @@ public static class Ui
     private static string? _registeredEmail;
     private static string? _registeredPassword;
     private static string? _registeredPhoneNumber;
-    
+
     // Field storing user object.
     private static User? _user;
 
     // Padding for aligning display elements based on the console window width.
     private static readonly double DisplayPadding = (Console.WindowWidth / 2.25);
     private const double MenuPadding = 2.1;
-    
+
     // Display formatted first name with padding.
     private static string FirstNameDisplay => $"First Name: {_registeredFirstName}".PadLeft(_registeredFirstName != null ?
         "First Name: ".Length + _registeredFirstName.Length + (int)DisplayPadding : "First Name: ".Length + (int)DisplayPadding);
-    
+
     // Display formatted last name with padding.
     private static string LastNameDisplay => $"Last Name: {_registeredLastName}".PadLeft(_registeredLastName != null ?
-        "Last Name: ".Length + _registeredLastName.Length + (int)DisplayPadding : "Last Name: ".Length + (int)DisplayPadding) ;
-    
+        "Last Name: ".Length + _registeredLastName.Length + (int)DisplayPadding : "Last Name: ".Length + (int)DisplayPadding);
+
     // Display formatted email with padding.
     private static string EmailDisplay => $"Email: {_registeredEmail}".PadLeft(_registeredEmail != null ?
         "Email: ".Length + _registeredEmail.Length + (int)DisplayPadding : "Email: ".Length + (int)DisplayPadding);
@@ -38,16 +38,16 @@ public static class Ui
     // Display formatted password with padding.
     private static string PasswordDisplay => $"Password: {_registeredPassword}".PadLeft(_registeredPassword != null ?
         "Password: ".Length + _registeredPassword.Length + (int)DisplayPadding : "Password: ".Length + (int)DisplayPadding);
-    
+
     // Display formatted phone number with padding.
     private static string PhoneNumberDisplay => $"Phone Number: {_registeredPhoneNumber}".PadLeft(
         _registeredPhoneNumber != null
             ? "Phone Number: ".Length + _registeredPhoneNumber.Length + (int)DisplayPadding : "Phone Number: ".Length + (int)DisplayPadding);
-    
+
     // String representing valid email pattern.
     private const string EmailPattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
     private const string PhoneNumberPattern = @"^\+46\d{9}$";
-    
+
     // Title screen.
     private static void TitleScreen()
     {
@@ -67,67 +67,67 @@ public static class Ui
     public static async Task RunProgram()
     {
         DB.InitializeDatabase();
-        
+
         if (!UserManager.EmailExists("salamanderbank@gmail.com"))
         {
             UserManager.AddUser(1, $"admin", "salamanderbank@gmail.com", "Salamander", "Admin", null, 1);
         }
-        
+
         TransferManager.PopulateQueueFromDB();
-        
+
         await CurrencyManager.UpdateCurrenciesAsync();
-        
+
         var thread = new Thread(TransferManager.ProcessQueue);
         thread.Start();
-        
+
         TitleScreen();
 
         await DisplayMainMenu();
     }
-    
+
     // Main menu display and selection handling method.
     private static async Task DisplayMainMenu()
     {
         EraseFields();
-        
+
         Console.Clear();
         Logo.DisplayFullLogo();
-            
+
         // Menu options with padding for alignment.
         string option1 = "Create Account".PadLeft("Create Account".Length + (int)((Console.WindowWidth - "Create Account".Length) / MenuPadding));
         string option2 = "Sign In".PadLeft("Sign In".Length + (int)((Console.WindowWidth - "Sign In".Length) / MenuPadding));
-        string option3 = "Exit".PadLeft("Exit".Length + (int)((Console.WindowWidth - "Exit".Length) / 2.1 ));
-            
+        string option3 = "Exit".PadLeft("Exit".Length + (int)((Console.WindowWidth - "Exit".Length) / 2.1));
+
         var login = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
                 .PageSize(10)
                 .HighlightStyle(new Style(Color.Yellow))
                 .AddChoices(option1, option2, option3));
-            
+
         // Handling user selection from the main menu.
         switch (login.Trim())
         {
             case "Create Account":
                 await CreateAccount();
                 break;
-                                
+
             case "Sign In":
                 await SignIn();
                 break;
-            
+
             case "Exit":
                 Environment.Exit(0);
                 break;
         }
     }
-    
+
     //Second Menu after Signing in
     private static async Task UserSignedIn()
     {
         Console.Clear();
         Logo.DisplayFullLogo();
         UserDetails();
-        
+
         var selection = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
                 .PageSize(10)
@@ -135,31 +135,31 @@ public static class Ui
                 .Title("[bold underline rgb(190,40,0)]    Main Menu[/]")
                 .AddChoices("  Accounts", "  Transfer Funds", "  Money Exchange", "  Take Loan",
                     "  View Transactions")
-                .AddChoiceGroup("","[yellow]Sign Out[/]")
+                .AddChoiceGroup("", "[yellow]Sign Out[/]")
                 .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
-        
+
         switch (selection.Trim())
         {
             case "Accounts":
                 await BankAccounts();
                 break;
-            
+
             case "Transfer Funds":
                 await TransferFrom();
                 break;
-            
+
             case "Money Exchange":
                 await ExchangeMenu();
                 break;
-            
+
             case "Take Loan":
                 await DepositLoanIn();
                 break;
-            
-            case "View Transactions": 
+
+            case "View Transactions":
                 //ViewTransaction();
                 throw new NotImplementedException();
-            
+
             case "[yellow]Sign Out[/]":
                 await DisplayMainMenu();
                 break;
@@ -168,7 +168,7 @@ public static class Ui
 
     // Method to create a new account.
     private static async Task CreateAccount()
-    { 
+    {
         // Set values for user information.
         _registeredFirstName = GetFirstName();
         _registeredLastName = GetLastName();
@@ -181,7 +181,7 @@ public static class Ui
         _user = Auth.Login(_registeredEmail, _registeredPassword);
 
         CreateDefaultBankAccounts(_user);
-        
+
         // Verify user account.
         await VerifyAccount();
     }
@@ -198,13 +198,13 @@ public static class Ui
     {
         Console.Clear();
         Logo.DisplayFullLogo();
-        
+
         GetEmailOnSignIn();
 
         if (GetPasswordOnSignIn())
         {
             SetUserValues();
-            
+
             if (IsLocked() && _user?.Type == 0)
             {
                 Console.WriteLine();
@@ -213,9 +213,9 @@ public static class Ui
                 Thread.Sleep(2000);
                 Environment.Exit(0);
             }
-            
+
             await IsVerified();
-            
+
             if (_user is { Type: 1 })
             {
                 await AdminSignedIn();
@@ -233,9 +233,9 @@ public static class Ui
             Thread.Sleep(2000);
             Environment.Exit(0);
         }
-        
+
     }
-    
+
     // Method to get email input on sign in attempt.
     private static void GetEmailOnSignIn()
     {
@@ -252,7 +252,7 @@ public static class Ui
             if (email != null && Regex.IsMatch(email, EmailPattern))
             {
                 if (UserManager.EmailExists(email)) break;
-                
+
                 Console.WriteLine();
                 message = "\u001b[38;2;255;69;0mNo account with this email exists\u001b[0m";
                 Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
@@ -278,10 +278,10 @@ public static class Ui
         {
             if (signInAttempt == 3)
             {
-               UserManager.UpdateUserLock(_registeredEmail, 1);
-               return false;
+                UserManager.UpdateUserLock(_registeredEmail, 1);
+                return false;
             }
-            
+
             Console.Clear();
             Logo.DisplayFullLogo();
             Console.Write($"{EmailDisplay}\n{PasswordDisplay}");
@@ -290,9 +290,9 @@ public static class Ui
             _user = Auth.Login(_registeredEmail, password);
 
             signInAttempt += 1;
-            
+
             if (_user != null) break;
-            
+
             Console.WriteLine();
             var message = "\u001b[38;2;255;69;0mIncorrect password\u001b[0m";
             Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
@@ -301,7 +301,7 @@ public static class Ui
 
         return true;
     }
-    
+
     // Method to check if account is verified.
     private static async Task IsVerified()
     {
@@ -313,8 +313,8 @@ public static class Ui
     {
         return _user?.Locked == 1;
     }
-   
-    
+
+
     // Method that assigns the database values to a user object.
     private static void SetUserValues()
     {
@@ -323,7 +323,7 @@ public static class Ui
         _registeredLastName = _user.LastName;
         _registeredPhoneNumber = _user.PhoneNumber;
     }
-    
+
     // Method to get the first name from user input.
     private static string GetFirstName()
     {
@@ -332,14 +332,14 @@ public static class Ui
         {
             Console.Clear();
             Logo.DisplayFullLogo();
-            
+
             Console.Write($"{FirstNameDisplay}");
-            
+
         } while (string.IsNullOrEmpty(name = Console.ReadLine()));
 
         return name;
     }
-    
+
     // Method to get the last name from user input.
     private static string GetLastName()
     {
@@ -348,14 +348,14 @@ public static class Ui
         {
             Console.Clear();
             Logo.DisplayFullLogo();
-            
+
             Console.Write($"{FirstNameDisplay}\n{LastNameDisplay}");
-            
+
         } while (string.IsNullOrEmpty(lastName = Console.ReadLine()));
-    
+
         return lastName;
     }
-    
+
     // Method to get the email from user input with validation.
     private static string GetEmail()
     {
@@ -363,9 +363,9 @@ public static class Ui
         {
             Console.Clear();
             Logo.DisplayFullLogo();
-            
+
             Console.Write($"{FirstNameDisplay}\n{LastNameDisplay}\n{EmailDisplay}");
-            
+
             var email = Console.ReadLine();
             if (email != null && Regex.IsMatch(email, EmailPattern))
             {
@@ -395,7 +395,7 @@ public static class Ui
         {
             Console.Clear();
             Logo.DisplayFullLogo();
-                
+
             Console.Write($"{FirstNameDisplay}\n{LastNameDisplay}\n{EmailDisplay}\n{PasswordDisplay}");
 
             var password = Console.ReadLine();
@@ -403,11 +403,11 @@ public static class Ui
             {
                 return password;
             }
-            
+
             Console.WriteLine();
             var message = "\u001b[38;2;255;69;0mPassword has to be at least 8 characters long\u001b[0m";
             Console.Write($"{message}".PadLeft(message.Length + (int)((Console.WindowWidth - message.Length) / 1.7)));
-            
+
             Thread.Sleep(3000);
         }
     }
@@ -418,13 +418,13 @@ public static class Ui
         {
             Console.Clear();
             Logo.DisplayFullLogo();
-            
+
             Console.Write($"{FirstNameDisplay}\n{LastNameDisplay}\n{EmailDisplay}\n{PasswordDisplay}\n{PhoneNumberDisplay}");
-            
+
             var phoneNumber = Console.ReadLine();
             if (phoneNumber != null && Regex.IsMatch(phoneNumber, PhoneNumberPattern))
             {
-                
+
                 if (!UserManager.PhoneNumberExists(phoneNumber))
                 {
                     return phoneNumber;
@@ -439,53 +439,53 @@ public static class Ui
                 var message2 = "\u001b[38;2;255;69;0mPlease enter a valid phone number with '+46' at the beginning\u001b[0m";
                 Console.Write($"{message2}".PadLeft(message2.Length + (int)((Console.WindowWidth - message2.Length) / 1.7)));
             }
-            
+
 
             Thread.Sleep(2000);
         }
     }
-    
+
     // Method to validate the account through a verification code.
     private static async Task VerifyAccount()
     {
         // Sending verification email to the registered email.
         EmailService.SendVerificationEmail(_registeredFirstName, _registeredEmail);
-        
+
         string? code;
         do
         {
             Console.Clear();
             Logo.DisplayFullLogo();
-            
+
             var message1 = $"A code has been sent to \u001b[38;2;34;139;34m{_registeredEmail}\u001b[0m use it to verify your account.";
             var message2 = "Enter Code: ";
 
             Console.WriteLine();
             Console.Write($"{message1}".PadLeft(message1.Length + (int)((Console.WindowWidth - message1.Length) / 1.45)));
-            
+
             Console.WriteLine("\n");
             Console.Write($"{message2}\n".PadLeft(message2.Length + (Console.WindowWidth - message2.Length) / 2));
-            
+
             Console.WriteLine();
             Console.Write("".PadLeft("".Length + (int)((Console.WindowWidth - "".Length) / 2.6)));
-            
+
             code = Console.ReadLine();
-            
+
         } while (string.IsNullOrEmpty(code) || code != EmailService.Code.ToString());
 
         UserManager.VerifyUser(_registeredEmail);
-        
+
         await UserSignedIn();
     }
-    
+
     // Method to display account details in a formatted table.
     private static void UserDetails()
     {
         Console.Clear();
         Logo.DisplayFullLogo();
-        
+
         var table = new Table();
-        
+
         table.AddColumn("User Information");
         table.AddRow($"Name: {_registeredFirstName} {_registeredLastName}");
         table.AddRow($"Email: {_registeredEmail}");
@@ -495,13 +495,13 @@ public static class Ui
         table.Alignment(Justify.Center);
         AnsiConsole.Write(table);
     }
-    
+
     private static async Task BankAccounts()
     {
         Console.Clear();
         Logo.DisplayFullLogo();
         UserDetails();
-        
+
         if (_user?.Accounts == null) return;
 
         // Create a dictionary to map indented account display names to their Account objects.
@@ -517,17 +517,17 @@ public static class Ui
                 .AddChoiceGroup("", "[green]Create new Account[/]")
                 .AddChoiceGroup("", "[yellow]Main Menu[/]")
                 .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
-        
+
         switch (choice)
-        { 
+        {
             case "[green]Create new Account[/]":
                 await UserChooseNewAccountType();
                 break;
-            
+
             case "[yellow]Main Menu[/]":
                 await UserSignedIn();
                 break;
-            
+
             default:
                 await AccountOptions(indentedAccounts[choice]);
                 break;
@@ -539,26 +539,26 @@ public static class Ui
         Console.Clear();
         Logo.DisplayFullLogo();
         UserDetails();
-        
+
         var choice = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
                 .PageSize(10)
                 .HighlightStyle(new Style(Color.Black, Color.Yellow))
                 .Title("[bold underline rgb(190,40,0)]    Choose what Type of Account you want to create[/]")
                 .AddChoices("  Personal Account", "  Savings Account")
-                .AddChoiceGroup("","[yellow]Main Menu[/]")
+                .AddChoiceGroup("", "[yellow]Main Menu[/]")
                 .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
-        
+
         switch (choice.Trim())
         {
             case "Personal Account":
                 await UserCreateNewAccount(0);
                 break;
-            
+
             case "Savings Account":
                 await UserCreateNewAccount(1);
                 break;
-            
+
             case "[yellow]Main Menu[/]":
                 await UserSignedIn();
                 break;
@@ -572,40 +572,40 @@ public static class Ui
             Console.Clear();
             Logo.DisplayFullLogo();
             UserDetails();
-            
+
             string message = "";
             switch (type)
             {
                 case 0:
                     message = "You have chosen to create a personal account. The interest rate of this type of account is 0%";
                     break;
-                
+
                 case 1:
                     message = "You have chosen to create a savings account. The interest rate of this type of account is 30%";
                     break;
             }
-            
+
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .PageSize(10)
                     .HighlightStyle(new Style(Color.Black, Color.Yellow))
                     .Title($"[bold underline rgb(190,40,0)]    {message}[/]")
                     .AddChoices("  Account Name")
-                    .AddChoiceGroup("","[yellow]Return[/]")
+                    .AddChoiceGroup("", "[yellow]Return[/]")
                     .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
 
             if (choice.Trim() == "Account Name")
             {
                 Console.Write("Choose an account name: ");
                 var accountName = Console.ReadLine();
-            
+
                 if (!string.IsNullOrEmpty(accountName))
                 {
                     if (AccountManager.CreateAccount(_user, "SEK", accountName, type)) break;
 
                     Console.WriteLine("\u001b[38;2;255;69;0mAn account with this name already exists\u001b[0m");
                     Thread.Sleep(3000);
-                
+
                 }
                 else
                 {
@@ -626,9 +626,9 @@ public static class Ui
     {
         Console.Clear();
         Logo.DisplayFullLogo();
-        
+
         var table = new Table();
-        
+
         table.AddColumn("Account Information");
         table.AddRow($"Name: {account.AccountName}");
         table.AddRow($"Currency: {account.CurrencyCode}");
@@ -645,14 +645,14 @@ public static class Ui
         Console.Clear();
         Logo.DisplayFullLogo();
         AccountDetails(account);
-        
+
         var choice = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
                 .PageSize(3)
                 .HighlightStyle(new Style(Color.Black, Color.Yellow))
                 .Title("[bold underline rgb(190,40,0)]    Account Options[/]")
                 .AddChoices("  Change Account Name")
-                .AddChoiceGroup("","[yellow]Return[/]")
+                .AddChoiceGroup("", "[yellow]Return[/]")
                 .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
 
         switch (choice.Trim())
@@ -660,13 +660,13 @@ public static class Ui
             case "Change Account Name":
                 await ChangeAccountName(account);
                 break;
-            
+
             case "[yellow]Return[/]":
                 await BankAccounts();
                 break;
         }
     }
-    
+
     private static async Task ChangeAccountName(Account account)
     {
         string? name;
@@ -674,26 +674,26 @@ public static class Ui
         {
             Console.Clear();
             Logo.DisplayFullLogo();
-            
+
             Console.WriteLine();
             var message = "New Account Name: ";
             Console.Write($"{message}".PadLeft(message.Length + ((Console.WindowWidth - message.Length) / 2)));
-            
+
         } while (string.IsNullOrEmpty(name = Console.ReadLine()));
-        
+
         account.AccountName = name;
         AccountManager.UpdateAccountName(account);
-        
+
         await AccountOptions(account);
     }
-    
-    private static async Task TransferFrom() 
+
+    private static async Task TransferFrom()
     {
         if (_user?.Accounts == null) return;
-        
+
         var indentedAccounts = _user.Accounts
             .ToDictionary(account => $"  {account.AccountName}", account => account);
-        
+
         var choice = AnsiConsole.Prompt(
             new SelectionPrompt<string>()
                 .PageSize(5)
@@ -708,32 +708,33 @@ public static class Ui
             case "[yellow]Main Menu[/]":
                 await UserSignedIn();
                 break;
-            
+
             default:
-                await TransferTo(indentedAccounts[choice]);
+                await TransferTo(_user, indentedAccounts[choice]);
                 break;
         }
-        
+
     }
 
-    private static async Task TransferTo(Account senderAccount)
+    private static async Task TransferTo(User user, Account senderAccount)
     {
         var accounts = new List<Account>();
         if (accounts == null) throw new ArgumentNullException(nameof(accounts));
-        
-        if (_user?.Accounts != null)
+
+        if (user?.Accounts != null)
         {
-            accounts.AddRange(_user.Accounts!.Where(account => account != senderAccount));
-            
+            accounts.AddRange(user.Accounts!.Where(account => account != senderAccount));
+
             var indentedAccounts = accounts
                 .ToDictionary(account => $"  {account.AccountName}", account => account);
-                
+
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .PageSize(10)
                     .HighlightStyle(new Style(Color.Black, Color.Yellow))
                     .Title("[bold underline rgb(190,40,0)]    Chose an Account to Transfer to[/]".PadLeft(5))
                     .AddChoices(indentedAccounts.Keys)
+                    .AddChoiceGroup("", "[green]Transfer to another user[/]")
                     .AddChoiceGroup("", "[yellow]Main Menu[/]")
                     .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
 
@@ -742,7 +743,9 @@ public static class Ui
                 case "[yellow]Main Menu[/]":
                     await UserSignedIn();
                     break;
-                
+                case "[green]Transfer to another user[/]":
+                    await SelectUser(senderAccount);
+                    break;
                 default:
                     await TransferFunds(senderAccount, indentedAccounts[choice]);
                     break;
@@ -750,6 +753,32 @@ public static class Ui
         }
     }
 
+    private static async Task SelectUser(Account senderAccount)
+    {
+        List<User> users = UserManager.SearchUser("");
+        users.RemoveAll(u => u.Email == _user.Email || u.Email == "salamanderbank@gmail.com");
+        var indentedUsers = users
+            .ToDictionary(user => $"  {user.Email}", user => user);
+
+        var choice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .PageSize(10)
+                .HighlightStyle(new Style(Color.Black, Color.Yellow))
+                .Title("[bold underline rgb(190,40,0)]    Chose a User to Transfer to[/]".PadLeft(5))
+                .AddChoices(indentedUsers.Keys)
+                .AddChoiceGroup("", "[yellow]Main Menu[/]")
+                .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
+
+        switch (choice)
+        {
+            case "[yellow]Main Menu[/]":
+                await UserSignedIn();
+                break;
+            default:
+                await TransferTo(indentedUsers[choice], senderAccount);
+                break;
+        }
+    }
     private static async Task TransferFunds(Account sender, Account receiver)
     {
         AccountDetails(receiver);
