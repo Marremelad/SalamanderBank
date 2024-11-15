@@ -157,7 +157,7 @@ public static class Ui
                 break;
 
             case "View Transactions":
-                //ViewTransaction();
+                await TransactionHistory();
                 throw new NotImplementedException();
 
             case "[yellow]Sign Out[/]":
@@ -1078,6 +1078,75 @@ public static class Ui
                 await DisplayMainMenu();
                 break;
         }
+    }
+     private static async Task TransactionHistory()
+    {
+        if (_user?.Accounts != null)
+        {
+            var indentedAccounts = _user.Accounts
+                .ToDictionary(account => $"  {account.AccountName}", account => account);
+            
+            var choice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .PageSize(5)
+                    .HighlightStyle(new Style(Color.Black, Color.Yellow))
+                    .Title("[bold underline rgb(190,40,0)]    Chose an Account to check your transactions[/]".PadLeft(5))
+                    .AddChoices(indentedAccounts.Keys)
+                    .AddChoiceGroup("", "[yellow]Main Menu[/]")
+                    .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
+
+            switch (choice)
+            {
+                case "[yellow]Main Menu[/]":
+                    await UserSignedIn();
+                    break;
+                
+                default:
+                    await TransactionDisplay(indentedAccounts[choice]);
+                    break;
+                
+            }
+        }
+    }
+
+    private static async Task TransactionDisplay(Account account)
+    {
+        var headerRow = new Rule("[bold yellow]Transaction Details[/]").RuleStyle("khaki1").Centered();
+        AnsiConsole.Write(headerRow);
+        var table = new Table()
+            .Alignment(Justify.Center)
+            .BorderColor(Color.Khaki1)
+            .Border(TableBorder.Rounded)
+            .ShowRowSeparators();
+            
+          
+          table.AddColumn(Markup.Escape("Account Name"));
+          table.AddColumn(Markup.Escape("Receiver Account"));
+          table.AddColumn(Markup.Escape("Receiver Name"));
+          table.AddColumn(Markup.Escape("Transaction Date"));
+          table.AddColumn(Markup.Escape("Amount"));
+          table.AddColumn(Markup.Escape("Currency"));
+         
+          
+        foreach (var transaction in account.TransferList)
+        {
+
+            table.AddRow(
+                Markup.Escape($"{account.AccountName}"),
+                Markup.Escape($"{transaction.ReceiverAccount}"),
+                Markup.Escape($"{account.User.FirstName}"),
+                Markup.Escape($"{transaction.TransferDate:yyyy-MM-dd HH:mm:ss}"),
+                Markup.Escape($"{transaction.Amount}"),
+                Markup.Escape($"{account.CurrencyCode}")
+                
+            );
+        }
+        AnsiConsole.Write(table);
+        var footerRow = new Rule("[bold green] All Transactions for this account[/]").RuleStyle("khaki1").Centered();
+        AnsiConsole.Write(footerRow);
+        Console.ReadLine();
+        await UserSignedIn();
+
     }
 
     private static async Task AdminCreateNewUser()
