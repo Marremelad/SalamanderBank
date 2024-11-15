@@ -1134,7 +1134,7 @@ public static class Ui
             table.AddRow(
                 Markup.Escape($"{account.AccountName}"),
                 Markup.Escape($"{transaction.ReceiverAccount}"),
-                Markup.Escape($"{account.User.FirstName}"),
+                Markup.Escape($"{account.User.FirstName} {account.User.LastName}"),
                 Markup.Escape($"{transaction.TransferDate:yyyy-MM-dd HH:mm:ss}"),
                 Markup.Escape($"{transaction.Amount}"),
                 Markup.Escape($"{account.CurrencyCode}")
