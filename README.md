@@ -1,4 +1,4 @@
-## Salamander Bank 🦎🔥
+## Salamander Bank
 
 <img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderBanner.png" height="500" width="900" alt="Salamander Banner">
 
