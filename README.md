@@ -1,6 +1,13 @@
 ## Salamander Bank 🦎🔥
 
+
+
 <img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderBanner.png" height="300" width="500" alt="Application Demo">
+
+<img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderUML.pdf" height="300" width="500" alt="Application Demo">
+
+<img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderUMLPicture.png" height="300" width="500" alt="Application Demo">
+
 
 
 ### Contributors
