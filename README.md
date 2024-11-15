@@ -1,12 +1,6 @@
 ## Salamander Bank 🦎🔥
 
-
-
 <img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderBanner.png" height="300" width="500" alt="Salamander Banner">
-
-
-### UML diagram in pdf format
-<img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderUML.pdf" height="300" width="500" alt="UML Diagram">
 
 ### Contributors
 * [Mauricio Corte](https://github.com/Marremelad)
@@ -46,4 +40,5 @@ In this application we have chosen to structure the code in the following way.
 * The Manager classes: UserManager, AccountManager, TransferManager, LoanManager, CurrencyManager and Auth, processes the information of objects and sends the data to the Ui class and also handles database querying.
 * The DB class initializes the database and created the database tables.
 * The classes, EmailService and SmsService Handles the formatting and sending of email and sms messages respectively.
+* img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderUML.pdf" height="300" width="500" alt="UML Diagram">
 
