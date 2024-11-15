@@ -2,11 +2,11 @@
 
 
 
-<img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderBanner.png" height="300" width="500" alt="Application Demo">
+<img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderBanner.png" height="300" width="500" alt="Salamander Banner">
 
 
 ### UML diagram in pdf format
-<img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderUML.pdf" height="300" width="500" alt="Application Demo">
+<img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderUML.pdf" height="300" width="500" alt="UML Diagram">
 
 ### Contributors
 * [Mauricio Corte](https://github.com/Marremelad)
