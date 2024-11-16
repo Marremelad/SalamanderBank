@@ -187,7 +187,6 @@ public static class Ui
     private static void CreateDefaultBankAccounts(User? user)
     {
         AccountManager.CreateAccount(user, "SEK", "Personal Account", 0, 1000000);
-        AccountManager.CreateAccount(user, "SEK", "Loan Account", 1);
         AccountManager.CreateAccount(user, "SEK", "Savings Account", 2);
     }
 
