@@ -28,16 +28,18 @@
 ### Application Demo
 <img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderBankDemoGif.gif" height="500" width="900" alt="Salamander Demo Gif">
 
-<div style="display: flex; align-items: flex-start; gap: 20px;">
-  <div style="text-align: center;">
-    <p>Verification Email</p>
-    <img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderBankEmailScreenShot.png" height="300" width="500" alt="Screenshot Of Verification Email">
-  </div>
-  <div style="text-align: center;">
-    <p>Transfer SMS</p>
-    <img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderBankSms.jpg" height="500" width="300" alt="Screenshot Of Transfer SMS">
-  </div>
-</div>
+<table>
+  <tr>
+    <td align="center" valign="top">
+      <p>Verification Email</p>
+      <img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderBankEmailScreenShot.png" height="300" width="500" alt="Screenshot Of Verification Email">
+    </td>
+    <td align="center" valign="top">
+      <p>Transfer SMS</p>
+      <img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderBankSms.jpg" height="500" width="300" alt="Screenshot Of Transfer SMS">
+    </td>
+  </tr>
+</table>
 
 ### Requirements
 To run the app successfully make sure that you are using the following.
