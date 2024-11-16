@@ -26,9 +26,9 @@
 * Create new users.
 
 ### Application Demo
-<img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderBankDemoGif.gif" height="500" width="900" alt="Salamander Banner">
+<img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderBankDemoGif.gif" height="500" width="900" alt="Salamander Demo Gif">
 
-
+<img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderBankEmailScreenShot.png" height="300" width="500" alt="Screenshot Of Verification Email">
 ### Requirements
 To run the app successfully make sure that you are using the following.
 
