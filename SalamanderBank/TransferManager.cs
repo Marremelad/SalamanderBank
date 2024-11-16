@@ -120,9 +120,9 @@ namespace SalamanderBank
                 var affectedRows = connection.Execute(query, new
                 {
                     SenderUser = transfer.SenderUser.ID,
-                    SenderAccount = transfer.SenderAccount.ID,
+                    SenderAccount = transfer.SenderAccount.Id,
                     ReceiverUser = transfer.ReceiverUser.ID,
-                    ReceiverAccount = transfer.ReceiverAccount.ID,
+                    ReceiverAccount = transfer.ReceiverAccount.Id,
                     CurrencyCode = transfer.CurrencyCode,
                     TransferDate = transfer.TransferDate,
                     Amount = transfer.Amount,

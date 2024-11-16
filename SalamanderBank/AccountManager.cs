@@ -43,7 +43,7 @@ namespace SalamanderBank
                         return transfer;
                     },
                     // Determines the value of the @ID parameter.
-                    new { ID = account.ID },
+                    new { ID = account.Id },
                     splitOn: "id"    // Creates a new group of columns whenever it encounters a column named "id".
                                      // This allows Dapper to sequentially map each group of columns to each Class.
                 ).ToList();
@@ -58,7 +58,7 @@ namespace SalamanderBank
             {
                 connection.Open();
                 var sql = "UPDATE Accounts SET Balance = @balance WHERE ID = @ID";
-                var affectedRows = connection.Execute(sql, new { balance = account.Balance, account.ID });
+                var affectedRows = connection.Execute(sql, new { balance = account.Balance, ID = account.Id });
             }
         }
 
@@ -69,7 +69,7 @@ namespace SalamanderBank
             {
                 connection.Open();
                 var sql = "UPDATE Accounts SET CurrencyCode = @currencyCode WHERE ID = @ID";
-                var affectedRows = connection.Execute(sql, new { currencyCode = account.CurrencyCode, account.ID });
+                var affectedRows = connection.Execute(sql, new { currencyCode = account.CurrencyCode, ID = account.Id });
             }
         }
 
@@ -80,7 +80,7 @@ namespace SalamanderBank
 			{
 				connection.Open();
 				var sql = "UPDATE Accounts SET AccountName = @name WHERE ID = @ID";
-				var affectedRows = connection.Execute(sql, new { name = account.AccountName, account.ID });
+				var affectedRows = connection.Execute(sql, new { name = account.AccountName, ID = account.Id });
 			}
 		}
 
