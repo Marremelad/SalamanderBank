@@ -23,7 +23,7 @@
 * View transaction history.
 
 ### Application Demo
-<img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderBankDemoGif.gif" height="200" width="900" alt="Salamander Banner">
+<img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderBankDemoGif.gif" height="500" width="900" alt="Salamander Banner">
 
 #### As admin 
 * Create new users.
