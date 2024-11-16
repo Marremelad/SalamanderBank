@@ -2,26 +2,12 @@
 
 namespace SalamanderBank
 {
-    /*
-     * HOW TO USE THE DATABASE CLASS
-     *
-     * 1. Create an instance of the Database class, passing the database file path as a parameter
-     * 2. Call the InitializeDatabase method to set up the database and create the necessary tables
-     * 3. Use the connection string to establish a connection to the database
-     * 4. Execute SQL queries using the SQLiteConnection and SQLiteCommand classes
-     *
-     * Example usage:
-     *
-     * Database db = new Database("path/to/database.db");
-     * db.InitializeDatabase();
-     * db.AddUser(1, "password", "user@example.com", "John", "Doe");
-     */
     public static class Db
     {
         public static string DbFile = "SalamanderBank.db";
         public static string ConnectionString = $"Data Source={DbFile};Version=3;";
 
-        // Run this method to check if the database file and correct tables exist
+        // Checks if the database file exists and initializes it if necessary
         public static void InitializeDatabase()
         {
             // Check if the database file exists
@@ -34,7 +20,7 @@ namespace SalamanderBank
                 {
                     connection.Open();
 
-                    // Optional: Create tables or add initial data here
+                    // Create tables if the database is new
                     CreateTables(connection);
 
                     Console.WriteLine("Database and table created successfully.");
@@ -54,9 +40,10 @@ namespace SalamanderBank
             }
         }
 
-        // Checks if the tables exist
+        // Creates necessary tables if they don't exist
         private static void CreateTables(SQLiteConnection connection)
         {
+            // SQL query to create the Users table
             string createUsersTableQuery = "CREATE TABLE IF NOT EXISTS Users (ID INTEGER PRIMARY KEY, Type INTEGER, Password TEXT, Email TEXT NOT NULL UNIQUE, FirstName TEXT, LastName TEXT, PhoneNumber TEXT, Verified INTEGER, Locked INTEGER);";
             using (SQLiteCommand command = new SQLiteCommand(createUsersTableQuery, connection))
             {
@@ -64,7 +51,7 @@ namespace SalamanderBank
                 Console.WriteLine($"Users table created.");
             }
 
-            // currency_code = SEK/USD/EUR/NOK, type 0 = normal account, type 1 = loan
+            // SQL query to create the Accounts table
             string createAccountsTableQuery = "CREATE TABLE IF NOT EXISTS Accounts (ID INTEGER PRIMARY KEY, UserID INTEGER, CurrencyCode TEXT, AccountName TEXT, Balance REAL, Status INTEGER, Type INTEGER, Interest REAL);";
             using (SQLiteCommand command = new SQLiteCommand(createAccountsTableQuery, connection))
             {
@@ -72,6 +59,7 @@ namespace SalamanderBank
                 Console.WriteLine($"Accounts table created.");
             }
 
+            // SQL query to create the Currencies table
             string createCurrenciesTableQuery = "CREATE TABLE IF NOT EXISTS Currencies (CurrencyCode TEXT PRIMARY KEY, ExchangeRate REAL, LastUpdated TEXT);";
             using (SQLiteCommand command = new SQLiteCommand(createCurrenciesTableQuery, connection))
             {
@@ -79,6 +67,7 @@ namespace SalamanderBank
                 Console.WriteLine($"Currencies table created.");
             }
 
+            // SQL query to create the Transfers table
             string createTransfersTableQuery = "CREATE TABLE IF NOT EXISTS Transfers (ID INTEGER PRIMARY KEY, SenderUserID INTEGER, SenderAccountID INTEGER, ReceiverUserID INTEGER, ReceiverAccountID INTEGER, CurrencyCode TEXT, TransferDate TEXT, Amount REAL, Processed INTEGER);";
             using (SQLiteCommand command = new SQLiteCommand(createTransfersTableQuery, connection))
             {
@@ -86,6 +75,7 @@ namespace SalamanderBank
                 Console.WriteLine($"Transfers table created.");
             }
 
+            // SQL query to create the Loans table
             string createLoanTableQuery = "CREATE TABLE IF NOT EXISTS Loans (ID INTEGER PRIMARY KEY, UserID INTEGER, Amount REAL, CurrencyCode TEXT, InterestRate REAL, Status INTEGER, LoanDate TEXT);";
             using (SQLiteCommand command = new SQLiteCommand(createLoanTableQuery, connection))
             {
@@ -94,7 +84,7 @@ namespace SalamanderBank
             }
         }
 
-        // Escapes strings for SQL LIKE queries
+        // Escapes strings for SQL LIKE queries to prevent SQL injection
         public static string? Escape(string? input)
         {
             return input?.Replace("[", "\\[")

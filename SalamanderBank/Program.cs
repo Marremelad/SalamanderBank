@@ -1,9 +1,13 @@
-﻿namespace SalamanderBank;
+﻿namespace SalamanderBank
 
-class Program
 {
-    public static async Task Main(string[] args)
+    class Program
     {
-        await Ui.RunProgram();
+        // Entry point for the application
+        public static async Task Main(string[] args)
+        {
+            // Run the user interface for the program asynchronously
+            await Ui.RunProgram();
+        }
     }
 }
