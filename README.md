@@ -25,7 +25,35 @@
 #### As admin 
 * Create new users.
 
-### Requirements
+## Application Demo
+<img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderBankDemoGif.gif" height="500" width="900" alt="Salamander Demo Gif">
+
+<table>
+  <tr>
+    <td align="center" valign="top">
+      <p>Verification Email</p>
+      <img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderBankEmailScreenShot.png" height="300" width="500" alt="Screenshot Of Verification Email">
+    </td>
+    <td align="center" valign="top">
+      <p>Transfer SMS</p>
+      <img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderBankSms.jpg" height="500" width="300" alt="Screenshot Of Transfer SMS">
+    </td>
+  </tr>
+</table>
+
+## Structure
+In this application we have chosen to structure the code in the following way.
+* Program.cs is the entry point of the program and is only used to start the application.
+* The Ui class displays user options and is largely responsible for message output and formatting.
+* The object classes: User, Account, Transfer, Loan and Currency, stores information that can be processed by the manager classes.
+* The Manager classes: UserManager, AccountManager, TransferManager, LoanManager, CurrencyManager and Auth, processes the information of objects and sends the data to the Ui class and also handles database querying.
+* The DB class initializes the database and created the database tables.
+* The classes, EmailService and SmsService Handles the formatting and sending of email and sms messages respectively.
+
+#### Download UML diagram
+<img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderBankUML.pdf" height="300" width="500" alt="UML Diagram">
+
+## Requirements
 To run the app successfully make sure that you are using the following.
 
 Runtime:
@@ -48,17 +76,18 @@ Files:
 
 * This application uses the [46elks](https://46elks.se/) API for sending SMS messages and [currencyapi.com](https://currencyapi.com/) for fetching currency data. To access these API's you will have to get a subscription or ask Team Salamander for the API keys and passwords.
 
-### Structure
-In this application we have chosen to structure the code in the following way.
-* Program.cs is the entry point of the program and is only used to start the application.
-* The Ui class displays user options and is largely responsible for message output and formatting.
-* The object classes: User, Account, Transfer, Loan and Currency, stores information that can be processed by the manager classes.
-* The Manager classes: UserManager, AccountManager, TransferManager, LoanManager, CurrencyManager and Auth, processes the information of objects and sends the data to the Ui class and also handles database querying.
-* The DB class initializes the database and created the database tables.
-* The classes, EmailService and SmsService Handles the formatting and sending of email and sms messages respectively.
+### Get started
+If you are using Visual Studio or any other C# IDE with an integrated repo-cloning function use it with this URL - https://github.com/Marremelad/SalamanderBank.git
+then open the solution and run the program.
 
-#### Download UML diagram
-<img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderUML.pdf" height="300" width="500" alt="UML Diagram">
-
-
-
+Else, do the following.
+* Open the terminal on your computer.
+* Navigate to the directory where you keep your repositories.
+* Run the following command
+```console
+git clone https://github.com/Marremelad/SalamanderBank.git      
+```
+* Navigate into the directory that holds the project and run the following command.
+```console
+dotnet run
+```

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DotNetEnv;
+﻿using DotNetEnv;
 using System.Text.Json;
 using System.Data.SQLite;
 using Dapper;
@@ -15,7 +10,7 @@ namespace SalamanderBank
         public static async Task UpdateCurrenciesAsync()
         {
             //Open a connection to the SQLite database 
-            using (SQLiteConnection connection = new SQLiteConnection(DB._connectionString))
+            using (SQLiteConnection connection = new SQLiteConnection(Db.ConnectionString))
             {
 
                 connection.Open();
@@ -129,15 +124,15 @@ namespace SalamanderBank
             }
         }
 
-        public static decimal GetExchangeRate(string currencyCode)
+        public static decimal GetExchangeRate(string? currencyCode)
         {
             //Intialize a variable to sotre the exchange rate
-            decimal exchangeRate = 0;
+            decimal exchangeRate ;
 
             // Define a query to fetch the exchange rate for the specified currency code 
             string query = "SELECT ExchangeRate FROM Currencies WHERE CurrencyCode = @currencyCode;";
 
-            using (SQLiteConnection connection = new SQLiteConnection(DB._connectionString))
+            using (SQLiteConnection connection = new SQLiteConnection(Db.ConnectionString))
             {
                 connection.Open();
 
@@ -165,7 +160,7 @@ namespace SalamanderBank
             return exchangeRate;
         }
 
-        public static decimal ConvertCurrency(decimal amount, string convertFrom, string convertTo)
+        public static decimal ConvertCurrency(decimal amount, string? convertFrom, string? convertTo)
         {
             // Retrieve exchange rates for the specified currencies
             decimal fromRate = GetExchangeRate(convertFrom);
@@ -181,11 +176,11 @@ namespace SalamanderBank
             decimal convertedAmount = (amount / fromRate) * toRate;
             return convertedAmount;
         }
-        public static List<Currency>? GetAllCurrencies()
+        public static List<Currency> GetAllCurrencies()
         {
             string query = @"SELECT * FROM Currencies";
 
-            using (var connection = new SQLiteConnection(DB._connectionString))
+            using (var connection = new SQLiteConnection(Db.ConnectionString))
             {
                 connection.Open();
                 List<Currency> codes = connection.Query<Currency>(query).ToList();

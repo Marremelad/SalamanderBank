@@ -7,7 +7,7 @@ namespace SalamanderBank;
 public class SmsService
 {
     // Method to send an SMS to the specified phone number.
-    public static async Task SendSms(string phoneNumber, string message = "Hello from team Salamander!")
+    public static async Task SendSms(string? phoneNumber, string message = "Hello from team Salamander!")
     {
         try
         {
@@ -22,17 +22,17 @@ public class SmsService
                 "Basic", Convert.ToBase64String(System.Text.Encoding.ASCII.GetBytes($"{smsApiUsername}:{smsApiPassword}")));
 
             // Prepare the data for the SMS request.
-            var data = new List<KeyValuePair<string, string>>
+            var data = new List<KeyValuePair<string, string?>>
             {
-                new KeyValuePair<string, string>("from", "Salamander"),
-                new KeyValuePair<string, string>("to", phoneNumber),
-                new KeyValuePair<string, string>("message", message)
+                new KeyValuePair<string, string?>("from", "Salamander"),
+                new KeyValuePair<string, string?>("to", phoneNumber),
+                new KeyValuePair<string, string?>("message", message)
             };
 
             // Send the SMS via POST request and retrieve the response.
             using var content = new FormUrlEncodedContent(data);
             using var response = await httpClient.PostAsync("https://api.46elks.com/a1/sms", content);
-            string responseContent = await response.Content.ReadAsStringAsync();
+            await response.Content.ReadAsStringAsync();
             
         }
         catch (Exception e)

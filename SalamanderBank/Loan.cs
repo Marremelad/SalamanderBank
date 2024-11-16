@@ -1,18 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿
 namespace SalamanderBank
 {
 
     public class Loan
     {
-        public int ID;
-        public User User;
+        public int Id;
+        public User? User;
         public decimal Amount;
-        public string CurrencyCode;
+        public string? CurrencyCode;
         public decimal InterestRate;
         public int Status;
 
@@ -20,7 +15,7 @@ namespace SalamanderBank
 
         public override string ToString()
         {
-            return $"Loan Amount: {Amount} {CurrencyCode} | Interest Rate: {InterestRate}";
+            return $"Loan Amount: {Amount} {CurrencyCode} | Interest Rate: {InterestRate}%";
         }
     }
 }

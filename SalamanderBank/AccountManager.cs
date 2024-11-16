@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Data.SQLite;
+﻿using System.Data.SQLite;
 using Dapper;
 
 namespace SalamanderBank
@@ -24,7 +19,7 @@ namespace SalamanderBank
                 WHERE sa.id = @ID OR ra.id = @ID
                 ORDER BY t.TransferDate DESC";
 
-            using (var connection = new SQLiteConnection(DB._connectionString))
+            using (var connection = new SQLiteConnection(Db.ConnectionString))
             {
                 connection.Open();
                 // Type hints informs Dapper which classes to use when mapping the information
@@ -43,7 +38,7 @@ namespace SalamanderBank
                         return transfer;
                     },
                     // Determines the value of the @ID parameter.
-                    new { ID = account.ID },
+                    new { ID = account.Id },
                     splitOn: "id"    // Creates a new group of columns whenever it encounters a column named "id".
                                      // This allows Dapper to sequentially map each group of columns to each Class.
                 ).ToList();
@@ -54,39 +49,39 @@ namespace SalamanderBank
 		// Updates the account's balance in the database
 		public static void UpdateAccountBalance(Account account)
         {
-            using (var connection = new SQLiteConnection(DB._connectionString))
+            using (var connection = new SQLiteConnection(Db.ConnectionString))
             {
                 connection.Open();
                 var sql = "UPDATE Accounts SET Balance = @balance WHERE ID = @ID";
-                var affectedRows = connection.Execute(sql, new { balance = account.Balance, account.ID });
+                connection.Execute(sql, new { balance = account.Balance, ID = account.Id });
             }
         }
 
 		// Updates the account's currency in the database
 		public static void UpdateAccountCurrency(Account account)
         {
-            using (var connection = new SQLiteConnection(DB._connectionString))
+            using (var connection = new SQLiteConnection(Db.ConnectionString))
             {
                 connection.Open();
                 var sql = "UPDATE Accounts SET CurrencyCode = @currencyCode WHERE ID = @ID";
-                var affectedRows = connection.Execute(sql, new { currencyCode = account.CurrencyCode, account.ID });
+                connection.Execute(sql, new { currencyCode = account.CurrencyCode, ID = account.Id });
             }
         }
 
 		// Updates the account's name in the database
 		public static void UpdateAccountName(Account account)
 		{
-			using (var connection = new SQLiteConnection(DB._connectionString))
+			using (var connection = new SQLiteConnection(Db.ConnectionString))
 			{
 				connection.Open();
 				var sql = "UPDATE Accounts SET AccountName = @name WHERE ID = @ID";
-				var affectedRows = connection.Execute(sql, new { name = account.AccountName, account.ID });
+				connection.Execute(sql, new { name = account.AccountName, ID = account.Id });
 			}
 		}
 
 		public static Account? GetAccount(int id)
         {
-            using (var connection = new SQLiteConnection(DB._connectionString))
+            using (var connection = new SQLiteConnection(Db.ConnectionString))
             {
                 connection.Open();
                 var sql = @"SELECT a.*, u.* 
@@ -111,33 +106,38 @@ namespace SalamanderBank
         // A method that retreives all accounts where all any account's UserID column = user.ID
         public static void GetAccountsFromUser(User? user)
         {
-            using (var connection = new SQLiteConnection(DB._connectionString))
+            using (var connection = new SQLiteConnection(Db.ConnectionString))
             {
                 connection.Open();
                 var sql = @"SELECT a.*, u.*
                         FROM Accounts a
                         INNER JOIN Users u on u.ID = a.UserID
                         WHERE a.UserID = @UserID";
-                var accounts = connection.Query<Account, User, Account>(
-                    sql,
-                    (acc, user) =>
-                    {
-                        acc.User = user;  // Assuming Account has a property User to hold User info
-                        return acc;
-                    },
-                    new { UserID = user.ID },
-                    splitOn: "ID"  // Use the `ID` column to indicate where the User object starts
-                    ).ToList();
-                user.Accounts = accounts;
-                foreach(Account acc in user.Accounts) 
+                if (user != null)
                 {
-                    GetAccountTransferHistory(acc);
+                    var accounts = connection.Query<Account, User, Account>(
+                        sql,
+                        (acc, accUser) =>
+                        {
+                            acc.User = accUser;  // Assuming Account has a property User to hold User info
+                            return acc;
+                        },
+                        new { UserID = user.Id },
+                        splitOn: "ID"  // Use the `ID` column to indicate where the User object starts
+                    ).ToList();
+                    user.Accounts = accounts;
                 }
+
+                if (user?.Accounts != null)
+                    foreach (Account acc in user.Accounts)
+                    {
+                        GetAccountTransferHistory(acc);
+                    }
             }
         }
 
         // Method that converts the currency of an account
-        public static Account ConvertAccountCurrency(Account account, string newCurrencyCode)
+        public static Account ConvertAccountCurrency(Account account, string? newCurrencyCode)
         {
             // Checks if it tries to convert to the same currency
             if (account.CurrencyCode != newCurrencyCode)
@@ -162,12 +162,12 @@ namespace SalamanderBank
         public static bool CreateAccount(User? user, string currencyCode, string accountName, int type, decimal balance = 0)
         {
             // Checks if the account name is already in use
-            if (user.Accounts.Any(acc => acc.AccountName == accountName))
+            if (user != null && user.Accounts!.Any(acc => acc.AccountName == accountName))
             {
                 return false;
             }
             
-            using (var connection = new SQLiteConnection(DB._connectionString))
+            using (var connection = new SQLiteConnection(Db.ConnectionString))
             {
                 connection.Open();
 
@@ -176,8 +176,11 @@ namespace SalamanderBank
 
                 // Inserts the account into SQL
                 var sql = "INSERT INTO Accounts (UserID, CurrencyCode, AccountName, Balance, Status, Type, Interest) VALUES (@UserID, @CurrencyCode, @AccountName, @Balance, @Status, @Type, @Interest)";
-                var affectedRows = connection.Execute(sql, new { UserID = user.ID, CurrencyCode = currencyCode, AccountName = accountName, Balance = balance, Status = 1, Type = type, Interest = interest });
-                Console.WriteLine($"{affectedRows} rows inserted into Accounts.");
+                if (user != null)
+                {
+                    var affectedRows = connection.Execute(sql, new { UserID = user.Id, CurrencyCode = currencyCode, AccountName = accountName, Balance = balance, Status = 1, Type = type, Interest = interest });
+                    Console.WriteLine($"{affectedRows} rows inserted into Accounts.");
+                }
 
                 GetAccountsFromUser(user);
             }

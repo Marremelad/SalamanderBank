@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Data.SQLite;
-using System.IO;
-using DotNetEnv;
-using System.Text.Json;
-using Dapper;
+﻿using System.Data.SQLite;
 
 namespace SalamanderBank
 {
@@ -25,21 +16,21 @@ namespace SalamanderBank
      * db.InitializeDatabase();
      * db.AddUser(1, "password", "user@example.com", "John", "Doe");
      */
-    public static class DB
+    public static class Db
     {
-        public static string _dbFile = "SalamanderBank.db";
-        public static string _connectionString = $"Data Source={_dbFile};Version=3;";
+        public static string DbFile = "SalamanderBank.db";
+        public static string ConnectionString = $"Data Source={DbFile};Version=3;";
 
         // Run this method to check if the database file and correct tables exist
         public static void InitializeDatabase()
         {
             // Check if the database file exists
-            if (!File.Exists(_dbFile))
+            if (!File.Exists(DbFile))
             {
                 Console.WriteLine("Database file does not exist. Creating a new database file.");
 
                 // Create and open a new database connection
-                using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
+                using (SQLiteConnection connection = new SQLiteConnection(ConnectionString))
                 {
                     connection.Open();
 
@@ -54,7 +45,7 @@ namespace SalamanderBank
                 Console.WriteLine("Database file exists. Connecting to existing database.");
 
                 // Open the connection to the existing database
-                using (SQLiteConnection connection = new SQLiteConnection(_connectionString))
+                using (SQLiteConnection connection = new SQLiteConnection(ConnectionString))
                 {
                     connection.Open();
                     CreateTables(connection);
@@ -69,7 +60,7 @@ namespace SalamanderBank
             string createUsersTableQuery = "CREATE TABLE IF NOT EXISTS Users (ID INTEGER PRIMARY KEY, Type INTEGER, Password TEXT, Email TEXT NOT NULL UNIQUE, FirstName TEXT, LastName TEXT, PhoneNumber TEXT, Verified INTEGER, Locked INTEGER);";
             using (SQLiteCommand command = new SQLiteCommand(createUsersTableQuery, connection))
             {
-                int rowsAffected = command.ExecuteNonQuery();
+                command.ExecuteNonQuery();
                 Console.WriteLine($"Users table created.");
             }
 
@@ -77,37 +68,36 @@ namespace SalamanderBank
             string createAccountsTableQuery = "CREATE TABLE IF NOT EXISTS Accounts (ID INTEGER PRIMARY KEY, UserID INTEGER, CurrencyCode TEXT, AccountName TEXT, Balance REAL, Status INTEGER, Type INTEGER, Interest REAL);";
             using (SQLiteCommand command = new SQLiteCommand(createAccountsTableQuery, connection))
             {
-                int rowsAffected = command.ExecuteNonQuery();
+                command.ExecuteNonQuery();
                 Console.WriteLine($"Accounts table created.");
             }
 
             string createCurrenciesTableQuery = "CREATE TABLE IF NOT EXISTS Currencies (CurrencyCode TEXT PRIMARY KEY, ExchangeRate REAL, LastUpdated TEXT);";
             using (SQLiteCommand command = new SQLiteCommand(createCurrenciesTableQuery, connection))
             {
-                int rowsAffected = command.ExecuteNonQuery();
+                command.ExecuteNonQuery();
                 Console.WriteLine($"Currencies table created.");
             }
 
             string createTransfersTableQuery = "CREATE TABLE IF NOT EXISTS Transfers (ID INTEGER PRIMARY KEY, SenderUserID INTEGER, SenderAccountID INTEGER, ReceiverUserID INTEGER, ReceiverAccountID INTEGER, CurrencyCode TEXT, TransferDate TEXT, Amount REAL, Processed INTEGER);";
             using (SQLiteCommand command = new SQLiteCommand(createTransfersTableQuery, connection))
             {
-                int rowsAffected = command.ExecuteNonQuery();
+                command.ExecuteNonQuery();
                 Console.WriteLine($"Transfers table created.");
             }
 
             string createLoanTableQuery = "CREATE TABLE IF NOT EXISTS Loans (ID INTEGER PRIMARY KEY, UserID INTEGER, Amount REAL, CurrencyCode TEXT, InterestRate REAL, Status INTEGER, LoanDate TEXT);";
             using (SQLiteCommand command = new SQLiteCommand(createLoanTableQuery, connection))
             {
-                int rowsAffected = command.ExecuteNonQuery();
+                command.ExecuteNonQuery();
                 Console.WriteLine($"Loans table created.");
             }
         }
 
         // Escapes strings for SQL LIKE queries
-        public static string Escape(string? input)
+        public static string? Escape(string? input)
         {
-            return input
-                .Replace("[", "\\[")
+            return input?.Replace("[", "\\[")
                 .Replace("]", "\\]")
                 .Replace("\\", "[\\]")
                 .Replace("%", "[%]")
