@@ -962,7 +962,7 @@ public static class Ui
         var message3 = $"\u001b[38;2;225;255;0mFinal Amount in {toCurrency}:\u001b[0m \u001b[38;2;255;69;0m{amount:f2}\u001b[0m";
         Console.WriteLine($"{message3}");
 
-        Console.WriteLine("\nPress any Key to Continue");
+        Console.WriteLine("\nPress any key to continue");
         
         Console.ReadLine();
        
