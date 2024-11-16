@@ -75,3 +75,19 @@ Files:
   Alternatively contact one the contributors to use Team Salamanders SMTP credentials.
 
 * This application uses the [46elks](https://46elks.se/) API for sending SMS messages and [currencyapi.com](https://currencyapi.com/) for fetching currency data. To access these API's you will have to get a subscription or ask Team Salamander for the API keys and passwords.
+
+### Get started
+If you are using Visual Studio or any other C# IDE with an integrated repo-cloning function use it with this URL - https://github.com/Marremelad/SalamanderBank.git
+then open the solution and run the program.
+
+Else, do the following.
+* Open the terminal on your computer.
+* Navigate to the directory where you keep your repositories.
+* Run the following command
+```console
+git clone https://github.com/Marremelad/SalamanderBank.git      
+```
+* Navigate into the directory that holds the project and run the following command.
+```console
+dotnet run
+```
