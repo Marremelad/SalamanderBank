@@ -5,6 +5,7 @@ namespace SalamanderBank
 {
     internal class AccountManager
     {
+        // Retrieves the transfer history for the specified account
         public static void GetAccountTransferHistory(Account account)
         {
             string transferQuery = @"
@@ -22,8 +23,7 @@ namespace SalamanderBank
             using (var connection = new SQLiteConnection(Db.ConnectionString))
             {
                 connection.Open();
-                // Type hints informs Dapper which classes to use when mapping the information
-                // it gets back from the SQL query.
+                // Type hints inform Dapper which classes to use when mapping the SQL query result.
                 var transferList = connection.Query<Transfer, User, Account, User, Account, Transfer>(
                     transferQuery,
                     (transfer, senderUser, senderAccount, receiverUser, receiverAccount) =>
@@ -37,17 +37,16 @@ namespace SalamanderBank
                         transfer.ReceiverAccount = receiverAccount;
                         return transfer;
                     },
-                    // Determines the value of the @ID parameter.
+                    // Passes the account's ID as a parameter to the query.
                     new { ID = account.Id },
-                    splitOn: "id"    // Creates a new group of columns whenever it encounters a column named "id".
-                                     // This allows Dapper to sequentially map each group of columns to each Class.
+                    splitOn: "id"    // Specifies the columns Dapper uses to split the result into separate objects.
                 ).ToList();
-                account.TransferList = transferList;
+                account.TransferList = transferList; // Assigns the list of transfers to the account
             }
         }
 
-		// Updates the account's balance in the database
-		public static void UpdateAccountBalance(Account account)
+        // Updates the account's balance in the database
+        public static void UpdateAccountBalance(Account account)
         {
             using (var connection = new SQLiteConnection(Db.ConnectionString))
             {
@@ -57,8 +56,8 @@ namespace SalamanderBank
             }
         }
 
-		// Updates the account's currency in the database
-		public static void UpdateAccountCurrency(Account account)
+        // Updates the account's currency code in the database
+        public static void UpdateAccountCurrency(Account account)
         {
             using (var connection = new SQLiteConnection(Db.ConnectionString))
             {
@@ -68,18 +67,19 @@ namespace SalamanderBank
             }
         }
 
-		// Updates the account's name in the database
-		public static void UpdateAccountName(Account account)
-		{
-			using (var connection = new SQLiteConnection(Db.ConnectionString))
-			{
-				connection.Open();
-				var sql = "UPDATE Accounts SET AccountName = @name WHERE ID = @ID";
-				connection.Execute(sql, new { name = account.AccountName, ID = account.Id });
-			}
-		}
+        // Updates the account's name in the database
+        public static void UpdateAccountName(Account account)
+        {
+            using (var connection = new SQLiteConnection(Db.ConnectionString))
+            {
+                connection.Open();
+                var sql = "UPDATE Accounts SET AccountName = @name WHERE ID = @ID";
+                connection.Execute(sql, new { name = account.AccountName, ID = account.Id });
+            }
+        }
 
-		public static Account? GetAccount(int id)
+        // Retrieves an account by its ID from the database
+        public static Account? GetAccount(int id)
         {
             using (var connection = new SQLiteConnection(Db.ConnectionString))
             {
@@ -92,18 +92,18 @@ namespace SalamanderBank
                     sql,
                     (acc, user) =>
                     {
-                        acc.User = user;  // Assuming Account has a property User to hold User info
+                        acc.User = user;  // Sets the User property of the Account object
                         return acc;
                     },
                     new { ID = id },
-                    splitOn: "ID"  // Use the `ID` column to indicate where the User object starts
+                    splitOn: "ID"  // Uses the `ID` column to indicate where the User object starts
                     ).FirstOrDefault();
 
                 return account;
             }
         }
 
-        // A method that retreives all accounts where all any account's UserID column = user.ID
+        // Retrieves all accounts associated with a specific user
         public static void GetAccountsFromUser(User? user)
         {
             using (var connection = new SQLiteConnection(Db.ConnectionString))
@@ -119,62 +119,62 @@ namespace SalamanderBank
                         sql,
                         (acc, accUser) =>
                         {
-                            acc.User = accUser;  // Assuming Account has a property User to hold User info
+                            acc.User = accUser;  // Sets the User property of the Account object
                             return acc;
                         },
                         new { UserID = user.Id },
-                        splitOn: "ID"  // Use the `ID` column to indicate where the User object starts
+                        splitOn: "ID"  // Uses the `ID` column to indicate where the User object starts
                     ).ToList();
-                    user.Accounts = accounts;
+                    user.Accounts = accounts; // Assigns the retrieved accounts to the user's Accounts property
                 }
 
                 if (user?.Accounts != null)
                     foreach (Account acc in user.Accounts)
                     {
-                        GetAccountTransferHistory(acc);
+                        GetAccountTransferHistory(acc); // Retrieves the transfer history for each account
                     }
             }
         }
 
-        // Method that converts the currency of an account
+        // Converts the currency of an account and updates the balance and currency
         public static Account ConvertAccountCurrency(Account account, string? newCurrencyCode)
         {
-            // Checks if it tries to convert to the same currency
+            // Checks if the account is trying to convert to a different currency
             if (account.CurrencyCode != newCurrencyCode)
             {
-                // The new balance will be calculated by CurrencyManager.ConvertCurrency
+                // Converts the balance to the new currency using CurrencyManager
                 decimal newBalance = CurrencyManager.ConvertCurrency(account.Balance, account.CurrencyCode, newCurrencyCode);
 
                 if (newBalance > 0)
                 {
-                    account.Balance = newBalance;
-                    account.CurrencyCode = newCurrencyCode;
-                    UpdateAccountBalance(account);
-                    UpdateAccountCurrency(account);
+                    account.Balance = newBalance; // Updates the account balance
+                    account.CurrencyCode = newCurrencyCode; // Updates the account currency
+                    UpdateAccountBalance(account); // Updates the account balance in the database
+                    UpdateAccountCurrency(account); // Updates the account currency in the database
                 }
             }
 
-            // Either way this method will return the same account, updated or not
+            // Returns the updated or unchanged account
             return account;
         }
 
-        // Creates an account for the user used as an argument
+        // Creates a new account for a user
         public static bool CreateAccount(User? user, string currencyCode, string accountName, int type, decimal balance = 0)
         {
             // Checks if the account name is already in use
             if (user != null && user.Accounts!.Any(acc => acc.AccountName == accountName))
             {
-                return false;
+                return false; // Returns false if the account name is already in use
             }
-            
+
             using (var connection = new SQLiteConnection(Db.ConnectionString))
             {
                 connection.Open();
 
-                // Gets the interest rate for account type based on dictionary in Account.AccountTypes
+                // Gets the interest rate based on the account type from the Account.AccountTypes dictionary
                 float interest = Account.AccountTypes[type];
 
-                // Inserts the account into SQL
+                // Inserts the new account into the database
                 var sql = "INSERT INTO Accounts (UserID, CurrencyCode, AccountName, Balance, Status, Type, Interest) VALUES (@UserID, @CurrencyCode, @AccountName, @Balance, @Status, @Type, @Interest)";
                 if (user != null)
                 {
@@ -182,10 +182,10 @@ namespace SalamanderBank
                     Console.WriteLine($"{affectedRows} rows inserted into Accounts.");
                 }
 
-                GetAccountsFromUser(user);
+                GetAccountsFromUser(user); // Retrieves and assigns the new account to the user
             }
 
-            return true;
+            return true; // Returns true if the account was successfully created
         }
     }
 }
