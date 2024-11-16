@@ -15,7 +15,7 @@ namespace SalamanderBank
 
         public override string ToString()
         {
-            return $"Loan Amount: {Amount} {CurrencyCode} | Interest Rate: {InterestRate}";
+            return $"Loan Amount: {Amount} {CurrencyCode} | Interest Rate: {InterestRate}%";
         }
     }
 }
