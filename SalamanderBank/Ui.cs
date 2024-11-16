@@ -1061,7 +1061,7 @@ public static class Ui
                 .PageSize(5)
                 .HighlightStyle(new Style(Color.Black, Color. Yellow))
                 .Title("[bold underline rgb(190,40,0)]    Admin Menu[/]")
-                .AddChoices("  Create User Account", "  Remove User Account")
+                .AddChoices("  Create User Account")
                 .AddChoiceGroup("", "[yellow]Sign Out[/]")
                 .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
         
@@ -1070,9 +1070,6 @@ public static class Ui
             case "Create User Account":
                 await AdminCreateNewUser();
                 break;
-            
-            case "Remove User Account":
-                throw new NotImplementedException();
             
             case "[yellow]Sign Out[/]":
                 await DisplayMainMenu();
