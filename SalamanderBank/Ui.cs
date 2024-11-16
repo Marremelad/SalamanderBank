@@ -1075,6 +1075,8 @@ public static class Ui
             // Update the account's balance and currency code
             account.Balance = convertedAmount;
             account.CurrencyCode = convertTo;
+            AccountManager.UpdateAccountBalance(account);
+            AccountManager.UpdateAccountCurrency(account);
 
             // Call method to show exchange animation and update user interface
             await ExchangeAnimation(account, convertFrom, convertTo, convertedAmount);
