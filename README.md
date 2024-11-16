@@ -22,11 +22,12 @@
 * Exchange currency.
 * View transaction history.
 
+#### As admin 
+* Create new users.
+
 ### Application Demo
 <img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderBankDemoGif.gif" height="500" width="900" alt="Salamander Banner">
 
-#### As admin 
-* Create new users.
 
 ### Requirements
 To run the app successfully make sure that you are using the following.
