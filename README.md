@@ -25,7 +25,7 @@
 #### As admin 
 * Create new users.
 
-### Application Demo
+## Application Demo
 <img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderBankDemoGif.gif" height="500" width="900" alt="Salamander Demo Gif">
 
 <table>
