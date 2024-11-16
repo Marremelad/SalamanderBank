@@ -88,7 +88,7 @@ namespace SalamanderBank
                 Console.WriteLine($"Currencies table created.");
             }
 
-            string createTransfersTableQuery = "CREATE TABLE IF NOT EXISTS Transfers (ID INTEGER PRIMARY KEY, SenderUserID INTEGER, SenderAccountID INTEGER, ReceiverUserID INTEGER, ReceiverAccountID INTEGER, TransferDate TEXT, Amount REAL, Processed INTEGER);";
+            string createTransfersTableQuery = "CREATE TABLE IF NOT EXISTS Transfers (ID INTEGER PRIMARY KEY, SenderUserID INTEGER, SenderAccountID INTEGER, ReceiverUserID INTEGER, ReceiverAccountID INTEGER, CurrencyCode TEXT, TransferDate TEXT, Amount REAL, Processed INTEGER);";
             using (SQLiteCommand command = new SQLiteCommand(createTransfersTableQuery, connection))
             {
                 int rowsAffected = command.ExecuteNonQuery();

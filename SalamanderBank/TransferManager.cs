@@ -94,7 +94,7 @@ namespace SalamanderBank
                 var affectedRows = connection.Execute(query, new { processed = 1,transfer.ID });
                 transfer.Processed = 1;
 
-                await SmsService.SendSms(transfer.ReceiverUser.PhoneNumber, $"Hello {transfer.ReceiverUser.FirstName}! {transfer.Amount} {transfer.ReceiverAccount.CurrencyCode} was sent to your '{transfer.ReceiverAccount.AccountName}' account.");
+                await SmsService.SendSms(transfer.ReceiverUser.PhoneNumber, $"Hello {transfer.ReceiverUser.FirstName}! {transfer.Amount:f2} {transfer.ReceiverAccount.CurrencyCode} was sent to your '{transfer.ReceiverAccount.AccountName}' account.");
             }
         }
     
@@ -114,8 +114,8 @@ namespace SalamanderBank
             {
                 connection.Open();
                 string query = @"INSERT INTO Transfers 
-                 (SenderUserID, SenderAccountID, ReceiverUserID, ReceiverAccountID, TransferDate, Amount, Processed)
-                 VALUES(@SenderUser, @SenderAccount, @ReceiverUser, @ReceiverAccount, @TransferDate, @Amount, @Processed)";
+                 (SenderUserID, SenderAccountID, ReceiverUserID, ReceiverAccountID, CurrencyCode, TransferDate, Amount, Processed)
+                 VALUES(@SenderUser, @SenderAccount, @ReceiverUser, @ReceiverAccount, @CurrencyCode, @TransferDate, @Amount, @Processed)";
 
                 var affectedRows = connection.Execute(query, new
                 {
@@ -123,6 +123,7 @@ namespace SalamanderBank
                     SenderAccount = transfer.SenderAccount.ID,
                     ReceiverUser = transfer.ReceiverUser.ID,
                     ReceiverAccount = transfer.ReceiverAccount.ID,
+                    CurrencyCode = transfer.CurrencyCode,
                     TransferDate = transfer.TransferDate,
                     Amount = transfer.Amount,
                     Processed = transfer.Processed
@@ -142,12 +143,15 @@ namespace SalamanderBank
                 SenderAccount = senderAccount,
                 ReceiverUser = receiverAccount.User,
                 ReceiverAccount = receiverAccount,
+                CurrencyCode = senderAccount.CurrencyCode, 
                 Amount = amount,
                 TransferDate = DateTime.Now,
                 Processed = 0
             };
             if (AddTransferToDB(transfer))
             {
+                AccountManager.GetAccountTransferHistory(senderAccount);
+                AccountManager.GetAccountTransferHistory(receiverAccount);
                 return transfer;
             };
             return null;
