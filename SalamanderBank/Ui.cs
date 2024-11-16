@@ -1,7 +1,5 @@
-using System.Data.Entity.Infrastructure.Interception;
 using System.Media;
 using System.Text.RegularExpressions;
-
 using Spectre.Console;
 
 namespace SalamanderBank;
@@ -66,14 +64,14 @@ public static class Ui
 
     public static async Task RunProgram()
     {
-        DB.InitializeDatabase();
+        Db.InitializeDatabase();
 
         if (!UserManager.EmailExists("salamanderbank@gmail.com"))
         {
             UserManager.AddUser(1, $"admin", "salamanderbank@gmail.com", "Salamander", "Admin", null, 1);
         }
 
-        TransferManager.PopulateQueueFromDB();
+        TransferManager.PopulateQueueFromDb();
 
         await CurrencyManager.UpdateCurrenciesAsync();
 
@@ -721,7 +719,7 @@ public static class Ui
         var accounts = new List<Account>();
         if (accounts == null) throw new ArgumentNullException(nameof(accounts));
 
-        if (user?.Accounts != null)
+        if (user.Accounts != null)
         {
             accounts.AddRange(user.Accounts!.Where(account => account != senderAccount));
 
@@ -756,7 +754,7 @@ public static class Ui
     private static async Task SelectUser(Account senderAccount)
     {
         List<User> users = UserManager.SearchUser("");
-        users.RemoveAll(u => u.Email == _user.Email || u.Email == "salamanderbank@gmail.com");
+        users.RemoveAll(u => u.Email == _user?.Email || u.Email == "salamanderbank@gmail.com");
         var indentedUsers = users
             .ToDictionary(user => $"  {user.Email}", user => user);
 
@@ -870,41 +868,38 @@ public static class Ui
     private static async Task Currencies(Account account)
     {
         var currencyMap  = CurrencyManager.GetAllCurrencies();
-
-        if (currencyMap != null)
+        
+        Dictionary<string, string?> indentedCurrencies =
+            currencyMap.ToDictionary(currency => $"  {currency.CurrencyCode, -5} | {currency.ExchangeRate, -10}",
+                currency => currency.CurrencyCode);
+            
+        if (account.Balance < decimal.Zero)
         {
-            var indentedCurrencies =
-                currencyMap.ToDictionary(currency => $"  {currency.CurrencyCode, -5} | {currency.ExchangeRate, -10}",
-                    currency => currency.CurrencyCode);
-            
-            if (account.Balance < decimal.Zero)
-            {
-                AnsiConsole.MarkupLine("[red]Not enough balance![/]");
-                return;
-            }
-            
-            var choice = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .PageSize(20)
-                    .HighlightStyle(new Style(Color.Black, Color.Yellow))
-                    .Title("[bold underline rgb(190,40,0)]    Select an Exchange Rate[/]".PadLeft(5))
-                    .AddChoices("[yellow]  Main Menu         [/]")
-                    .AddChoices(indentedCurrencies.Keys)
-                    .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
-
-            switch (choice.Trim())
-            {
-                case "[yellow]  Main Menu         [/]":
-                    await UserSignedIn();
-                    break;
-            }
-            
-            await CurrencyConverter(account.CurrencyCode, indentedCurrencies[choice], account);
-            Thread.Sleep(1000);
+            AnsiConsole.MarkupLine("[red]Not enough balance![/]");
+            return;
         }
+            
+        var choice = AnsiConsole.Prompt(
+            new SelectionPrompt<string>()
+                .PageSize(20)
+                .HighlightStyle(new Style(Color.Black, Color.Yellow))
+                .Title("[bold underline rgb(190,40,0)]    Select an Exchange Rate[/]".PadLeft(5))
+                .AddChoices("[yellow]  Main Menu         [/]")
+                .AddChoices(indentedCurrencies.Keys)
+                .MoreChoicesText("[grey](Move up and down to reveal more options)[/]"));
+
+        switch (choice.Trim())
+        {
+            case "[yellow]  Main Menu         [/]":
+                await UserSignedIn();
+                break;
+        }
+            
+        await CurrencyConverter(account.CurrencyCode, indentedCurrencies[choice], account);
+        Thread.Sleep(1000);
     }
 
-    private static async Task CurrencyConverter(string convertFrom, string convertTo, Account account)
+    private static async Task CurrencyConverter(string? convertFrom, string? convertTo, Account account)
     {
         try
         {
@@ -923,7 +918,7 @@ public static class Ui
         await AccountOptions(account);
     }
 
-    private static async Task ExchangeAnimation(Account account, string fromCurrency, string toCurrency, decimal amount)
+    private static async Task ExchangeAnimation(Account account, string? fromCurrency, string? toCurrency, decimal amount)
     {
         var customStyle = new Style(new Color(225, 69, 0));
         Console.Clear();
@@ -1131,7 +1126,7 @@ public static class Ui
             table.AddRow(
                 Markup.Escape($"{account.AccountName}"),
                 Markup.Escape($"{transaction.ReceiverAccount}"),
-                Markup.Escape($"{account.User.FirstName} {account.User.LastName}"),
+                Markup.Escape($"{account.User?.FirstName} {account.User?.LastName}"),
                 Markup.Escape($"{transaction.TransferDate:yyyy-MM-dd HH:mm:ss}"),
                 Markup.Escape($"{transaction.Amount}"),
                 Markup.Escape($"{transaction.CurrencyCode}")

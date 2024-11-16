@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Data.SQLite;
+﻿using System.Data.SQLite;
 using Dapper;
 
 namespace SalamanderBank
@@ -23,7 +18,7 @@ namespace SalamanderBank
                     VALUES (@Type, @Password, @Email, @FirstName, @LastName, @PhoneNumber, @Verified, 0);
                     SELECT * FROM Users WHERE Id = last_insert_rowid();";
 
-                using (SQLiteConnection connection = new SQLiteConnection(DB._connectionString))
+                using (SQLiteConnection connection = new SQLiteConnection(Db.ConnectionString))
                 {
                     connection.Open();
 
@@ -32,10 +27,10 @@ namespace SalamanderBank
                     {
                         Type = type,
                         Password = Auth.HashPassword(password),
-                        Email = DB.Escape(email),
-                        FirstName = DB.Escape(firstName),
-                        LastName = DB.Escape(lastName),
-                        PhoneNumber = phoneNumber == null ? null : DB.Escape(phoneNumber),
+                        Email = Db.Escape(email),
+                        FirstName = Db.Escape(firstName),
+                        LastName = Db.Escape(lastName),
+                        PhoneNumber = phoneNumber == null ? null : Db.Escape(phoneNumber),
                         Verified = verified
                     };
                     User user = connection.QuerySingle<User>(insertQuery, parameters);
@@ -51,13 +46,13 @@ namespace SalamanderBank
         {
             string updateQuery = "UPDATE Users SET Verified = 1 WHERE Email = @Email;";
 
-            using (SQLiteConnection connection = new SQLiteConnection(DB._connectionString))
+            using (SQLiteConnection connection = new SQLiteConnection(Db.ConnectionString))
             {
                 connection.Open();
 
                 using (SQLiteCommand updateCommand = new SQLiteCommand(updateQuery, connection))
                 {
-                    updateCommand.Parameters.AddWithValue("@Email", DB.Escape(email));
+                    updateCommand.Parameters.AddWithValue("@Email", Db.Escape(email));
 
                     int rowsAffected = updateCommand.ExecuteNonQuery();
                     Console.WriteLine($"{rowsAffected} row(s) updated in Users table.");
@@ -72,13 +67,13 @@ namespace SalamanderBank
         {
             string query = "SELECT COUNT(*) FROM Users WHERE Email = @Email;";
 
-            using (SQLiteConnection connection = new SQLiteConnection(DB._connectionString))
+            using (SQLiteConnection connection = new SQLiteConnection(Db.ConnectionString))
             {
                 connection.Open();
 
                 using (SQLiteCommand command = new SQLiteCommand(query, connection))
                 {
-                    command.Parameters.AddWithValue("@Email", DB.Escape(email));
+                    command.Parameters.AddWithValue("@Email", Db.Escape(email));
 
                     long emailExists = (long)command.ExecuteScalar();
 
@@ -89,8 +84,8 @@ namespace SalamanderBank
         public static bool PhoneNumberExists(string? phoneNumber)
         {
             string query = "SELECT COUNT(1) FROM Users WHERE PhoneNumber = @PhoneNumber;";
-            int count = 0;
-            using (SQLiteConnection connection = new SQLiteConnection(DB._connectionString))
+            int count;
+            using (SQLiteConnection connection = new SQLiteConnection(Db.ConnectionString))
             {
                 connection.Open();
                 count = connection.ExecuteScalar<int>(query, new {PhoneNumber = phoneNumber});
@@ -107,7 +102,7 @@ namespace SalamanderBank
             var parameters = new { search = $"%{searchTerm}%" };
 
 
-            using (SQLiteConnection connection = new SQLiteConnection(DB._connectionString))
+            using (SQLiteConnection connection = new SQLiteConnection(Db.ConnectionString))
             {
                 connection.Open();
 
@@ -123,14 +118,14 @@ namespace SalamanderBank
 		// Updates user password
         public static void ChangePassword(string? email, string newPassword)
         {
-            using (var connection = new SQLiteConnection(DB._connectionString))
+            using (var connection = new SQLiteConnection(Db.ConnectionString))
             {
                 connection.Open();
 
                 string query = "UPDATE Users SET Password = @NewPassword WHERE Email = @Email";
                 using (var command = new SQLiteCommand(query, connection))
                 {
-                    command.Parameters.AddWithValue("@Email", DB.Escape(email));
+                    command.Parameters.AddWithValue("@Email", Db.Escape(email));
                     command.Parameters.AddWithValue("@NewPassword", Auth.HashPassword(newPassword));
 
                     int rowsAffected = command.ExecuteNonQuery();
@@ -146,7 +141,7 @@ namespace SalamanderBank
         {
             string updateQuery = "UPDATE Users SET Password = @NewPassword WHERE ID = @UserID;";
 
-            using (SQLiteConnection connection = new SQLiteConnection(DB._connectionString))
+            using (SQLiteConnection connection = new SQLiteConnection(Db.ConnectionString))
             {
                 connection.Open();
 
@@ -156,7 +151,7 @@ namespace SalamanderBank
                     
 
 					updateCommand.Parameters.AddWithValue("@NewPassword", newHashedPassword);
-                    updateCommand.Parameters.AddWithValue("@UserID", user.ID);
+                    updateCommand.Parameters.AddWithValue("@UserID", user.Id);
 
                     int rowsAffected = updateCommand.ExecuteNonQuery();
                     Console.WriteLine($"{rowsAffected} row(s) updated in Users table.");
@@ -177,14 +172,14 @@ namespace SalamanderBank
         {
             string updateQuery = "UPDATE Users SET PhoneNumber = @NewPhoneNumber WHERE ID = @UserID;";
 
-            using (SQLiteConnection connection = new SQLiteConnection(DB._connectionString))
+            using (SQLiteConnection connection = new SQLiteConnection(Db.ConnectionString))
             {
                 connection.Open();
 
                 using (SQLiteCommand updateCommand = new SQLiteCommand(updateQuery, connection))
                 {
-                    updateCommand.Parameters.AddWithValue("@NewPhoneNumber", DB.Escape(newPhoneNumber));
-                    updateCommand.Parameters.AddWithValue("@UserID", user.ID);
+                    updateCommand.Parameters.AddWithValue("@NewPhoneNumber", Db.Escape(newPhoneNumber));
+                    updateCommand.Parameters.AddWithValue("@UserID", user.Id);
 
                     int rowsAffected = updateCommand.ExecuteNonQuery();
                     Console.WriteLine($"{rowsAffected} row(s) updated in Users table.");
@@ -205,14 +200,14 @@ namespace SalamanderBank
         {
             string updateQuery = "UPDATE Users SET Email = @NewEmail WHERE ID = @UserID;";
 
-            using (SQLiteConnection connection = new SQLiteConnection(DB._connectionString))
+            using (SQLiteConnection connection = new SQLiteConnection(Db.ConnectionString))
             {
                 connection.Open();
 
                 using (SQLiteCommand updateCommand = new SQLiteCommand(updateQuery, connection))
                 {
-                    updateCommand.Parameters.AddWithValue("@NewEmail", DB.Escape(newEmail));
-                    updateCommand.Parameters.AddWithValue("@UserID", user.ID);
+                    updateCommand.Parameters.AddWithValue("@NewEmail", Db.Escape(newEmail));
+                    updateCommand.Parameters.AddWithValue("@UserID", user.Id);
 
                     int rowsAffected = updateCommand.ExecuteNonQuery();
                     Console.WriteLine($"{rowsAffected} row(s) updated in Users table.");
@@ -232,7 +227,7 @@ namespace SalamanderBank
 		{
 			string updateQuery = "UPDATE Users SET Locked = @NewLocked WHERE Email = @Email;";
 
-			using (SQLiteConnection connection = new SQLiteConnection(DB._connectionString))
+			using (SQLiteConnection connection = new SQLiteConnection(Db.ConnectionString))
 			{
 				connection.Open();
 

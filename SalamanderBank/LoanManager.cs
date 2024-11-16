@@ -1,13 +1,5 @@
 ﻿using Dapper;
-using Microsoft.AspNetCore.Identity;
-using Spectre.Console;
-using System;
-using System.Collections.Generic;
-using System.Data.Entity;
 using System.Data.SQLite;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SalamanderBank
 {
@@ -30,25 +22,29 @@ namespace SalamanderBank
         }
 
         //Metod to fetch the total sum of loans for the given user
-        public static decimal GetTotalLoans(User? user, string currencyCode)
+        public static decimal GetTotalLoans(User? user, string? currencyCode)
         {
             decimal totalLoans = 0;
-            foreach (Loan loan in user.Loans)
-            {
-                totalLoans += CurrencyManager.ConvertCurrency(loan.Amount, loan.CurrencyCode, currencyCode);
-            }
+            if (user?.Loans != null)
+                foreach (Loan loan in user.Loans)
+                {
+                    totalLoans += CurrencyManager.ConvertCurrency(loan.Amount, loan.CurrencyCode, currencyCode);
+                }
+
             return Math.Round(totalLoans, 2);
         }
 
         // Method to get the total balance across all accounts for the user
-        public static decimal GetTotalBalance(User? user, string currencyCode)
+        public static decimal GetTotalBalance(User? user, string? currencyCode)
         {
             decimal totalBalance = 0;
 
-            foreach (var account in user.Accounts)
-            {
-                totalBalance += CurrencyManager.ConvertCurrency(account.Balance, account.CurrencyCode, currencyCode);
-            }
+            if (user?.Accounts != null)
+                foreach (var account in user.Accounts)
+                {
+                    totalBalance +=
+                        CurrencyManager.ConvertCurrency(account.Balance, account.CurrencyCode, currencyCode);
+                }
 
             return Math.Round(totalBalance, 2);
         }
@@ -70,15 +66,15 @@ namespace SalamanderBank
                 VALUES (@UserID, @Amount, @CurrencyCode, @InterestRate, @Status, @LoanDate );
                 SELECT * FROM Loans WHERE ID = last_insert_rowid();";
 
-            using (SQLiteConnection connection = new SQLiteConnection(DB._connectionString))
+            using (SQLiteConnection connection = new SQLiteConnection(Db.ConnectionString))
             {
                 connection.Open();
                 // If email doesn't exist, proceed with insertion
                 var parameters = new
                 {
-                    UserID = user.ID,
+                    UserID = user!.Id,
                     Amount = loanAmount,
-                    CurrencyCode = account.CurrencyCode,
+                    account.CurrencyCode,
                     InterestRate = interestRate,
                     Status = 0,
                     LoanDate = DateTime.Now
@@ -94,24 +90,27 @@ namespace SalamanderBank
         }
         public static void GetLoansFromUser(User? user)
         {
-            using (var connection = new SQLiteConnection(DB._connectionString))
+            using (var connection = new SQLiteConnection(Db.ConnectionString))
             {
                 connection.Open();
                 var sql = @"SELECT l.*, u.*
                         FROM Loans l
                         INNER JOIN Users u on u.ID = l.UserID
                         WHERE l.UserID = @UserID";
-                var loans = connection.Query<Loan, User, Loan>(
-                    sql,
-                    (loan, user) =>
-                    {
-                        loan.User = user;  // Assuming Account has a property User to hold User info
-                        return loan;
-                    },
-                    new { UserID = user.ID },
-                    splitOn: "ID"  // Use the `ID` column to indicate where the User object starts
+                if (user != null)
+                {
+                    var loans = connection.Query<Loan, User, Loan>(
+                        sql,
+                        (loan, loanUser) =>
+                        {
+                            loan.User = loanUser;  // Assuming Account has a property User to hold User info
+                            return loan;
+                        },
+                        new { UserID = user.Id },
+                        splitOn: "ID"  // Use the `ID` column to indicate where the User object starts
                     ).ToList();
-                user.Loans = loans;
+                    user.Loans = loans;
+                }
             }
         }
     }

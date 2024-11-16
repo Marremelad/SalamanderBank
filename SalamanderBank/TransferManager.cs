@@ -1,17 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Data.SQLite;
+﻿using System.Data.SQLite;
 using Dapper;
 
 namespace SalamanderBank
 {
     internal class TransferManager
     {
-        public static Queue<Transfer> TransferQueue = new();
-        public static void PopulateQueueFromDB()
+        public static Queue<Transfer?> TransferQueue = new();
+        public static void PopulateQueueFromDb()
         {
             // Selects a transfer based on Processed status and orders the transfers
             // by TransferDate so the oldest transfer is processed first in the Queue.
@@ -27,7 +22,7 @@ namespace SalamanderBank
                 WHERE t.Processed = @Processed
                 ORDER BY t.TransferDate DESC";
 
-            using (var connection = new SQLiteConnection(DB._connectionString))
+            using (var connection = new SQLiteConnection(Db.ConnectionString))
             {
                 connection.Open();
                 // Type hints informs Dapper which classes to use when mapping the information
@@ -46,52 +41,59 @@ namespace SalamanderBank
                     new { Processed = 0 },
                     splitOn: "id"
                 ).ToList();
-                TransferQueue = new Queue<Transfer>(transferList);
+                TransferQueue = new Queue<Transfer?>(transferList);
             } 
         }
-        public static void ProcessQueue()
+        public static async void ProcessQueue()
         {
             while (true)
             {
                 int timeToSleep = 5000; // If the queue is empty the thread will sleep for 15 minutes.
 
-                if (TransferQueue.TryDequeue(out Transfer transfer))
+                if (TransferQueue.TryDequeue(out Transfer? transfer))
                 {
                     // Changes timeToSleep so the thread wakes up in time for the next transfer.
-                    timeToSleep = (int)(DateTime.Now.AddMilliseconds(timeToSleep) - transfer.TransferDate).TotalMilliseconds;
+                    if (transfer != null)
+                        timeToSleep = (int)(DateTime.Now.AddMilliseconds(timeToSleep) - transfer.TransferDate)
+                            .TotalMilliseconds;
                 }
                 // In case the program imports old transfers the timeToSleep can become negative, in which case it doesn't sleep.
                 if (timeToSleep > 0) { Thread.Sleep(timeToSleep); }
                 // If there was a transfer it's sent for processing.
                 if (transfer != null)
                 {
-                    ProcessTransfer(transfer);
+                    await ProcessTransfer(transfer);
                 }
             }
+            // ReSharper disable once FunctionNeverReturns
         }
 
-        private static async Task ProcessTransfer(Transfer transfer)
+        private static async Task ProcessTransfer(Transfer? transfer)
         {
             // Makes sure the receiver and the receiving account exists.
-            if(transfer.ReceiverUser == null || transfer.ReceiverAccount == null)
+            if(transfer?.ReceiverUser == null || transfer.ReceiverAccount == null)
             {
                 // If something goes wrong we return the money to the sender.
-                transfer.SenderAccount.Balance += transfer.Amount;
-                AccountManager.UpdateAccountBalance(transfer.SenderAccount);
+                if (transfer?.SenderAccount != null)
+                {
+                    transfer.SenderAccount.Balance += transfer.Amount;
+                    AccountManager.UpdateAccountBalance(transfer.SenderAccount);
+                }
+
                 return;
             }
             
             // Converts the amount to the receiving accounts currency.
-            transfer.Amount = CurrencyManager.ConvertCurrency(transfer.Amount, transfer.SenderAccount.CurrencyCode, transfer.ReceiverAccount.CurrencyCode);
+            transfer.Amount = CurrencyManager.ConvertCurrency(transfer.Amount, transfer.SenderAccount?.CurrencyCode, transfer.ReceiverAccount.CurrencyCode);
             transfer.ReceiverAccount.Balance += transfer.Amount;
             AccountManager.UpdateAccountBalance(transfer.ReceiverAccount);
             
             // Marks the transfer as processed in the database.
-            using (var connection = new SQLiteConnection(DB._connectionString))
+            using (var connection = new SQLiteConnection(Db.ConnectionString))
             {
                 connection.Open();
                 string query = "UPDATE Transfers SET Processed = @processed WHERE ID = @ID";
-                var affectedRows = connection.Execute(query, new { processed = 1,transfer.ID });
+                await connection.ExecuteAsync(query, new { processed = 1, ID = transfer.Id });
                 transfer.Processed = 1;
 
                 await SmsService.SendSms(transfer.ReceiverUser.PhoneNumber, $"Hello {transfer.ReceiverUser.FirstName}! {transfer.Amount:f2} {transfer.ReceiverAccount.CurrencyCode} was sent to your '{transfer.ReceiverAccount.AccountName}' account.");
@@ -99,38 +101,46 @@ namespace SalamanderBank
         }
     
         // Adds a tranfer to the database.
-        private static bool AddTransferToDB(Transfer transfer)
+        private static bool AddTransferToDb(Transfer? transfer)
         {
-            if (transfer.SenderAccount.Balance < transfer.Amount)
+            if (transfer?.SenderAccount != null && transfer.SenderAccount.Balance < transfer.Amount)
             {
                 return false;
             }
             // Deducts the money from the senders account and savess the transfer in the database.
             // This ensures THAT The transfer continues to exist even if the application is closed.
-            transfer.SenderAccount.Balance -= transfer.Amount;
-            AccountManager.UpdateAccountBalance(transfer.SenderAccount);
-            TransferQueue.Enqueue(transfer);
-            using (var connection = new SQLiteConnection(DB._connectionString))
+            if (transfer?.SenderAccount != null)
             {
-                connection.Open();
-                string query = @"INSERT INTO Transfers 
+                transfer.SenderAccount.Balance -= transfer.Amount;
+                AccountManager.UpdateAccountBalance(transfer.SenderAccount);
+                TransferQueue.Enqueue(transfer);
+                using (var connection = new SQLiteConnection(Db.ConnectionString))
+                {
+                    connection.Open();
+                    string query = @"INSERT INTO Transfers 
                  (SenderUserID, SenderAccountID, ReceiverUserID, ReceiverAccountID, CurrencyCode, TransferDate, Amount, Processed)
                  VALUES(@SenderUser, @SenderAccount, @ReceiverUser, @ReceiverAccount, @CurrencyCode, @TransferDate, @Amount, @Processed)";
 
-                var affectedRows = connection.Execute(query, new
-                {
-                    SenderUser = transfer.SenderUser.ID,
-                    SenderAccount = transfer.SenderAccount.Id,
-                    ReceiverUser = transfer.ReceiverUser.ID,
-                    ReceiverAccount = transfer.ReceiverAccount.Id,
-                    CurrencyCode = transfer.CurrencyCode,
-                    TransferDate = transfer.TransferDate,
-                    Amount = transfer.Amount,
-                    Processed = transfer.Processed
-                });
-                // Sets the ID of the transfer object.
-                transfer.ID = connection.ExecuteScalar<int>("SELECT last_insert_rowid()");
+                    if (transfer is { SenderUser: not null, ReceiverUser: not null, ReceiverAccount: not null })
+                    {
+                        connection.Execute(query, new
+                        {
+                            SenderUser = transfer.SenderUser.Id,
+                            SenderAccount = transfer.SenderAccount.Id,
+                            ReceiverUser = transfer.ReceiverUser.Id,
+                            ReceiverAccount = transfer.ReceiverAccount.Id,
+                            transfer.CurrencyCode,
+                            transfer.TransferDate,
+                            transfer.Amount,
+                            transfer.Processed
+                        });
+                    }
+
+                    // Sets the ID of the transfer object.
+                    transfer.Id = connection.ExecuteScalar<int>("SELECT last_insert_rowid()");
+                }
             }
+
             return true;
         }
     
@@ -148,16 +158,16 @@ namespace SalamanderBank
                 TransferDate = DateTime.Now,
                 Processed = 0
             };
-            if (AddTransferToDB(transfer))
+            if (AddTransferToDb(transfer))
             {
                 AccountManager.GetAccountTransferHistory(senderAccount);
                 AccountManager.GetAccountTransferHistory(receiverAccount);
                 return transfer;
-            };
+            }
             return null;
         }
 
-        public static Transfer GetTransfer(int transferId)
+        public static Transfer? GetTransfer(int transferId)
         {
             // Selects a transfer based on transferId and joins relevant information
             // from Users and Accounts tables.
@@ -172,7 +182,7 @@ namespace SalamanderBank
                 INNER JOIN Accounts ra ON ra.ID = t.ReceiverAccountID
                 WHERE t.id = @ID";
 
-            using (var connection = new SQLiteConnection(DB._connectionString))
+            using (var connection = new SQLiteConnection(Db.ConnectionString))
             {
                 connection.Open();
                 // Type hints informs Dapper which classes to use when mapping the information
