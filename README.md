@@ -41,6 +41,18 @@
   </tr>
 </table>
 
+## Structure
+In this application we have chosen to structure the code in the following way.
+* Program.cs is the entry point of the program and is only used to start the application.
+* The Ui class displays user options and is largely responsible for message output and formatting.
+* The object classes: User, Account, Transfer, Loan and Currency, stores information that can be processed by the manager classes.
+* The Manager classes: UserManager, AccountManager, TransferManager, LoanManager, CurrencyManager and Auth, processes the information of objects and sends the data to the Ui class and also handles database querying.
+* The DB class initializes the database and created the database tables.
+* The classes, EmailService and SmsService Handles the formatting and sending of email and sms messages respectively.
+
+#### Download UML diagram
+<img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderBankUML.pdf" height="300" width="500" alt="UML Diagram">
+
 ## Requirements
 To run the app successfully make sure that you are using the following.
 
@@ -63,18 +75,3 @@ Files:
   Alternatively contact one the contributors to use Team Salamanders SMTP credentials.
 
 * This application uses the [46elks](https://46elks.se/) API for sending SMS messages and [currencyapi.com](https://currencyapi.com/) for fetching currency data. To access these API's you will have to get a subscription or ask Team Salamander for the API keys and passwords.
-
-## Structure
-In this application we have chosen to structure the code in the following way.
-* Program.cs is the entry point of the program and is only used to start the application.
-* The Ui class displays user options and is largely responsible for message output and formatting.
-* The object classes: User, Account, Transfer, Loan and Currency, stores information that can be processed by the manager classes.
-* The Manager classes: UserManager, AccountManager, TransferManager, LoanManager, CurrencyManager and Auth, processes the information of objects and sends the data to the Ui class and also handles database querying.
-* The DB class initializes the database and created the database tables.
-* The classes, EmailService and SmsService Handles the formatting and sending of email and sms messages respectively.
-
-#### Download UML diagram
-<img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderBankUML.pdf" height="300" width="500" alt="UML Diagram">
-
-
-
