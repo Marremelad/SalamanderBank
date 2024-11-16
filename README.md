@@ -58,7 +58,7 @@ In this application we have chosen to structure the code in the following way.
 * The classes, EmailService and SmsService Handles the formatting and sending of email and sms messages respectively.
 
 #### Download UML diagram
-<img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderUML.pdf" height="300" width="500" alt="UML Diagram">
+<img src="https://github.com/Marremelad/AssetsAndImages/raw/main/SalamanderBankUML.pdf" height="300" width="500" alt="UML Diagram">
 
 
 
