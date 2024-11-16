@@ -1141,6 +1141,7 @@ public static class Ui
         AnsiConsole.Write(table);
         var footerRow = new Rule("[bold green] All Transactions for this account[/]").RuleStyle("khaki1").Centered();
         AnsiConsole.Write(footerRow);
+        Console.WriteLine("\nPress any key to continue");
         Console.ReadLine();
         await UserSignedIn();
 
