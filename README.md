@@ -69,7 +69,7 @@ Packages:
 
 Files:
 * In your entry point directory, create a file named Credentials.env and add the environmental variables EMAIL and EMAIL_PASSWORD for sending emails, SMS_API_USERNAME and SMS_API_PASSWORD for sending SMS messages and CURRENCY_API_KEY for fetching currency data.
-Example:
+
 <img src="https://github.com/Marremelad/AssetsAndImages/raw/main/ENVScreenShot.png" height="200" width="400" alt="UML Diagram">
 
 ### Notes
