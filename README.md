@@ -69,7 +69,7 @@ Packages:
 
 Files:
 * In your entry point directory, create a file named Credentials.env and add the environmental variables EMAIL and EMAIL_PASSWORD for sending emails, SMS_API_USERNAME and SMS_API_PASSWORD for sending SMS messages and CURRENCY_API_KEY for fetching currency data.
-  <img src="https://github.com/Marremelad/AssetsAndImages/raw/main/ENVScreenShot.png" height="300" width="500" alt="UML Diagram">
+  <img src="https://github.com/Marremelad/AssetsAndImages/raw/main/ENVScreenShot.png" height="200" width="300" alt="UML Diagram">
 
 ### Notes
 * Keep in mind that some email providers require SMTP authentication for third party applications. This means that your regular password might not work when trying to send emails through this app. To fix this, access your email account and generate a third party app password and set it as the value for the EMAIL_PASSWORD variable.
